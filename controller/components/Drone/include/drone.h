@@ -3,6 +3,8 @@
 #include <driver/ledc.h>
 #include <driver/gpio.h>
 
+#include "MPU6050.h"
+
 #include "rotor.h"
 #include "esc_timer.h"
 
@@ -13,10 +15,14 @@ class Drone {
               gpio_num_t rotor2_pin, ledc_channel_t rotor2_channel,
               gpio_num_t rotor3_pin, ledc_channel_t rotor3_channel,
               gpio_num_t rotor4_pin, ledc_channel_t rotor4_channel);
-    private:
+
+        void print_ypr();
+        VectorFloat ypr();
+
         EscTimer esc_timer;
         Rotor rotor1;
         Rotor rotor2;
         Rotor rotor3;
         Rotor rotor4;
+        MPU6050 mpu;
 };

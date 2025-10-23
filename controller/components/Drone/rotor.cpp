@@ -20,6 +20,12 @@ Rotor::Rotor(gpio_num_t pin, ledc_channel_t channel, EscTimer &timer)
     ledc_channel_config(&ledc_channel);
 }
 
+void Rotor::init()
+{
+    setThrottle(0.0f);
+    vTaskDelay(pdMS_TO_TICKS(3000));
+}
+
 void Rotor::setThrottle(float throttle_percent)
 {
     // Map 0-100% throttle to 1-2ms pulse width

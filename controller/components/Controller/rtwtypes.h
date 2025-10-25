@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller'.
 //
-// Model version                  : 1.206
+// Model version                  : 1.207
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Thu Oct 23 19:05:47 2025
+// C/C++ source code generated on : Sat Oct 25 12:33:16 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor

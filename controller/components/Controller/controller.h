@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller'.
 //
-// Model version                  : 1.206
+// Model version                  : 1.207
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Thu Oct 23 19:05:47 2025
+// C/C++ source code generated on : Sat Oct 25 12:33:16 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -30,10 +30,6 @@ class Model
  public:
   // Block signals and states (default storage) for system '<Root>'
   struct DW {
-    real_T Integrator_DSTATE;          // '<S40>/Integrator'
-    real_T UD_DSTATE;                  // '<S33>/UD'
-    real_T Integrator_DSTATE_f;        // '<S94>/Integrator'
-    real_T UD_DSTATE_p;                // '<S87>/UD'
     real_T a_f;                        // '<Root>/MATLAB Function1'
     real_T b_f;                        // '<Root>/MATLAB Function1'
     real_T c_f;                        // '<Root>/MATLAB Function1'
@@ -42,10 +38,6 @@ class Model
     real_T b_t;                        // '<Root>/MATLAB Function1'
     real_T distance;                   // '<Root>/MATLAB Function1'
     real_T torque_minimum;             // '<Root>/MATLAB Function1'
-    real_T thrust_part;
-    real_T Sum_d;                      // '<Root>/Sum'
-    real_T Sum1;                       // '<Root>/Sum1'
-    real_T Tsamp;                      // '<S35>/Tsamp'
     boolean_T a_f_not_empty;           // '<Root>/MATLAB Function1'
   };
 
@@ -69,60 +61,14 @@ class Model
 
   // Parameters (default storage)
   struct P {
-    real_T DiscretePIDController_D;   // Mask Parameter: DiscretePIDController_D
-                                         //  Referenced by: '<S31>/Derivative Gain'
-
-    real_T DiscretePIDController1_D; // Mask Parameter: DiscretePIDController1_D
-                                        //  Referenced by: '<S85>/Derivative Gain'
-
-    real_T DiscretePIDController_Different;
-                              // Mask Parameter: DiscretePIDController_Different
-                                 //  Referenced by: '<S33>/UD'
-
-    real_T DiscretePIDController1_Differen;
-                              // Mask Parameter: DiscretePIDController1_Differen
-                                 //  Referenced by: '<S87>/UD'
-
-    real_T DiscretePIDController1_I; // Mask Parameter: DiscretePIDController1_I
-                                        //  Referenced by: '<S91>/Integral Gain'
-
-    real_T DiscretePIDController_I;   // Mask Parameter: DiscretePIDController_I
-                                         //  Referenced by: '<S37>/Integral Gain'
-
-    real_T DiscretePIDController_InitialCo;
-                              // Mask Parameter: DiscretePIDController_InitialCo
-                                 //  Referenced by: '<S40>/Integrator'
-
-    real_T DiscretePIDController1_InitialC;
-                              // Mask Parameter: DiscretePIDController1_InitialC
-                                 //  Referenced by: '<S94>/Integrator'
-
-    real_T DiscretePIDController_P;   // Mask Parameter: DiscretePIDController_P
-                                         //  Referenced by: '<S45>/Proportional Gain'
-
-    real_T DiscretePIDController1_P; // Mask Parameter: DiscretePIDController1_P
-                                        //  Referenced by: '<S99>/Proportional Gain'
-
     real_T Constant_Value;             // Expression: 10
                                           //  Referenced by: '<Root>/Constant'
 
-    real_T target_roll_Value;          // Expression: 0
-                                          //  Referenced by: '<Root>/target_roll'
+    real_T Constant1_Value;            // Expression: 0.2
+                                          //  Referenced by: '<Root>/Constant1'
 
-    real_T Integrator_gainval;         // Computed Parameter: Integrator_gainval
-                                          //  Referenced by: '<S40>/Integrator'
-
-    real_T Tsamp_WtEt;                 // Computed Parameter: Tsamp_WtEt
-                                          //  Referenced by: '<S35>/Tsamp'
-
-    real_T target_pitch_Value;         // Expression: 0
-                                          //  Referenced by: '<Root>/target_pitch'
-
-    real_T Integrator_gainval_l;     // Computed Parameter: Integrator_gainval_l
-                                        //  Referenced by: '<S94>/Integrator'
-
-    real_T Tsamp_WtEt_a;               // Computed Parameter: Tsamp_WtEt_a
-                                          //  Referenced by: '<S89>/Tsamp'
+    real_T Constant2_Value;            // Expression: 0
+                                          //  Referenced by: '<Root>/Constant2'
 
     real_T Constant3_Value;            // Expression: 0
                                           //  Referenced by: '<Root>/Constant3'
@@ -172,9 +118,29 @@ class Model
 //-
 //  These blocks were eliminated from the model due to optimizations:
 //
+//  Block '<S31>/Derivative Gain' : Unused code path elimination
 //  Block '<S33>/DTDup' : Unused code path elimination
+//  Block '<S33>/Diff' : Unused code path elimination
+//  Block '<S35>/Tsamp' : Unused code path elimination
+//  Block '<S33>/UD' : Unused code path elimination
+//  Block '<S37>/Integral Gain' : Unused code path elimination
+//  Block '<S40>/Integrator' : Unused code path elimination
+//  Block '<S45>/Proportional Gain' : Unused code path elimination
+//  Block '<S49>/Sum' : Unused code path elimination
+//  Block '<S85>/Derivative Gain' : Unused code path elimination
 //  Block '<S87>/DTDup' : Unused code path elimination
+//  Block '<S87>/Diff' : Unused code path elimination
+//  Block '<S89>/Tsamp' : Unused code path elimination
+//  Block '<S87>/UD' : Unused code path elimination
+//  Block '<S91>/Integral Gain' : Unused code path elimination
+//  Block '<S94>/Integrator' : Unused code path elimination
+//  Block '<S99>/Proportional Gain' : Unused code path elimination
+//  Block '<S103>/Sum' : Unused code path elimination
 //  Block '<Root>/Scope' : Unused code path elimination
+//  Block '<Root>/Sum' : Unused code path elimination
+//  Block '<Root>/Sum1' : Unused code path elimination
+//  Block '<Root>/target_pitch' : Unused code path elimination
+//  Block '<Root>/target_roll' : Unused code path elimination
 
 
 //-

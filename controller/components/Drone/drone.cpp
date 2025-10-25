@@ -101,6 +101,9 @@ void Drone::print_ypr() {
 
 VectorFloat Drone::ypr() {
     Quaternion q;           // [w, x, y, z]         quaternion container
+
+    VectorInt16 accel;
+
     VectorFloat gravity;    // [x, y, z]            gravity vector
     float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
     uint16_t packetSize = 42;    // expected DMP packet size (default is 42 bytes)
@@ -132,6 +135,7 @@ VectorFloat Drone::ypr() {
     // printf("YAW: %3.1f, ", ypr[0] * 180/M_PI);
     // printf("PITCH: %3.1f, ", ypr[1] * 180/M_PI);
     // printf("ROLL: %3.1f \n", ypr[2] * 180/M_PI);
+    printf("%.3f,%.3f,%.3f\n", ypr[2] * 180/M_PI, ypr[1] * 180/M_PI, ypr[0] * 180/M_PI);
 
     return VectorFloat(ypr[2]* 180/M_PI, ypr[1] * 180/M_PI, ypr[0] * 180/M_PI);
 }

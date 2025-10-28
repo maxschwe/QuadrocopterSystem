@@ -129,5 +129,5 @@ def plot_csv_data(filename: str):
 
 
 if __name__ == "__main__":
-    main("measurements_roll/measurements_roll_12N_0.2Nm.csv")
+    main("measurements_roll/measurements_roll_12N_0.2Nm_2.csv")
     # plot_csv_data("measurements.csv")

@@ -4,7 +4,8 @@
 
 #include "tests.h"
 #include "drone.h"
-#include "controller.h"
+#include "model_3dof.h"
+#include "model_3dof_types.h"
 #include "MPU6050.h"
 
 
@@ -17,27 +18,28 @@ void task_display(void*){
 		GPIO_NUM_5, LEDC_CHANNEL_3
 	);
 
-	Model controller;
+	model_3dof controller;
 	controller.initialize();
 
 	while (true) {
-		VectorFloat ypr = drone.ypr();
+		// VectorFloat ypr = drone.ypr();
 
-		controller.rtU.roll = ypr.x;
-		controller.rtU.pitch = ypr.y;
-		// controller.rtU.yaw = ypr.z;
-		controller.rtU.x = 0.0f;
-		controller.rtU.y = 0.0f;
-		// controller.rtU.z = 10.0f;
+		// controller.rtU.roll = ypr.x;
+		// controller.rtU.pitch = ypr.y;
+		// // controller.rtU.yaw = ypr.z;
+		// controller.rtU.x = 0.0f;
+		// controller.rtU.y = 0.0f;
+		// // controller.rtU.z = 10.0f;
 
 		controller.step();
+		model_3dof::ExtY_model_3dof_T outputs = controller.getExternalOutputs();
 
-		drone.rotor1.setThrottle(controller.rtY.Out1);
-		drone.rotor2.setThrottle(controller.rtY.Out2);
-		drone.rotor3.setThrottle(controller.rtY.Out3);
-		drone.rotor4.setThrottle(controller.rtY.Out4);
+		drone.rotor1.setThrottle(outputs.throttle1);
+		drone.rotor2.setThrottle(outputs.throttle2);
+		drone.rotor3.setThrottle(outputs.throttle3);
+		drone.rotor4.setThrottle(outputs.throttle4);
 		// printf("r1: %f, r2: %f, r3: %f, r4: %f\n", controller.rtY.Out1, controller.rtY.Out2, controller.rtY.Out3, controller.rtY.Out4);
-		vTaskDelay(pdMS_TO_TICKS(4));
+		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 }
 

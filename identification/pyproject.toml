@@ -1,22 +1,14 @@
 [project]
 name = "identification"
 version = "0.1.0"
-description = ""
-authors = [
-    {name = "Your Name",email = "you@example.com"}
-]
-requires-python = ">=3.13"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
 dependencies = [
-    "numpy (>=2.3.4,<3.0.0)",
-    "matplotlib (>=3.10.7,<4.0.0)",
-    "ipykernel (>=7.0.1,<8.0.0)",
-    "pyserial (>=3.5,<4.0)",
-    "pandas (>=2.3.3,<3.0.0)"
+    "ipykernel>=7.1.0",
+    "matplotlib>=3.10.7",
+    "numpy>=2.3.4",
+    "pandas>=2.3.3",
+    "pyserial>=3.5",
+    "scipy>=1.16.3",
 ]
-
-[tool.poetry]
-package-mode = false
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"

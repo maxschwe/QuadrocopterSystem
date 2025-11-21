@@ -4,9 +4,8 @@
 
 #include "tests.h"
 #include "drone.h"
-#include "model_3dof.h"
-#include "model_3dof_types.h"
-#include "MPU6050.h"
+#include "controller_3dof.h"
+#include "mpu6050.h"
 
 
 void task_display(void*){
@@ -18,11 +17,17 @@ void task_display(void*){
 		GPIO_NUM_5, LEDC_CHANNEL_3
 	);
 
-	model_3dof controller;
+	Controller controller;
 	controller.initialize();
 
+	TickType_t xLastWakeTime = xTaskGetTickCount();
+	const TickType_t xFrequency = pdMS_TO_TICKS(5);
+
 	while (true) {
-		// VectorFloat ypr = drone.ypr();
+		drone.ypr();
+		// printf("YAW: %3.1f, ", ypr.x * 180/M_PI);
+		// printf("PITCH: %3.1f, ", ypr.y *180/M_PI);
+		// printf("ROLL: %3.1f \n", ypr.z * 180/M_PI);
 
 		// controller.rtU.roll = ypr.x;
 		// controller.rtU.pitch = ypr.y;
@@ -32,14 +37,18 @@ void task_display(void*){
 		// // controller.rtU.z = 10.0f;
 
 		controller.step();
-		model_3dof::ExtY_model_3dof_T outputs = controller.getExternalOutputs();
+		Controller::ExtY outputs = controller.rtY;
 
-		drone.rotor1.setThrottle(outputs.throttle1);
-		drone.rotor2.setThrottle(outputs.throttle2);
-		drone.rotor3.setThrottle(outputs.throttle3);
-		drone.rotor4.setThrottle(outputs.throttle4);
-		// printf("r1: %f, r2: %f, r3: %f, r4: %f\n", controller.rtY.Out1, controller.rtY.Out2, controller.rtY.Out3, controller.rtY.Out4);
-		vTaskDelay(pdMS_TO_TICKS(1));
+		drone.rotor1.setThrottle(outputs.throttle_1);
+		drone.rotor2.setThrottle(outputs.throttle_2);
+		drone.rotor3.setThrottle(outputs.throttle_3);
+		drone.rotor4.setThrottle(outputs.throttle_4);
+		// printf("t1: %f, t2: %f, t3: %f, t4: %f\n", outputs.throttle_1, outputs.throttle_2, outputs.throttle_3, outputs.throttle_4);
+		BaseType_t xWasDelayed = xTaskDelayUntil( &xLastWakeTime, xFrequency );
+		
+		if (xWasDelayed != pdTRUE) {
+			ESP_LOGW("TASK", "task_display delayed!");
+		}
 	}
 }
 
@@ -47,5 +56,5 @@ void task_display(void*){
 extern "C" void app_main(void)
 {
 	start_onboard_led_test();
-    xTaskCreate(&task_display, "disp_task", 8192, NULL, 5, NULL);
+    xTaskCreate(&task_display, "disp_task", 16384, NULL, 5, NULL);
 }

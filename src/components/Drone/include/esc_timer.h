@@ -3,7 +3,7 @@
 #include <driver/ledc.h>
 
 #define ESC_PWM_RESOLUTION LEDC_TIMER_16_BIT
-#define ESC_PWM_FREQ_HZ 50
+#define ESC_PWM_FREQ_HZ 490
 
 class EscTimer {
 public:

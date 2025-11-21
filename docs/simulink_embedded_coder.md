@@ -1,0 +1,10 @@
+- Erstellen eines Controller Subsystems
+- Rechtsklick auf Subsystem -> Block Parameters -> Check "Treat as atomic unit"
+- Embedded Coder runterladen
+- Quick Start ausführen in Embedded Coder Tab
+    - Subsystem für Code Generation auswählen (nicht gesamtes Modell)
+    - C++ Code auswählen
+    - Device Vendor: Custom, Device Type: Custom Processor
+- Model Settings:
+    - Solver: Fixed Step, discrete, step size: 0.001
+    - Code Generation -> Optimization: Default Paramteter behaviour: inlined

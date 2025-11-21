@@ -33,13 +33,13 @@ THE SOFTWARE.
 #ifndef _MPU6050_9AXIS_MOTIONAPPS41_H_
 #define _MPU6050_9AXIS_MOTIONAPPS41_H_
 
-#include "I2Cdev.h"
+#include "i2cdev.h"
 #include "helper_3dmath.h"
 
 // MotionApps 4.1 DMP implementation, built using the MPU-9150 "MotionFit" board
 #define MPU6050_INCLUDE_DMP_MOTIONAPPS41
 
-#include "MPU6050.h"
+#include "mpu6050.h"
 
 // Tom Carpenter's conditional PROGMEM code
 // http://forum.arduino.cc/index.php?topic=129407.0

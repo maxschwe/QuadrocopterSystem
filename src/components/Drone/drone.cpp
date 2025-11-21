@@ -52,6 +52,7 @@ Drone::Drone(
 	// mpu.setYGyroOffset(76);
 	// mpu.setZGyroOffset(-85);
 	// mpu.setZAccelOffset(1788);
+    
     mpu.CalibrateAccel(6);
     mpu.CalibrateGyro(6);
 
@@ -135,7 +136,7 @@ VectorFloat Drone::ypr() {
     // printf("YAW: %3.1f, ", ypr[0] * 180/M_PI);
     // printf("PITCH: %3.1f, ", ypr[1] * 180/M_PI);
     // printf("ROLL: %3.1f \n", ypr[2] * 180/M_PI);
-    printf("%.3f,%.3f,%.3f\n", ypr[2] * 180/M_PI, ypr[1] * 180/M_PI, ypr[0] * 180/M_PI);
+    // printf("%.3f,%.3f,%.3f\n", ypr[2] * 180/M_PI, ypr[1] * 180/M_PI, ypr[0] * 180/M_PI);
 
     return VectorFloat(ypr[2]* 180/M_PI, ypr[1] * 180/M_PI, ypr[0] * 180/M_PI);
 }

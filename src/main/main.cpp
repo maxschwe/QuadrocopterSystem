@@ -8,26 +8,28 @@
 #include "mpu6050.h"
 
 
-void task_display(void*){
+void drone_control(void*){
 	Drone drone(
 		LEDC_TIMER_0,
 		GPIO_NUM_15, LEDC_CHANNEL_0,
 		GPIO_NUM_2, LEDC_CHANNEL_1,
 		GPIO_NUM_4,  LEDC_CHANNEL_2,
-		GPIO_NUM_5, LEDC_CHANNEL_3
+		GPIO_NUM_16, LEDC_CHANNEL_3,
+		GPIO_NUM_5
 	);
 
 	Controller controller;
 	controller.initialize();
 
 	TickType_t xLastWakeTime = xTaskGetTickCount();
-	const TickType_t xFrequency = pdMS_TO_TICKS(5);
+	const TickType_t xFrequency = pdMS_TO_TICKS(10);
 
+	
 	while (true) {
-		drone.ypr();
-		// printf("YAW: %3.1f, ", ypr.x * 180/M_PI);
-		// printf("PITCH: %3.1f, ", ypr.y *180/M_PI);
-		// printf("ROLL: %3.1f \n", ypr.z * 180/M_PI);
+		VectorFloat orientation = drone.ypr();
+		printf("YAW: %3.1f, ", orientation.x);
+		printf("PITCH: %3.1f, ", orientation.y);
+		printf("ROLL: %3.1f \n", orientation.z);
 
 		// controller.rtU.roll = ypr.x;
 		// controller.rtU.pitch = ypr.y;
@@ -56,5 +58,5 @@ void task_display(void*){
 extern "C" void app_main(void)
 {
 	start_onboard_led_test();
-    xTaskCreate(&task_display, "disp_task", 16384, NULL, 5, NULL);
+    xTaskCreate(&drone_control, "drone_control", 16384, NULL, 5, NULL);
 }

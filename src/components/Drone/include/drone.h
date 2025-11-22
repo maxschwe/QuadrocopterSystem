@@ -14,9 +14,9 @@ class Drone {
               gpio_num_t rotor1_pin, ledc_channel_t rotor1_channel, 
               gpio_num_t rotor2_pin, ledc_channel_t rotor2_channel,
               gpio_num_t rotor3_pin, ledc_channel_t rotor3_channel,
-              gpio_num_t rotor4_pin, ledc_channel_t rotor4_channel);
+              gpio_num_t rotor4_pin, ledc_channel_t rotor4_channel,
+              gpio_num_t mpu_interrupt_pin);
 
-        void print_ypr();
         VectorFloat ypr();
 
         EscTimer esc_timer;

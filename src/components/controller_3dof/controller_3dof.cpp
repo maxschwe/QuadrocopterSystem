@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.52
+// Model version                  : 1.86
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Wed Nov 19 17:56:25 2025
+// C/C++ source code generated on : Fri Nov 28 17:24:05 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -22,49 +22,402 @@
 #include <cmath>
 #include "rtwtypes.h"
 
+// private model entry point functions
+extern void controller_3dof_derivatives();
+
+//=========*
+//  Asserts *
+// =========
+#ifndef utAssert
+#if defined(DOASSERTS)
+#if !defined(PRINT_ASSERTS)
+#include <assert.h>
+#define utAssert(exp)                  assert(exp)
+#else
+#include <stdio.h>
+
+static void _assert(char_T *statement, char_T *file, int line)
+{
+  printf("%s in %s on line %d\n", statement, file, line);
+}
+
+#define utAssert(_EX)                  ((_EX) ? (void)0 : _assert(#_EX, __FILE__, __LINE__))
+#endif
+
+#else
+#define utAssert(exp)                                            // do nothing
+#endif
+#endif
+
+//
+// This function updates continuous states using the ODE3 fixed-step
+// solver algorithm
+//
+void Controller::rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
+{
+  // Solver Matrices
+  static const real_T rt_ODE3_A[3]{
+    1.0/2.0, 3.0/4.0, 1.0
+  };
+
+  static const real_T rt_ODE3_B[3][3]{
+    { 1.0/2.0, 0.0, 0.0 },
+
+    { 0.0, 3.0/4.0, 0.0 },
+
+    { 2.0/9.0, 1.0/3.0, 4.0/9.0 }
+  };
+
+  time_T t { rtsiGetT(si) };
+
+  time_T tnew { rtsiGetSolverStopTime(si) };
+
+  time_T h { rtsiGetStepSize(si) };
+
+  real_T *x { rtsiGetContStates(si) };
+
+  ODE3_IntgData *id { static_cast<ODE3_IntgData *>(rtsiGetSolverData(si)) };
+
+  real_T *y { id->y };
+
+  real_T *f0 { id->f[0] };
+
+  real_T *f1 { id->f[1] };
+
+  real_T *f2 { id->f[2] };
+
+  real_T hB[3];
+  int_T i;
+  int_T nXc { 2 };
+
+  rtsiSetSimTimeStep(si,MINOR_TIME_STEP);
+
+  // Save the state values at time t in y, we'll use x as ynew.
+  (void) std::memcpy(y, x,
+                     static_cast<uint_T>(nXc)*sizeof(real_T));
+
+  // Assumes that rtsiSetT and ModelOutputs are up-to-date
+  // f0 = f(t,y)
+  rtsiSetdX(si, f0);
+  controller_3dof_derivatives();
+
+  // f(:,2) = feval(odefile, t + hA(1), y + f*hB(:,1), args(:)(*));
+  hB[0] = h * rt_ODE3_B[0][0];
+  for (i = 0; i < nXc; i++) {
+    x[i] = y[i] + (f0[i]*hB[0]);
+  }
+
+  rtsiSetT(si, t + h*rt_ODE3_A[0]);
+  rtsiSetdX(si, f1);
+  this->step();
+  controller_3dof_derivatives();
+
+  // f(:,3) = feval(odefile, t + hA(2), y + f*hB(:,2), args(:)(*));
+  for (i = 0; i <= 1; i++) {
+    hB[i] = h * rt_ODE3_B[1][i];
+  }
+
+  for (i = 0; i < nXc; i++) {
+    x[i] = y[i] + (f0[i]*hB[0] + f1[i]*hB[1]);
+  }
+
+  rtsiSetT(si, t + h*rt_ODE3_A[1]);
+  rtsiSetdX(si, f2);
+  this->step();
+  controller_3dof_derivatives();
+
+  // tnew = t + hA(3);
+  // ynew = y + f*hB(:,3);
+  for (i = 0; i <= 2; i++) {
+    hB[i] = h * rt_ODE3_B[2][i];
+  }
+
+  for (i = 0; i < nXc; i++) {
+    x[i] = y[i] + (f0[i]*hB[0] + f1[i]*hB[1] + f2[i]*hB[2]);
+  }
+
+  rtsiSetT(si, tnew);
+  rtsiSetSimTimeStep(si,MAJOR_TIME_STEP);
+}
+
 // Model step function
 void Controller::step()
 {
-  int32_T k;
-  real32_T rtb_u[4];
-  real32_T tau_Value;
-  real32_T tau_Value_0;
-  real32_T tau_Value_1;
-  real32_T tau_Value_2;
-  static const real32_T b[16]{ 0.25F, 0.25F, 0.25F, 0.25F, 0.0F, -2.5F, 0.0F,
-    2.5F, 2.5F, 0.0F, -2.5F, 0.0F, 7.1225F, -7.1225F, 7.1225F, -7.1225F };
+  real_T Saturation[4];
+  real_T b_data[4];
+  real_T rtb_u[4];
+  real_T Saturation_0;
+  real_T Saturation_1;
+  real_T Saturation_2;
+  real_T Saturation_3;
+  real_T rtb_Sum_e;
+  real_T tmp_0;
+  int32_T Saturation_tmp;
+  int32_T i;
+  boolean_T tmp;
+  static const real_T a[16]{ 0.25, 0.25, 0.25, 0.25, 0.0, -2.5, 0.0, 2.5, 2.5,
+    0.0, -2.5, 0.0, 7.1225, -7.1225, 7.1225, -7.1225 };
 
-  // MATLAB Function: '<Root>/MATLAB Function' incorporates:
-  //   Constant: '<Root>/tau'
+  int32_T b_size_idx_0;
+  if ((&rtM)->isMajorTimeStep()) {
+    // set solver stop time
+    rtsiSetSolverStopTime(&(&rtM)->solverInfo,(((&rtM)->Timing.clockTick0+1)*
+      (&rtM)->Timing.stepSize0));
+  }                                    // end MajorTimeStep
 
-  tau_Value = rtP.tau_Value[1];
-  tau_Value_0 = rtP.tau_Value[0];
-  tau_Value_1 = rtP.tau_Value[2];
-  tau_Value_2 = rtP.tau_Value[3];
-  for (k = 0; k < 4; k++) {
-    rtb_u[k] = std::sqrt((((b[k + 4] * tau_Value + b[k] * tau_Value_0) + b[k + 8]
-      * tau_Value_1) + b[k + 12] * tau_Value_2) / 0.0013F) + 8.5908F;
+  // Update absolute time of base rate at minor time step
+  if ((&rtM)->isMinorTimeStep()) {
+    (&rtM)->Timing.t[0] = rtsiGetT(&(&rtM)->solverInfo);
   }
 
-  // End of MATLAB Function: '<Root>/MATLAB Function'
+  tmp = ((&rtM)->isMajorTimeStep());
+  if (tmp) {
+    // Sum: '<Root>/Sum' incorporates:
+    //   Constant: '<Root>/Constant3'
+    //   Inport: '<Root>/roll'
 
-  // Outport: '<Root>/throttle_1'
-  rtY.throttle_1 = rtb_u[0];
+    rtb_Sum_e = rtP.Constant3_Value - rtU.roll;
 
-  // Outport: '<Root>/throttle_2'
-  rtY.throttle_2 = rtb_u[1];
+    // Gain: '<S43>/Proportional Gain'
+    rtDW.ProportionalGain = rtP.PIDController_P * rtb_Sum_e;
 
-  // Outport: '<Root>/throttle_3'
-  rtY.throttle_3 = rtb_u[2];
+    // Gain: '<S31>/Derivative Gain'
+    rtDW.DerivativeGain = rtP.PIDController_D * rtb_Sum_e;
+  }
 
-  // Outport: '<Root>/throttle_4'
-  rtY.throttle_4 = rtb_u[3];
+  // Gain: '<S41>/Filter Coefficient' incorporates:
+  //   Integrator: '<S33>/Filter'
+  //   Sum: '<S33>/SumD'
+
+  rtDW.FilterCoefficient = (rtDW.DerivativeGain - rtX.Filter_CSTATE) *
+    rtP.PIDController_N;
+
+  // SignalConversion generated from: '<S2>/ SFunction ' incorporates:
+  //   Constant: '<Root>/Constant'
+  //   Constant: '<Root>/Constant1'
+  //   Constant: '<Root>/Constant2'
+  //   Integrator: '<S38>/Integrator'
+  //   MATLAB Function: '<Root>/MATLAB Function'
+  //   Sum: '<S47>/Sum'
+
+  Saturation[0] = rtP.Constant2_Value;
+  Saturation[1] = (rtDW.ProportionalGain + rtX.Integrator_CSTATE) +
+    rtDW.FilterCoefficient;
+  Saturation[2] = rtP.Constant_Value;
+  Saturation[3] = rtP.Constant1_Value;
+
+  // MATLAB Function: '<Root>/MATLAB Function'
+  Saturation_0 = 0.0;
+  Saturation_1 = 0.0;
+  Saturation_2 = 0.0;
+  Saturation_3 = 0.0;
+  for (i = 0; i < 4; i++) {
+    tmp_0 = Saturation[i];
+    Saturation_tmp = i << 2;
+    Saturation_0 += a[Saturation_tmp] * tmp_0;
+    Saturation_1 += a[Saturation_tmp + 1] * tmp_0;
+    Saturation_2 += a[Saturation_tmp + 2] * tmp_0;
+    Saturation_3 += a[Saturation_tmp + 3] * tmp_0;
+    rtb_u[i] = 0.0;
+  }
+
+  Saturation[3] = Saturation_3;
+  Saturation[2] = Saturation_2;
+  Saturation[1] = Saturation_1;
+  Saturation[0] = Saturation_0;
+  Saturation_tmp = 0;
+  for (i = 0; i < 4; i++) {
+    if (Saturation[i] / 0.0013 >= 0.0) {
+      Saturation_tmp++;
+    }
+  }
+
+  b_size_idx_0 = Saturation_tmp;
+  Saturation_tmp = 0;
+  for (i = 0; i < 4; i++) {
+    tmp_0 = Saturation[i] / 0.0013;
+    if (tmp_0 >= 0.0) {
+      b_data[Saturation_tmp] = tmp_0;
+      Saturation_tmp++;
+    }
+  }
+
+  for (Saturation_tmp = 0; Saturation_tmp < b_size_idx_0; Saturation_tmp++) {
+    b_data[Saturation_tmp] = std::sqrt(b_data[Saturation_tmp]);
+  }
+
+  Saturation_tmp = 0;
+  for (i = 0; i < 4; i++) {
+    if (Saturation[i] / 0.0013 >= 0.0) {
+      rtb_u[i] = b_data[Saturation_tmp] + 8.5908;
+      Saturation_tmp++;
+    }
+  }
+
+  if (tmp) {
+    // Assertion: '<S1>/Assertion' incorporates:
+    //   Constant: '<S1>/max_val'
+    //   Constant: '<S1>/min_val'
+    //   Logic: '<S1>/conjunction'
+    //   RelationalOperator: '<S1>/max_relop'
+    //   RelationalOperator: '<S1>/min_relop'
+
+    utAssert((rtP.CheckStaticRange_min <= rtb_u[0]) && (rtb_u[0] <=
+              rtP.CheckStaticRange_max));
+    utAssert((rtP.CheckStaticRange_min <= rtb_u[1]) && (rtb_u[1] <=
+              rtP.CheckStaticRange_max));
+    utAssert((rtP.CheckStaticRange_min <= rtb_u[2]) && (rtb_u[2] <=
+              rtP.CheckStaticRange_max));
+    utAssert((rtP.CheckStaticRange_min <= rtb_u[3]) && (rtb_u[3] <=
+              rtP.CheckStaticRange_max));
+
+    // Saturate: '<Root>/Saturation'
+    if (rtb_u[0] > rtP.Saturation_UpperSat) {
+      // Outport: '<Root>/throttle_1'
+      rtY.throttle_1 = rtP.Saturation_UpperSat;
+    } else if (rtb_u[0] < rtP.Saturation_LowerSat) {
+      // Outport: '<Root>/throttle_1'
+      rtY.throttle_1 = rtP.Saturation_LowerSat;
+    } else {
+      // Outport: '<Root>/throttle_1'
+      rtY.throttle_1 = rtb_u[0];
+    }
+
+    if (rtb_u[1] > rtP.Saturation_UpperSat) {
+      // Outport: '<Root>/throttle_2'
+      rtY.throttle_2 = rtP.Saturation_UpperSat;
+    } else if (rtb_u[1] < rtP.Saturation_LowerSat) {
+      // Outport: '<Root>/throttle_2'
+      rtY.throttle_2 = rtP.Saturation_LowerSat;
+    } else {
+      // Outport: '<Root>/throttle_2'
+      rtY.throttle_2 = rtb_u[1];
+    }
+
+    if (rtb_u[2] > rtP.Saturation_UpperSat) {
+      // Outport: '<Root>/throttle_3'
+      rtY.throttle_3 = rtP.Saturation_UpperSat;
+    } else if (rtb_u[2] < rtP.Saturation_LowerSat) {
+      // Outport: '<Root>/throttle_3'
+      rtY.throttle_3 = rtP.Saturation_LowerSat;
+    } else {
+      // Outport: '<Root>/throttle_3'
+      rtY.throttle_3 = rtb_u[2];
+    }
+
+    if (rtb_u[3] > rtP.Saturation_UpperSat) {
+      // Outport: '<Root>/throttle_4'
+      rtY.throttle_4 = rtP.Saturation_UpperSat;
+    } else if (rtb_u[3] < rtP.Saturation_LowerSat) {
+      // Outport: '<Root>/throttle_4'
+      rtY.throttle_4 = rtP.Saturation_LowerSat;
+    } else {
+      // Outport: '<Root>/throttle_4'
+      rtY.throttle_4 = rtb_u[3];
+    }
+
+    // End of Saturate: '<Root>/Saturation'
+
+    // Gain: '<S35>/Integral Gain'
+    rtDW.IntegralGain = rtP.PIDController_I * rtb_Sum_e;
+  }
+
+  if ((&rtM)->isMajorTimeStep()) {
+    rt_ertODEUpdateContinuousStates(&(&rtM)->solverInfo);
+
+    // Update absolute time for base rate
+    // The "clockTick0" counts the number of times the code of this task has
+    //  been executed. The absolute time is the multiplication of "clockTick0"
+    //  and "Timing.stepSize0". Size of "clockTick0" ensures timer will not
+    //  overflow during the application lifespan selected.
+
+    ++(&rtM)->Timing.clockTick0;
+    (&rtM)->Timing.t[0] = rtsiGetSolverStopTime(&(&rtM)->solverInfo);
+
+    {
+      // Update absolute timer for sample time: [0.001s, 0.0s]
+      // The "clockTick1" counts the number of times the code of this task has
+      //  been executed. The resolution of this integer timer is 0.001, which is the step size
+      //  of the task. Size of "clockTick1" ensures timer will not overflow during the
+      //  application lifespan selected.
+
+      (&rtM)->Timing.clockTick1++;
+    }
+  }                                    // end MajorTimeStep
+}
+
+// Derivatives for root system: '<Root>'
+void Controller::controller_3dof_derivatives()
+{
+  Controller::XDot *_rtXdot;
+  _rtXdot = ((XDot *) (&rtM)->derivs);
+
+  // Derivatives for Integrator: '<S38>/Integrator'
+  _rtXdot->Integrator_CSTATE = rtDW.IntegralGain;
+
+  // Derivatives for Integrator: '<S33>/Filter'
+  _rtXdot->Filter_CSTATE = rtDW.FilterCoefficient;
 }
 
 // Model initialize function
 void Controller::initialize()
 {
-  // (no initialization code required)
+  // Registration code
+  {
+    // Setup solver object
+    rtsiSetSimTimeStepPtr(&(&rtM)->solverInfo, &(&rtM)->Timing.simTimeStep);
+    rtsiSetTPtr(&(&rtM)->solverInfo, (&rtM)->getTPtrPtr());
+    rtsiSetStepSizePtr(&(&rtM)->solverInfo, &(&rtM)->Timing.stepSize0);
+    rtsiSetdXPtr(&(&rtM)->solverInfo, &(&rtM)->derivs);
+    rtsiSetContStatesPtr(&(&rtM)->solverInfo, (real_T **) &(&rtM)->contStates);
+    rtsiSetNumContStatesPtr(&(&rtM)->solverInfo, &(&rtM)->Sizes.numContStates);
+    rtsiSetNumPeriodicContStatesPtr(&(&rtM)->solverInfo, &(&rtM)
+      ->Sizes.numPeriodicContStates);
+    rtsiSetPeriodicContStateIndicesPtr(&(&rtM)->solverInfo, &(&rtM)
+      ->periodicContStateIndices);
+    rtsiSetPeriodicContStateRangesPtr(&(&rtM)->solverInfo, &(&rtM)
+      ->periodicContStateRanges);
+    rtsiSetContStateDisabledPtr(&(&rtM)->solverInfo, (boolean_T**) &(&rtM)
+      ->contStateDisabled);
+    rtsiSetErrorStatusPtr(&(&rtM)->solverInfo, (&rtM)->getErrorStatusPtr());
+    rtsiSetRTModelPtr(&(&rtM)->solverInfo, (&rtM));
+  }
+
+  rtsiSetSimTimeStep(&(&rtM)->solverInfo, MAJOR_TIME_STEP);
+  rtsiSetIsMinorTimeStepWithModeChange(&(&rtM)->solverInfo, false);
+  rtsiSetIsContModeFrozen(&(&rtM)->solverInfo, false);
+  (&rtM)->intgData.y = (&rtM)->odeY;
+  (&rtM)->intgData.f[0] = (&rtM)->odeF[0];
+  (&rtM)->intgData.f[1] = (&rtM)->odeF[1];
+  (&rtM)->intgData.f[2] = (&rtM)->odeF[2];
+  (&rtM)->contStates = ((X *) &rtX);
+  (&rtM)->contStateDisabled = ((XDis *) &rtXDis);
+  (&rtM)->Timing.tStart = (0.0);
+  rtsiSetSolverData(&(&rtM)->solverInfo, static_cast<void *>(&(&rtM)->intgData));
+  rtsiSetSolverName(&(&rtM)->solverInfo,"ode3");
+  (&rtM)->setTPtr(&(&rtM)->Timing.tArray[0]);
+  (&rtM)->Timing.stepSize0 = 0.001;
+
+  // InitializeConditions for Integrator: '<S38>/Integrator'
+  rtX.Integrator_CSTATE = rtP.PIDController_InitialConditio_d;
+
+  // InitializeConditions for Integrator: '<S33>/Filter'
+  rtX.Filter_CSTATE = rtP.PIDController_InitialConditionF;
+}
+
+time_T** Controller::RT_MODEL::getTPtrPtr()
+{
+  return &(Timing.t);
+}
+
+boolean_T Controller::RT_MODEL::getStopRequested() const
+{
+  return (Timing.stopRequestedFlag);
+}
+
+void Controller::RT_MODEL::setStopRequested(boolean_T aStopRequested)
+{
+  (Timing.stopRequestedFlag = aStopRequested);
 }
 
 const char_T* Controller::RT_MODEL::getErrorStatus() const
@@ -72,16 +425,53 @@ const char_T* Controller::RT_MODEL::getErrorStatus() const
   return (errorStatus);
 }
 
-void Controller::RT_MODEL::setErrorStatus(const char_T* const volatile
-  aErrorStatus)
+void Controller::RT_MODEL::setErrorStatus(const char_T* const aErrorStatus)
 {
   (errorStatus = aErrorStatus);
+}
+
+time_T* Controller::RT_MODEL::getTPtr() const
+{
+  return (Timing.t);
+}
+
+void Controller::RT_MODEL::setTPtr(time_T* aTPtr)
+{
+  (Timing.t = aTPtr);
+}
+
+boolean_T* Controller::RT_MODEL::getStopRequestedPtr()
+{
+  return (&(Timing.stopRequestedFlag));
+}
+
+const char_T** Controller::RT_MODEL::getErrorStatusPtr()
+{
+  return &errorStatus;
+}
+
+boolean_T Controller::RT_MODEL::isMajorTimeStep() const
+{
+  return ((Timing.simTimeStep) == MAJOR_TIME_STEP);
+}
+
+boolean_T Controller::RT_MODEL::isMinorTimeStep() const
+{
+  return ((Timing.simTimeStep) == MINOR_TIME_STEP);
+}
+
+time_T Controller::RT_MODEL::getTStart() const
+{
+  return (Timing.tStart);
 }
 
 // Constructor
 Controller::Controller() :
   rtU(),
   rtY(),
+  rtDW(),
+  rtX(),
+  rtXDis(),
   rtM()
 {
   // Currently there is no constructor body generated.

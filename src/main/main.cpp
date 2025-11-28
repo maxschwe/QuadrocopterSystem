@@ -12,9 +12,9 @@ void drone_control(void*){
 	Drone drone(
 		LEDC_TIMER_0,
 		GPIO_NUM_15, LEDC_CHANNEL_0,
-		GPIO_NUM_2, LEDC_CHANNEL_1,
-		GPIO_NUM_4,  LEDC_CHANNEL_2,
-		GPIO_NUM_16, LEDC_CHANNEL_3,
+		GPIO_NUM_4, LEDC_CHANNEL_1,
+		GPIO_NUM_16,  LEDC_CHANNEL_2,
+		GPIO_NUM_17, LEDC_CHANNEL_3,
 		GPIO_NUM_5
 	);
 
@@ -22,18 +22,15 @@ void drone_control(void*){
 	controller.initialize();
 
 	TickType_t xLastWakeTime = xTaskGetTickCount();
-	const TickType_t xFrequency = pdMS_TO_TICKS(10);
+	const TickType_t xFrequency = pdMS_TO_TICKS(5);
 
 	
 	while (true) {
 		VectorFloat orientation = drone.ypr();
-		printf("YAW: %3.1f, ", orientation.x);
-		printf("PITCH: %3.1f, ", orientation.y);
-		printf("ROLL: %3.1f \n", orientation.z);
 
-		// controller.rtU.roll = ypr.x;
-		// controller.rtU.pitch = ypr.y;
-		// // controller.rtU.yaw = ypr.z;
+		controller.rtU.roll = orientation.x;
+		controller.rtU.pitch = orientation.y;
+		controller.rtU.yaw = orientation.z;
 		// controller.rtU.x = 0.0f;
 		// controller.rtU.y = 0.0f;
 		// // controller.rtU.z = 10.0f;

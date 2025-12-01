@@ -17,12 +17,29 @@ class Drone {
               gpio_num_t rotor4_pin, ledc_channel_t rotor4_channel,
               gpio_num_t mpu_interrupt_pin);
 
-        VectorFloat ypr();
+        void setThrottles(float throttle1, float throttle2, float throttle3, float throttle4);
+        VectorFloat rpy();
+        void printRpy();
 
+    private:
         EscTimer esc_timer;
         Rotor rotor1;
         Rotor rotor2;
         Rotor rotor3;
         Rotor rotor4;
         MPU6050 mpu;
+
+        TaskHandle_t mpuProcessingTaskHandle;
+        QueueHandle_t mpuMailbox;
+
+
+        bool initMpu(gpio_num_t mpu_interrupt_pin);
+
+        static void IRAM_ATTR wrapperOnMpuInterrupt(void *drone);
+        void IRAM_ATTR onMpuInterrupt();
+
+        static void wrapperMPUInterruptProcessor(void *drone);
+        void mpuInterruptProcessor();
+
+        void initRotors();
 };

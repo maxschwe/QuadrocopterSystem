@@ -23,30 +23,38 @@ void drone_control(void*){
 
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	const TickType_t xFrequency = pdMS_TO_TICKS(5);
-
+	// good values: P: 0.009, D: 0.0013, N: 100
 	
 	while (true) {
-		VectorFloat orientation = drone.ypr();
+		VectorFloat orientation = drone.rpy();
 
 		controller.rtU.roll = orientation.x;
 		controller.rtU.pitch = orientation.y;
 		controller.rtU.yaw = orientation.z;
-		// controller.rtU.x = 0.0f;
-		// controller.rtU.y = 0.0f;
-		// // controller.rtU.z = 10.0f;
 
 		controller.step();
 		Controller::ExtY outputs = controller.rtY;
 
-		drone.rotor1.setThrottle(outputs.throttle_1);
-		drone.rotor2.setThrottle(outputs.throttle_2);
-		drone.rotor3.setThrottle(outputs.throttle_3);
-		drone.rotor4.setThrottle(outputs.throttle_4);
-		// printf("t1: %f, t2: %f, t3: %f, t4: %f\n", outputs.throttle_1, outputs.throttle_2, outputs.throttle_3, outputs.throttle_4);
+		drone.setThrottles(
+			outputs.throttle_1, 
+			outputs.throttle_2, 
+			outputs.throttle_3, 
+			outputs.throttle_4
+		);
+		printf(
+			"%.3f, %.3f, %.3f; %.3f, %.3f, %.3f, %.3f\n", 
+			orientation.x, 
+			orientation.y, 
+			orientation.z, 
+			outputs.throttle_1, 
+			outputs.throttle_2, 
+			outputs.throttle_3, 
+			outputs.throttle_4
+		);
 		BaseType_t xWasDelayed = xTaskDelayUntil( &xLastWakeTime, xFrequency );
 		
 		if (xWasDelayed != pdTRUE) {
-			ESP_LOGW("TASK", "task_display delayed!");
+			ESP_LOGW("TASK", "drone_control delayed!");
 		}
 	}
 }

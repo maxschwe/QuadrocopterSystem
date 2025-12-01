@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.86
+// Model version                  : 1.100
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Nov 28 17:24:05 2025
+// C/C++ source code generated on : Mon Dec  1 15:00:20 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -88,7 +88,7 @@ void Controller::rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
 
   real_T hB[3];
   int_T i;
-  int_T nXc { 2 };
+  int_T nXc { 6 };
 
   rtsiSetSimTimeStep(si,MINOR_TIME_STEP);
 
@@ -143,18 +143,19 @@ void Controller::rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
 // Model step function
 void Controller::step()
 {
-  real_T Saturation[4];
   real_T b_data[4];
+  real_T rtb_Saturation[4];
   real_T rtb_u[4];
-  real_T Saturation_0;
-  real_T Saturation_1;
-  real_T Saturation_2;
-  real_T Saturation_3;
+  real_T rtb_Saturation_0;
+  real_T rtb_Saturation_1;
+  real_T rtb_Saturation_2;
+  real_T rtb_Saturation_3;
+  real_T rtb_Sum1;
+  real_T rtb_Sum2;
   real_T rtb_Sum_e;
-  real_T tmp_0;
-  int32_T Saturation_tmp;
+  real_T tmp;
   int32_T i;
-  boolean_T tmp;
+  int32_T rtb_Saturation_tmp;
   static const real_T a[16]{ 0.25, 0.25, 0.25, 0.25, 0.0, -2.5, 0.0, 2.5, 2.5,
     0.0, -2.5, 0.0, 7.1225, -7.1225, 7.1225, -7.1225 };
 
@@ -170,91 +171,119 @@ void Controller::step()
     (&rtM)->Timing.t[0] = rtsiGetT(&(&rtM)->solverInfo);
   }
 
-  tmp = ((&rtM)->isMajorTimeStep());
-  if (tmp) {
-    // Sum: '<Root>/Sum' incorporates:
-    //   Constant: '<Root>/Constant3'
-    //   Inport: '<Root>/roll'
+  // Sum: '<Root>/Sum' incorporates:
+  //   Constant: '<Root>/target_roll'
+  //   Inport: '<Root>/roll'
 
-    rtb_Sum_e = rtP.Constant3_Value - rtU.roll;
+  rtb_Sum_e = rtP.target_roll_Value - rtU.roll;
 
-    // Gain: '<S43>/Proportional Gain'
-    rtDW.ProportionalGain = rtP.PIDController_P * rtb_Sum_e;
+  // Gain: '<S43>/Filter Coefficient' incorporates:
+  //   Gain: '<S33>/Derivative Gain'
+  //   Integrator: '<S35>/Filter'
+  //   Sum: '<S35>/SumD'
 
-    // Gain: '<S31>/Derivative Gain'
-    rtDW.DerivativeGain = rtP.PIDController_D * rtb_Sum_e;
-  }
+  rtDW.FilterCoefficient = (rtP.PIDController_D * rtb_Sum_e - rtX.Filter_CSTATE)
+    * rtP.PIDController_N;
 
-  // Gain: '<S41>/Filter Coefficient' incorporates:
-  //   Integrator: '<S33>/Filter'
-  //   Sum: '<S33>/SumD'
+  // Sum: '<Root>/Sum1' incorporates:
+  //   Constant: '<Root>/target_pitch'
+  //   Inport: '<Root>/pitch'
 
-  rtDW.FilterCoefficient = (rtDW.DerivativeGain - rtX.Filter_CSTATE) *
-    rtP.PIDController_N;
+  rtb_Sum1 = rtP.target_pitch_Value - rtU.pitch;
+
+  // Gain: '<S95>/Filter Coefficient' incorporates:
+  //   Gain: '<S85>/Derivative Gain'
+  //   Integrator: '<S87>/Filter'
+  //   Sum: '<S87>/SumD'
+
+  rtDW.FilterCoefficient_p = (rtP.PIDController1_D * rtb_Sum1 -
+    rtX.Filter_CSTATE_d) * rtP.PIDController1_N;
+
+  // Sum: '<Root>/Sum2' incorporates:
+  //   Constant: '<Root>/target_yaw'
+  //   Inport: '<Root>/yaw'
+
+  rtb_Sum2 = rtP.target_yaw_Value - rtU.yaw;
+
+  // Gain: '<S147>/Filter Coefficient' incorporates:
+  //   Gain: '<S137>/Derivative Gain'
+  //   Integrator: '<S139>/Filter'
+  //   Sum: '<S139>/SumD'
+
+  rtDW.FilterCoefficient_d = (rtP.PIDController2_D * rtb_Sum2 -
+    rtX.Filter_CSTATE_j) * rtP.PIDController2_N;
 
   // SignalConversion generated from: '<S2>/ SFunction ' incorporates:
-  //   Constant: '<Root>/Constant'
-  //   Constant: '<Root>/Constant1'
   //   Constant: '<Root>/Constant2'
-  //   Integrator: '<S38>/Integrator'
+  //   Gain: '<S149>/Proportional Gain'
+  //   Gain: '<S45>/Proportional Gain'
+  //   Gain: '<S97>/Proportional Gain'
+  //   Integrator: '<S144>/Integrator'
+  //   Integrator: '<S40>/Integrator'
+  //   Integrator: '<S92>/Integrator'
   //   MATLAB Function: '<Root>/MATLAB Function'
-  //   Sum: '<S47>/Sum'
+  //   Sum: '<S101>/Sum'
+  //   Sum: '<S153>/Sum'
+  //   Sum: '<S49>/Sum'
 
-  Saturation[0] = rtP.Constant2_Value;
-  Saturation[1] = (rtDW.ProportionalGain + rtX.Integrator_CSTATE) +
-    rtDW.FilterCoefficient;
-  Saturation[2] = rtP.Constant_Value;
-  Saturation[3] = rtP.Constant1_Value;
+  rtb_Saturation[0] = rtP.Constant2_Value;
+  rtb_Saturation[1] = (rtP.PIDController_P * rtb_Sum_e + rtX.Integrator_CSTATE)
+    + rtDW.FilterCoefficient;
+  rtb_Saturation[2] = (rtP.PIDController1_P * rtb_Sum1 + rtX.Integrator_CSTATE_f)
+    + rtDW.FilterCoefficient_p;
+  rtb_Saturation[3] = (rtP.PIDController2_P * rtb_Sum2 + rtX.Integrator_CSTATE_j)
+    + rtDW.FilterCoefficient_d;
 
   // MATLAB Function: '<Root>/MATLAB Function'
-  Saturation_0 = 0.0;
-  Saturation_1 = 0.0;
-  Saturation_2 = 0.0;
-  Saturation_3 = 0.0;
+  rtb_Saturation_0 = 0.0;
+  rtb_Saturation_1 = 0.0;
+  rtb_Saturation_2 = 0.0;
+  rtb_Saturation_3 = 0.0;
   for (i = 0; i < 4; i++) {
-    tmp_0 = Saturation[i];
-    Saturation_tmp = i << 2;
-    Saturation_0 += a[Saturation_tmp] * tmp_0;
-    Saturation_1 += a[Saturation_tmp + 1] * tmp_0;
-    Saturation_2 += a[Saturation_tmp + 2] * tmp_0;
-    Saturation_3 += a[Saturation_tmp + 3] * tmp_0;
+    tmp = rtb_Saturation[i];
+    rtb_Saturation_tmp = i << 2;
+    rtb_Saturation_0 += a[rtb_Saturation_tmp] * tmp;
+    rtb_Saturation_1 += a[rtb_Saturation_tmp + 1] * tmp;
+    rtb_Saturation_2 += a[rtb_Saturation_tmp + 2] * tmp;
+    rtb_Saturation_3 += a[rtb_Saturation_tmp + 3] * tmp;
     rtb_u[i] = 0.0;
   }
 
-  Saturation[3] = Saturation_3;
-  Saturation[2] = Saturation_2;
-  Saturation[1] = Saturation_1;
-  Saturation[0] = Saturation_0;
-  Saturation_tmp = 0;
+  rtb_Saturation[3] = rtb_Saturation_3;
+  rtb_Saturation[2] = rtb_Saturation_2;
+  rtb_Saturation[1] = rtb_Saturation_1;
+  rtb_Saturation[0] = rtb_Saturation_0;
+  rtb_Saturation_tmp = 0;
   for (i = 0; i < 4; i++) {
-    if (Saturation[i] / 0.0013 >= 0.0) {
-      Saturation_tmp++;
+    if (rtb_Saturation[i] / 0.0013 >= 0.0) {
+      rtb_Saturation_tmp++;
     }
   }
 
-  b_size_idx_0 = Saturation_tmp;
-  Saturation_tmp = 0;
+  b_size_idx_0 = rtb_Saturation_tmp;
+  rtb_Saturation_tmp = 0;
   for (i = 0; i < 4; i++) {
-    tmp_0 = Saturation[i] / 0.0013;
-    if (tmp_0 >= 0.0) {
-      b_data[Saturation_tmp] = tmp_0;
-      Saturation_tmp++;
+    tmp = rtb_Saturation[i] / 0.0013;
+    if (tmp >= 0.0) {
+      b_data[rtb_Saturation_tmp] = tmp;
+      rtb_Saturation_tmp++;
     }
   }
 
-  for (Saturation_tmp = 0; Saturation_tmp < b_size_idx_0; Saturation_tmp++) {
-    b_data[Saturation_tmp] = std::sqrt(b_data[Saturation_tmp]);
+  for (rtb_Saturation_tmp = 0; rtb_Saturation_tmp < b_size_idx_0;
+       rtb_Saturation_tmp++) {
+    b_data[rtb_Saturation_tmp] = std::sqrt(b_data[rtb_Saturation_tmp]);
   }
 
-  Saturation_tmp = 0;
+  rtb_Saturation_tmp = 0;
   for (i = 0; i < 4; i++) {
-    if (Saturation[i] / 0.0013 >= 0.0) {
-      rtb_u[i] = b_data[Saturation_tmp] + 8.5908;
-      Saturation_tmp++;
+    if (rtb_Saturation[i] / 0.0013 >= 0.0) {
+      rtb_u[i] = b_data[rtb_Saturation_tmp] + 8.5908;
+      rtb_Saturation_tmp++;
     }
   }
 
-  if (tmp) {
+  if ((&rtM)->isMajorTimeStep()) {
     // Assertion: '<S1>/Assertion' incorporates:
     //   Constant: '<S1>/max_val'
     //   Constant: '<S1>/min_val'
@@ -270,58 +299,63 @@ void Controller::step()
               rtP.CheckStaticRange_max));
     utAssert((rtP.CheckStaticRange_min <= rtb_u[3]) && (rtb_u[3] <=
               rtP.CheckStaticRange_max));
-
-    // Saturate: '<Root>/Saturation'
-    if (rtb_u[0] > rtP.Saturation_UpperSat) {
-      // Outport: '<Root>/throttle_1'
-      rtY.throttle_1 = rtP.Saturation_UpperSat;
-    } else if (rtb_u[0] < rtP.Saturation_LowerSat) {
-      // Outport: '<Root>/throttle_1'
-      rtY.throttle_1 = rtP.Saturation_LowerSat;
-    } else {
-      // Outport: '<Root>/throttle_1'
-      rtY.throttle_1 = rtb_u[0];
-    }
-
-    if (rtb_u[1] > rtP.Saturation_UpperSat) {
-      // Outport: '<Root>/throttle_2'
-      rtY.throttle_2 = rtP.Saturation_UpperSat;
-    } else if (rtb_u[1] < rtP.Saturation_LowerSat) {
-      // Outport: '<Root>/throttle_2'
-      rtY.throttle_2 = rtP.Saturation_LowerSat;
-    } else {
-      // Outport: '<Root>/throttle_2'
-      rtY.throttle_2 = rtb_u[1];
-    }
-
-    if (rtb_u[2] > rtP.Saturation_UpperSat) {
-      // Outport: '<Root>/throttle_3'
-      rtY.throttle_3 = rtP.Saturation_UpperSat;
-    } else if (rtb_u[2] < rtP.Saturation_LowerSat) {
-      // Outport: '<Root>/throttle_3'
-      rtY.throttle_3 = rtP.Saturation_LowerSat;
-    } else {
-      // Outport: '<Root>/throttle_3'
-      rtY.throttle_3 = rtb_u[2];
-    }
-
-    if (rtb_u[3] > rtP.Saturation_UpperSat) {
-      // Outport: '<Root>/throttle_4'
-      rtY.throttle_4 = rtP.Saturation_UpperSat;
-    } else if (rtb_u[3] < rtP.Saturation_LowerSat) {
-      // Outport: '<Root>/throttle_4'
-      rtY.throttle_4 = rtP.Saturation_LowerSat;
-    } else {
-      // Outport: '<Root>/throttle_4'
-      rtY.throttle_4 = rtb_u[3];
-    }
-
-    // End of Saturate: '<Root>/Saturation'
-
-    // Gain: '<S35>/Integral Gain'
-    rtDW.IntegralGain = rtP.PIDController_I * rtb_Sum_e;
   }
 
+  // Saturate: '<Root>/Saturation'
+  if (rtb_u[0] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_1'
+    rtY.throttle_1 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[0] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_1'
+    rtY.throttle_1 = rtP.Saturation_LowerSat;
+  } else {
+    // Outport: '<Root>/throttle_1'
+    rtY.throttle_1 = rtb_u[0];
+  }
+
+  if (rtb_u[1] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_2'
+    rtY.throttle_2 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[1] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_2'
+    rtY.throttle_2 = rtP.Saturation_LowerSat;
+  } else {
+    // Outport: '<Root>/throttle_2'
+    rtY.throttle_2 = rtb_u[1];
+  }
+
+  if (rtb_u[2] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_3'
+    rtY.throttle_3 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[2] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_3'
+    rtY.throttle_3 = rtP.Saturation_LowerSat;
+  } else {
+    // Outport: '<Root>/throttle_3'
+    rtY.throttle_3 = rtb_u[2];
+  }
+
+  if (rtb_u[3] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_4'
+    rtY.throttle_4 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[3] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_4'
+    rtY.throttle_4 = rtP.Saturation_LowerSat;
+  } else {
+    // Outport: '<Root>/throttle_4'
+    rtY.throttle_4 = rtb_u[3];
+  }
+
+  // End of Saturate: '<Root>/Saturation'
+
+  // Gain: '<S141>/Integral Gain'
+  rtDW.IntegralGain = rtP.PIDController2_I * rtb_Sum2;
+
+  // Gain: '<S89>/Integral Gain'
+  rtDW.IntegralGain_i = rtP.PIDController1_I * rtb_Sum1;
+
+  // Gain: '<S37>/Integral Gain'
+  rtDW.IntegralGain_l = rtP.PIDController_I * rtb_Sum_e;
   if ((&rtM)->isMajorTimeStep()) {
     rt_ertODEUpdateContinuousStates(&(&rtM)->solverInfo);
 
@@ -335,9 +369,9 @@ void Controller::step()
     (&rtM)->Timing.t[0] = rtsiGetSolverStopTime(&(&rtM)->solverInfo);
 
     {
-      // Update absolute timer for sample time: [0.001s, 0.0s]
+      // Update absolute timer for sample time: [0.005s, 0.0s]
       // The "clockTick1" counts the number of times the code of this task has
-      //  been executed. The resolution of this integer timer is 0.001, which is the step size
+      //  been executed. The resolution of this integer timer is 0.005, which is the step size
       //  of the task. Size of "clockTick1" ensures timer will not overflow during the
       //  application lifespan selected.
 
@@ -352,11 +386,23 @@ void Controller::controller_3dof_derivatives()
   Controller::XDot *_rtXdot;
   _rtXdot = ((XDot *) (&rtM)->derivs);
 
-  // Derivatives for Integrator: '<S38>/Integrator'
-  _rtXdot->Integrator_CSTATE = rtDW.IntegralGain;
+  // Derivatives for Integrator: '<S40>/Integrator'
+  _rtXdot->Integrator_CSTATE = rtDW.IntegralGain_l;
 
-  // Derivatives for Integrator: '<S33>/Filter'
+  // Derivatives for Integrator: '<S35>/Filter'
   _rtXdot->Filter_CSTATE = rtDW.FilterCoefficient;
+
+  // Derivatives for Integrator: '<S92>/Integrator'
+  _rtXdot->Integrator_CSTATE_f = rtDW.IntegralGain_i;
+
+  // Derivatives for Integrator: '<S87>/Filter'
+  _rtXdot->Filter_CSTATE_d = rtDW.FilterCoefficient_p;
+
+  // Derivatives for Integrator: '<S144>/Integrator'
+  _rtXdot->Integrator_CSTATE_j = rtDW.IntegralGain;
+
+  // Derivatives for Integrator: '<S139>/Filter'
+  _rtXdot->Filter_CSTATE_j = rtDW.FilterCoefficient_d;
 }
 
 // Model initialize function
@@ -396,13 +442,25 @@ void Controller::initialize()
   rtsiSetSolverData(&(&rtM)->solverInfo, static_cast<void *>(&(&rtM)->intgData));
   rtsiSetSolverName(&(&rtM)->solverInfo,"ode3");
   (&rtM)->setTPtr(&(&rtM)->Timing.tArray[0]);
-  (&rtM)->Timing.stepSize0 = 0.001;
+  (&rtM)->Timing.stepSize0 = 0.005;
 
-  // InitializeConditions for Integrator: '<S38>/Integrator'
+  // InitializeConditions for Integrator: '<S40>/Integrator'
   rtX.Integrator_CSTATE = rtP.PIDController_InitialConditio_d;
 
-  // InitializeConditions for Integrator: '<S33>/Filter'
+  // InitializeConditions for Integrator: '<S35>/Filter'
   rtX.Filter_CSTATE = rtP.PIDController_InitialConditionF;
+
+  // InitializeConditions for Integrator: '<S92>/Integrator'
+  rtX.Integrator_CSTATE_f = rtP.PIDController1_InitialConditi_l;
+
+  // InitializeConditions for Integrator: '<S87>/Filter'
+  rtX.Filter_CSTATE_d = rtP.PIDController1_InitialCondition;
+
+  // InitializeConditions for Integrator: '<S144>/Integrator'
+  rtX.Integrator_CSTATE_j = rtP.PIDController2_InitialConditi_k;
+
+  // InitializeConditions for Integrator: '<S139>/Filter'
+  rtX.Filter_CSTATE_j = rtP.PIDController2_InitialCondition;
 }
 
 time_T** Controller::RT_MODEL::getTPtrPtr()

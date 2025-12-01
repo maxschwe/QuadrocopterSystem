@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.86
+// Model version                  : 1.100
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Nov 28 17:24:05 2025
+// C/C++ source code generated on : Mon Dec  1 15:00:20 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -42,28 +42,42 @@ class Controller final
  public:
   // Block signals and states (default storage) for system '<Root>'
   struct DW {
-    real_T ProportionalGain;           // '<S43>/Proportional Gain'
-    real_T DerivativeGain;             // '<S31>/Derivative Gain'
-    real_T FilterCoefficient;          // '<S41>/Filter Coefficient'
-    real_T IntegralGain;               // '<S35>/Integral Gain'
+    real_T FilterCoefficient;          // '<S43>/Filter Coefficient'
+    real_T FilterCoefficient_p;        // '<S95>/Filter Coefficient'
+    real_T FilterCoefficient_d;        // '<S147>/Filter Coefficient'
+    real_T IntegralGain;               // '<S141>/Integral Gain'
+    real_T IntegralGain_i;             // '<S89>/Integral Gain'
+    real_T IntegralGain_l;             // '<S37>/Integral Gain'
   };
 
   // Continuous states (default storage)
   struct X {
-    real_T Integrator_CSTATE;          // '<S38>/Integrator'
-    real_T Filter_CSTATE;              // '<S33>/Filter'
+    real_T Integrator_CSTATE;          // '<S40>/Integrator'
+    real_T Filter_CSTATE;              // '<S35>/Filter'
+    real_T Integrator_CSTATE_f;        // '<S92>/Integrator'
+    real_T Filter_CSTATE_d;            // '<S87>/Filter'
+    real_T Integrator_CSTATE_j;        // '<S144>/Integrator'
+    real_T Filter_CSTATE_j;            // '<S139>/Filter'
   };
 
   // State derivatives (default storage)
   struct XDot {
-    real_T Integrator_CSTATE;          // '<S38>/Integrator'
-    real_T Filter_CSTATE;              // '<S33>/Filter'
+    real_T Integrator_CSTATE;          // '<S40>/Integrator'
+    real_T Filter_CSTATE;              // '<S35>/Filter'
+    real_T Integrator_CSTATE_f;        // '<S92>/Integrator'
+    real_T Filter_CSTATE_d;            // '<S87>/Filter'
+    real_T Integrator_CSTATE_j;        // '<S144>/Integrator'
+    real_T Filter_CSTATE_j;            // '<S139>/Filter'
   };
 
   // State disabled
   struct XDis {
-    boolean_T Integrator_CSTATE;       // '<S38>/Integrator'
-    boolean_T Filter_CSTATE;           // '<S33>/Filter'
+    boolean_T Integrator_CSTATE;       // '<S40>/Integrator'
+    boolean_T Filter_CSTATE;           // '<S35>/Filter'
+    boolean_T Integrator_CSTATE_f;     // '<S92>/Integrator'
+    boolean_T Filter_CSTATE_d;         // '<S87>/Filter'
+    boolean_T Integrator_CSTATE_j;     // '<S144>/Integrator'
+    boolean_T Filter_CSTATE_j;         // '<S139>/Filter'
   };
 
   // External inputs (root inport signals with default storage)
@@ -84,24 +98,64 @@ class Controller final
   // Parameters (default storage)
   struct P {
     real_T PIDController_D;            // Mask Parameter: PIDController_D
-                                          //  Referenced by: '<S31>/Derivative Gain'
+                                          //  Referenced by: '<S33>/Derivative Gain'
+
+    real_T PIDController1_D;           // Mask Parameter: PIDController1_D
+                                          //  Referenced by: '<S85>/Derivative Gain'
+
+    real_T PIDController2_D;           // Mask Parameter: PIDController2_D
+                                          //  Referenced by: '<S137>/Derivative Gain'
+
+    real_T PIDController2_I;           // Mask Parameter: PIDController2_I
+                                          //  Referenced by: '<S141>/Integral Gain'
+
+    real_T PIDController1_I;           // Mask Parameter: PIDController1_I
+                                          //  Referenced by: '<S89>/Integral Gain'
 
     real_T PIDController_I;            // Mask Parameter: PIDController_I
-                                          //  Referenced by: '<S35>/Integral Gain'
+                                          //  Referenced by: '<S37>/Integral Gain'
 
     real_T PIDController_InitialConditionF;
                               // Mask Parameter: PIDController_InitialConditionF
-                                 //  Referenced by: '<S33>/Filter'
+                                 //  Referenced by: '<S35>/Filter'
+
+    real_T PIDController1_InitialCondition;
+                              // Mask Parameter: PIDController1_InitialCondition
+                                 //  Referenced by: '<S87>/Filter'
+
+    real_T PIDController2_InitialCondition;
+                              // Mask Parameter: PIDController2_InitialCondition
+                                 //  Referenced by: '<S139>/Filter'
 
     real_T PIDController_InitialConditio_d;
                               // Mask Parameter: PIDController_InitialConditio_d
-                                 //  Referenced by: '<S38>/Integrator'
+                                 //  Referenced by: '<S40>/Integrator'
+
+    real_T PIDController1_InitialConditi_l;
+                              // Mask Parameter: PIDController1_InitialConditi_l
+                                 //  Referenced by: '<S92>/Integrator'
+
+    real_T PIDController2_InitialConditi_k;
+                              // Mask Parameter: PIDController2_InitialConditi_k
+                                 //  Referenced by: '<S144>/Integrator'
 
     real_T PIDController_N;            // Mask Parameter: PIDController_N
-                                          //  Referenced by: '<S41>/Filter Coefficient'
+                                          //  Referenced by: '<S43>/Filter Coefficient'
+
+    real_T PIDController1_N;           // Mask Parameter: PIDController1_N
+                                          //  Referenced by: '<S95>/Filter Coefficient'
+
+    real_T PIDController2_N;           // Mask Parameter: PIDController2_N
+                                          //  Referenced by: '<S147>/Filter Coefficient'
 
     real_T PIDController_P;            // Mask Parameter: PIDController_P
-                                          //  Referenced by: '<S43>/Proportional Gain'
+                                          //  Referenced by: '<S45>/Proportional Gain'
+
+    real_T PIDController1_P;           // Mask Parameter: PIDController1_P
+                                          //  Referenced by: '<S97>/Proportional Gain'
+
+    real_T PIDController2_P;           // Mask Parameter: PIDController2_P
+                                          //  Referenced by: '<S149>/Proportional Gain'
 
     real_T CheckStaticRange_max;       // Mask Parameter: CheckStaticRange_max
                                           //  Referenced by: '<S1>/max_val'
@@ -112,19 +166,19 @@ class Controller final
     real_T Constant2_Value;            // Expression: 5
                                           //  Referenced by: '<Root>/Constant2'
 
-    real_T Constant3_Value;            // Expression: 0
-                                          //  Referenced by: '<Root>/Constant3'
+    real_T target_roll_Value;          // Expression: 0
+                                          //  Referenced by: '<Root>/target_roll'
 
-    real_T Constant_Value;             // Expression: 0
-                                          //  Referenced by: '<Root>/Constant'
+    real_T target_pitch_Value;         // Expression: 0
+                                          //  Referenced by: '<Root>/target_pitch'
 
-    real_T Constant1_Value;            // Expression: 0
-                                          //  Referenced by: '<Root>/Constant1'
+    real_T target_yaw_Value;           // Expression: 0
+                                          //  Referenced by: '<Root>/target_yaw'
 
-    real_T Saturation_UpperSat;        // Expression: 85
+    real_T Saturation_UpperSat;        // Expression: 90
                                           //  Referenced by: '<Root>/Saturation'
 
-    real_T Saturation_LowerSat;        // Expression: 20
+    real_T Saturation_LowerSat;        // Expression: 15
                                           //  Referenced by: '<Root>/Saturation'
 
     boolean_T Assertion_Enabled;       // Computed Parameter: Assertion_Enabled
@@ -133,7 +187,7 @@ class Controller final
   };
 
   // Real-time Model Data Structure
-  using odeFSubArray = real_T[2];
+  using odeFSubArray = real_T[6];
   struct RT_MODEL {
     const char_T *errorStatus;
     RTWSolverInfo solverInfo;
@@ -145,8 +199,8 @@ class Controller final
     boolean_T zCCacheNeedsReset;
     boolean_T derivCacheNeedsReset;
     boolean_T CTOutputIncnstWithState;
-    real_T odeY[2];
-    real_T odeF[3][2];
+    real_T odeY[6];
+    real_T odeF[3][6];
     ODE3_IntgData intgData;
 
     //
@@ -253,7 +307,6 @@ class Controller final
 //-
 //  These blocks were eliminated from the model due to optimizations:
 //
-//  Block '<Root>/Constant4' : Unused code path elimination
 //  Block '<Root>/Scope1' : Unused code path elimination
 
 
@@ -275,58 +328,164 @@ class Controller final
 //  '<S1>'   : 'controller_3dof/Check  Static Range'
 //  '<S2>'   : 'controller_3dof/MATLAB Function'
 //  '<S3>'   : 'controller_3dof/PID Controller'
-//  '<S4>'   : 'controller_3dof/PID Controller/Anti-windup'
-//  '<S5>'   : 'controller_3dof/PID Controller/D Gain'
-//  '<S6>'   : 'controller_3dof/PID Controller/External Derivative'
-//  '<S7>'   : 'controller_3dof/PID Controller/Filter'
-//  '<S8>'   : 'controller_3dof/PID Controller/Filter ICs'
-//  '<S9>'   : 'controller_3dof/PID Controller/I Gain'
-//  '<S10>'  : 'controller_3dof/PID Controller/Ideal P Gain'
-//  '<S11>'  : 'controller_3dof/PID Controller/Ideal P Gain Fdbk'
-//  '<S12>'  : 'controller_3dof/PID Controller/Integrator'
-//  '<S13>'  : 'controller_3dof/PID Controller/Integrator ICs'
-//  '<S14>'  : 'controller_3dof/PID Controller/N Copy'
-//  '<S15>'  : 'controller_3dof/PID Controller/N Gain'
-//  '<S16>'  : 'controller_3dof/PID Controller/P Copy'
-//  '<S17>'  : 'controller_3dof/PID Controller/Parallel P Gain'
-//  '<S18>'  : 'controller_3dof/PID Controller/Reset Signal'
-//  '<S19>'  : 'controller_3dof/PID Controller/Saturation'
-//  '<S20>'  : 'controller_3dof/PID Controller/Saturation Fdbk'
-//  '<S21>'  : 'controller_3dof/PID Controller/Sum'
-//  '<S22>'  : 'controller_3dof/PID Controller/Sum Fdbk'
-//  '<S23>'  : 'controller_3dof/PID Controller/Tracking Mode'
-//  '<S24>'  : 'controller_3dof/PID Controller/Tracking Mode Sum'
-//  '<S25>'  : 'controller_3dof/PID Controller/Tsamp - Integral'
-//  '<S26>'  : 'controller_3dof/PID Controller/Tsamp - Ngain'
-//  '<S27>'  : 'controller_3dof/PID Controller/postSat Signal'
-//  '<S28>'  : 'controller_3dof/PID Controller/preInt Signal'
-//  '<S29>'  : 'controller_3dof/PID Controller/preSat Signal'
-//  '<S30>'  : 'controller_3dof/PID Controller/Anti-windup/Passthrough'
-//  '<S31>'  : 'controller_3dof/PID Controller/D Gain/Internal Parameters'
-//  '<S32>'  : 'controller_3dof/PID Controller/External Derivative/Error'
-//  '<S33>'  : 'controller_3dof/PID Controller/Filter/Cont. Filter'
-//  '<S34>'  : 'controller_3dof/PID Controller/Filter ICs/Internal IC - Filter'
-//  '<S35>'  : 'controller_3dof/PID Controller/I Gain/Internal Parameters'
-//  '<S36>'  : 'controller_3dof/PID Controller/Ideal P Gain/Passthrough'
-//  '<S37>'  : 'controller_3dof/PID Controller/Ideal P Gain Fdbk/Disabled'
-//  '<S38>'  : 'controller_3dof/PID Controller/Integrator/Continuous'
-//  '<S39>'  : 'controller_3dof/PID Controller/Integrator ICs/Internal IC'
-//  '<S40>'  : 'controller_3dof/PID Controller/N Copy/Disabled'
-//  '<S41>'  : 'controller_3dof/PID Controller/N Gain/Internal Parameters'
-//  '<S42>'  : 'controller_3dof/PID Controller/P Copy/Disabled'
-//  '<S43>'  : 'controller_3dof/PID Controller/Parallel P Gain/Internal Parameters'
-//  '<S44>'  : 'controller_3dof/PID Controller/Reset Signal/Disabled'
-//  '<S45>'  : 'controller_3dof/PID Controller/Saturation/Passthrough'
-//  '<S46>'  : 'controller_3dof/PID Controller/Saturation Fdbk/Disabled'
-//  '<S47>'  : 'controller_3dof/PID Controller/Sum/Sum_PID'
-//  '<S48>'  : 'controller_3dof/PID Controller/Sum Fdbk/Disabled'
-//  '<S49>'  : 'controller_3dof/PID Controller/Tracking Mode/Disabled'
-//  '<S50>'  : 'controller_3dof/PID Controller/Tracking Mode Sum/Passthrough'
-//  '<S51>'  : 'controller_3dof/PID Controller/Tsamp - Integral/TsSignalSpecification'
-//  '<S52>'  : 'controller_3dof/PID Controller/Tsamp - Ngain/Passthrough'
-//  '<S53>'  : 'controller_3dof/PID Controller/postSat Signal/Forward_Path'
-//  '<S54>'  : 'controller_3dof/PID Controller/preInt Signal/Internal PreInt'
-//  '<S55>'  : 'controller_3dof/PID Controller/preSat Signal/Forward_Path'
+//  '<S4>'   : 'controller_3dof/PID Controller1'
+//  '<S5>'   : 'controller_3dof/PID Controller2'
+//  '<S6>'   : 'controller_3dof/PID Controller/Anti-windup'
+//  '<S7>'   : 'controller_3dof/PID Controller/D Gain'
+//  '<S8>'   : 'controller_3dof/PID Controller/External Derivative'
+//  '<S9>'   : 'controller_3dof/PID Controller/Filter'
+//  '<S10>'  : 'controller_3dof/PID Controller/Filter ICs'
+//  '<S11>'  : 'controller_3dof/PID Controller/I Gain'
+//  '<S12>'  : 'controller_3dof/PID Controller/Ideal P Gain'
+//  '<S13>'  : 'controller_3dof/PID Controller/Ideal P Gain Fdbk'
+//  '<S14>'  : 'controller_3dof/PID Controller/Integrator'
+//  '<S15>'  : 'controller_3dof/PID Controller/Integrator ICs'
+//  '<S16>'  : 'controller_3dof/PID Controller/N Copy'
+//  '<S17>'  : 'controller_3dof/PID Controller/N Gain'
+//  '<S18>'  : 'controller_3dof/PID Controller/P Copy'
+//  '<S19>'  : 'controller_3dof/PID Controller/Parallel P Gain'
+//  '<S20>'  : 'controller_3dof/PID Controller/Reset Signal'
+//  '<S21>'  : 'controller_3dof/PID Controller/Saturation'
+//  '<S22>'  : 'controller_3dof/PID Controller/Saturation Fdbk'
+//  '<S23>'  : 'controller_3dof/PID Controller/Sum'
+//  '<S24>'  : 'controller_3dof/PID Controller/Sum Fdbk'
+//  '<S25>'  : 'controller_3dof/PID Controller/Tracking Mode'
+//  '<S26>'  : 'controller_3dof/PID Controller/Tracking Mode Sum'
+//  '<S27>'  : 'controller_3dof/PID Controller/Tsamp - Integral'
+//  '<S28>'  : 'controller_3dof/PID Controller/Tsamp - Ngain'
+//  '<S29>'  : 'controller_3dof/PID Controller/postSat Signal'
+//  '<S30>'  : 'controller_3dof/PID Controller/preInt Signal'
+//  '<S31>'  : 'controller_3dof/PID Controller/preSat Signal'
+//  '<S32>'  : 'controller_3dof/PID Controller/Anti-windup/Passthrough'
+//  '<S33>'  : 'controller_3dof/PID Controller/D Gain/Internal Parameters'
+//  '<S34>'  : 'controller_3dof/PID Controller/External Derivative/Error'
+//  '<S35>'  : 'controller_3dof/PID Controller/Filter/Cont. Filter'
+//  '<S36>'  : 'controller_3dof/PID Controller/Filter ICs/Internal IC - Filter'
+//  '<S37>'  : 'controller_3dof/PID Controller/I Gain/Internal Parameters'
+//  '<S38>'  : 'controller_3dof/PID Controller/Ideal P Gain/Passthrough'
+//  '<S39>'  : 'controller_3dof/PID Controller/Ideal P Gain Fdbk/Disabled'
+//  '<S40>'  : 'controller_3dof/PID Controller/Integrator/Continuous'
+//  '<S41>'  : 'controller_3dof/PID Controller/Integrator ICs/Internal IC'
+//  '<S42>'  : 'controller_3dof/PID Controller/N Copy/Disabled'
+//  '<S43>'  : 'controller_3dof/PID Controller/N Gain/Internal Parameters'
+//  '<S44>'  : 'controller_3dof/PID Controller/P Copy/Disabled'
+//  '<S45>'  : 'controller_3dof/PID Controller/Parallel P Gain/Internal Parameters'
+//  '<S46>'  : 'controller_3dof/PID Controller/Reset Signal/Disabled'
+//  '<S47>'  : 'controller_3dof/PID Controller/Saturation/Passthrough'
+//  '<S48>'  : 'controller_3dof/PID Controller/Saturation Fdbk/Disabled'
+//  '<S49>'  : 'controller_3dof/PID Controller/Sum/Sum_PID'
+//  '<S50>'  : 'controller_3dof/PID Controller/Sum Fdbk/Disabled'
+//  '<S51>'  : 'controller_3dof/PID Controller/Tracking Mode/Disabled'
+//  '<S52>'  : 'controller_3dof/PID Controller/Tracking Mode Sum/Passthrough'
+//  '<S53>'  : 'controller_3dof/PID Controller/Tsamp - Integral/TsSignalSpecification'
+//  '<S54>'  : 'controller_3dof/PID Controller/Tsamp - Ngain/Passthrough'
+//  '<S55>'  : 'controller_3dof/PID Controller/postSat Signal/Forward_Path'
+//  '<S56>'  : 'controller_3dof/PID Controller/preInt Signal/Internal PreInt'
+//  '<S57>'  : 'controller_3dof/PID Controller/preSat Signal/Forward_Path'
+//  '<S58>'  : 'controller_3dof/PID Controller1/Anti-windup'
+//  '<S59>'  : 'controller_3dof/PID Controller1/D Gain'
+//  '<S60>'  : 'controller_3dof/PID Controller1/External Derivative'
+//  '<S61>'  : 'controller_3dof/PID Controller1/Filter'
+//  '<S62>'  : 'controller_3dof/PID Controller1/Filter ICs'
+//  '<S63>'  : 'controller_3dof/PID Controller1/I Gain'
+//  '<S64>'  : 'controller_3dof/PID Controller1/Ideal P Gain'
+//  '<S65>'  : 'controller_3dof/PID Controller1/Ideal P Gain Fdbk'
+//  '<S66>'  : 'controller_3dof/PID Controller1/Integrator'
+//  '<S67>'  : 'controller_3dof/PID Controller1/Integrator ICs'
+//  '<S68>'  : 'controller_3dof/PID Controller1/N Copy'
+//  '<S69>'  : 'controller_3dof/PID Controller1/N Gain'
+//  '<S70>'  : 'controller_3dof/PID Controller1/P Copy'
+//  '<S71>'  : 'controller_3dof/PID Controller1/Parallel P Gain'
+//  '<S72>'  : 'controller_3dof/PID Controller1/Reset Signal'
+//  '<S73>'  : 'controller_3dof/PID Controller1/Saturation'
+//  '<S74>'  : 'controller_3dof/PID Controller1/Saturation Fdbk'
+//  '<S75>'  : 'controller_3dof/PID Controller1/Sum'
+//  '<S76>'  : 'controller_3dof/PID Controller1/Sum Fdbk'
+//  '<S77>'  : 'controller_3dof/PID Controller1/Tracking Mode'
+//  '<S78>'  : 'controller_3dof/PID Controller1/Tracking Mode Sum'
+//  '<S79>'  : 'controller_3dof/PID Controller1/Tsamp - Integral'
+//  '<S80>'  : 'controller_3dof/PID Controller1/Tsamp - Ngain'
+//  '<S81>'  : 'controller_3dof/PID Controller1/postSat Signal'
+//  '<S82>'  : 'controller_3dof/PID Controller1/preInt Signal'
+//  '<S83>'  : 'controller_3dof/PID Controller1/preSat Signal'
+//  '<S84>'  : 'controller_3dof/PID Controller1/Anti-windup/Passthrough'
+//  '<S85>'  : 'controller_3dof/PID Controller1/D Gain/Internal Parameters'
+//  '<S86>'  : 'controller_3dof/PID Controller1/External Derivative/Error'
+//  '<S87>'  : 'controller_3dof/PID Controller1/Filter/Cont. Filter'
+//  '<S88>'  : 'controller_3dof/PID Controller1/Filter ICs/Internal IC - Filter'
+//  '<S89>'  : 'controller_3dof/PID Controller1/I Gain/Internal Parameters'
+//  '<S90>'  : 'controller_3dof/PID Controller1/Ideal P Gain/Passthrough'
+//  '<S91>'  : 'controller_3dof/PID Controller1/Ideal P Gain Fdbk/Disabled'
+//  '<S92>'  : 'controller_3dof/PID Controller1/Integrator/Continuous'
+//  '<S93>'  : 'controller_3dof/PID Controller1/Integrator ICs/Internal IC'
+//  '<S94>'  : 'controller_3dof/PID Controller1/N Copy/Disabled'
+//  '<S95>'  : 'controller_3dof/PID Controller1/N Gain/Internal Parameters'
+//  '<S96>'  : 'controller_3dof/PID Controller1/P Copy/Disabled'
+//  '<S97>'  : 'controller_3dof/PID Controller1/Parallel P Gain/Internal Parameters'
+//  '<S98>'  : 'controller_3dof/PID Controller1/Reset Signal/Disabled'
+//  '<S99>'  : 'controller_3dof/PID Controller1/Saturation/Passthrough'
+//  '<S100>' : 'controller_3dof/PID Controller1/Saturation Fdbk/Disabled'
+//  '<S101>' : 'controller_3dof/PID Controller1/Sum/Sum_PID'
+//  '<S102>' : 'controller_3dof/PID Controller1/Sum Fdbk/Disabled'
+//  '<S103>' : 'controller_3dof/PID Controller1/Tracking Mode/Disabled'
+//  '<S104>' : 'controller_3dof/PID Controller1/Tracking Mode Sum/Passthrough'
+//  '<S105>' : 'controller_3dof/PID Controller1/Tsamp - Integral/TsSignalSpecification'
+//  '<S106>' : 'controller_3dof/PID Controller1/Tsamp - Ngain/Passthrough'
+//  '<S107>' : 'controller_3dof/PID Controller1/postSat Signal/Forward_Path'
+//  '<S108>' : 'controller_3dof/PID Controller1/preInt Signal/Internal PreInt'
+//  '<S109>' : 'controller_3dof/PID Controller1/preSat Signal/Forward_Path'
+//  '<S110>' : 'controller_3dof/PID Controller2/Anti-windup'
+//  '<S111>' : 'controller_3dof/PID Controller2/D Gain'
+//  '<S112>' : 'controller_3dof/PID Controller2/External Derivative'
+//  '<S113>' : 'controller_3dof/PID Controller2/Filter'
+//  '<S114>' : 'controller_3dof/PID Controller2/Filter ICs'
+//  '<S115>' : 'controller_3dof/PID Controller2/I Gain'
+//  '<S116>' : 'controller_3dof/PID Controller2/Ideal P Gain'
+//  '<S117>' : 'controller_3dof/PID Controller2/Ideal P Gain Fdbk'
+//  '<S118>' : 'controller_3dof/PID Controller2/Integrator'
+//  '<S119>' : 'controller_3dof/PID Controller2/Integrator ICs'
+//  '<S120>' : 'controller_3dof/PID Controller2/N Copy'
+//  '<S121>' : 'controller_3dof/PID Controller2/N Gain'
+//  '<S122>' : 'controller_3dof/PID Controller2/P Copy'
+//  '<S123>' : 'controller_3dof/PID Controller2/Parallel P Gain'
+//  '<S124>' : 'controller_3dof/PID Controller2/Reset Signal'
+//  '<S125>' : 'controller_3dof/PID Controller2/Saturation'
+//  '<S126>' : 'controller_3dof/PID Controller2/Saturation Fdbk'
+//  '<S127>' : 'controller_3dof/PID Controller2/Sum'
+//  '<S128>' : 'controller_3dof/PID Controller2/Sum Fdbk'
+//  '<S129>' : 'controller_3dof/PID Controller2/Tracking Mode'
+//  '<S130>' : 'controller_3dof/PID Controller2/Tracking Mode Sum'
+//  '<S131>' : 'controller_3dof/PID Controller2/Tsamp - Integral'
+//  '<S132>' : 'controller_3dof/PID Controller2/Tsamp - Ngain'
+//  '<S133>' : 'controller_3dof/PID Controller2/postSat Signal'
+//  '<S134>' : 'controller_3dof/PID Controller2/preInt Signal'
+//  '<S135>' : 'controller_3dof/PID Controller2/preSat Signal'
+//  '<S136>' : 'controller_3dof/PID Controller2/Anti-windup/Passthrough'
+//  '<S137>' : 'controller_3dof/PID Controller2/D Gain/Internal Parameters'
+//  '<S138>' : 'controller_3dof/PID Controller2/External Derivative/Error'
+//  '<S139>' : 'controller_3dof/PID Controller2/Filter/Cont. Filter'
+//  '<S140>' : 'controller_3dof/PID Controller2/Filter ICs/Internal IC - Filter'
+//  '<S141>' : 'controller_3dof/PID Controller2/I Gain/Internal Parameters'
+//  '<S142>' : 'controller_3dof/PID Controller2/Ideal P Gain/Passthrough'
+//  '<S143>' : 'controller_3dof/PID Controller2/Ideal P Gain Fdbk/Disabled'
+//  '<S144>' : 'controller_3dof/PID Controller2/Integrator/Continuous'
+//  '<S145>' : 'controller_3dof/PID Controller2/Integrator ICs/Internal IC'
+//  '<S146>' : 'controller_3dof/PID Controller2/N Copy/Disabled'
+//  '<S147>' : 'controller_3dof/PID Controller2/N Gain/Internal Parameters'
+//  '<S148>' : 'controller_3dof/PID Controller2/P Copy/Disabled'
+//  '<S149>' : 'controller_3dof/PID Controller2/Parallel P Gain/Internal Parameters'
+//  '<S150>' : 'controller_3dof/PID Controller2/Reset Signal/Disabled'
+//  '<S151>' : 'controller_3dof/PID Controller2/Saturation/Passthrough'
+//  '<S152>' : 'controller_3dof/PID Controller2/Saturation Fdbk/Disabled'
+//  '<S153>' : 'controller_3dof/PID Controller2/Sum/Sum_PID'
+//  '<S154>' : 'controller_3dof/PID Controller2/Sum Fdbk/Disabled'
+//  '<S155>' : 'controller_3dof/PID Controller2/Tracking Mode/Disabled'
+//  '<S156>' : 'controller_3dof/PID Controller2/Tracking Mode Sum/Passthrough'
+//  '<S157>' : 'controller_3dof/PID Controller2/Tsamp - Integral/TsSignalSpecification'
+//  '<S158>' : 'controller_3dof/PID Controller2/Tsamp - Ngain/Passthrough'
+//  '<S159>' : 'controller_3dof/PID Controller2/postSat Signal/Forward_Path'
+//  '<S160>' : 'controller_3dof/PID Controller2/preInt Signal/Internal PreInt'
+//  '<S161>' : 'controller_3dof/PID Controller2/preSat Signal/Forward_Path'
 
 #endif                                 // controller_3dof_h_
 

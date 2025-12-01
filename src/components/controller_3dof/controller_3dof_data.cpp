@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.86
+// Model version                  : 1.100
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Nov 28 17:24:05 2025
+// C/C++ source code generated on : Mon Dec  1 15:00:20 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -23,34 +23,94 @@
 // Block parameters (default storage)
 Controller::P Controller::rtP{
   // Mask Parameter: PIDController_D
-  //  Referenced by: '<S31>/Derivative Gain'
+  //  Referenced by: '<S33>/Derivative Gain'
 
-  0.0008,
+  0.0082,
+
+  // Mask Parameter: PIDController1_D
+  //  Referenced by: '<S85>/Derivative Gain'
+
+  0.0082,
+
+  // Mask Parameter: PIDController2_D
+  //  Referenced by: '<S137>/Derivative Gain'
+
+  0.006,
+
+  // Mask Parameter: PIDController2_I
+  //  Referenced by: '<S141>/Integral Gain'
+
+  0.005,
+
+  // Mask Parameter: PIDController1_I
+  //  Referenced by: '<S89>/Integral Gain'
+
+  0.02,
 
   // Mask Parameter: PIDController_I
-  //  Referenced by: '<S35>/Integral Gain'
+  //  Referenced by: '<S37>/Integral Gain'
+
+  0.02,
+
+  // Mask Parameter: PIDController_InitialConditionF
+  //  Referenced by: '<S35>/Filter'
 
   0.0,
 
-  // Mask Parameter: PIDController_InitialConditionF
-  //  Referenced by: '<S33>/Filter'
+  // Mask Parameter: PIDController1_InitialCondition
+  //  Referenced by: '<S87>/Filter'
+
+  0.0,
+
+  // Mask Parameter: PIDController2_InitialCondition
+  //  Referenced by: '<S139>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController_InitialConditio_d
-  //  Referenced by: '<S38>/Integrator'
+  //  Referenced by: '<S40>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController1_InitialConditi_l
+  //  Referenced by: '<S92>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController2_InitialConditi_k
+  //  Referenced by: '<S144>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController_N
-  //  Referenced by: '<S41>/Filter Coefficient'
+  //  Referenced by: '<S43>/Filter Coefficient'
 
-  10.0,
+  100.0,
+
+  // Mask Parameter: PIDController1_N
+  //  Referenced by: '<S95>/Filter Coefficient'
+
+  100.0,
+
+  // Mask Parameter: PIDController2_N
+  //  Referenced by: '<S147>/Filter Coefficient'
+
+  100.0,
 
   // Mask Parameter: PIDController_P
-  //  Referenced by: '<S43>/Proportional Gain'
+  //  Referenced by: '<S45>/Proportional Gain'
 
-  0.01,
+  0.012,
+
+  // Mask Parameter: PIDController1_P
+  //  Referenced by: '<S97>/Proportional Gain'
+
+  0.012,
+
+  // Mask Parameter: PIDController2_P
+  //  Referenced by: '<S149>/Proportional Gain'
+
+  0.006,
 
   // Mask Parameter: CheckStaticRange_max
   //  Referenced by: '<S1>/max_val'
@@ -68,29 +128,29 @@ Controller::P Controller::rtP{
   5.0,
 
   // Expression: 0
-  //  Referenced by: '<Root>/Constant3'
+  //  Referenced by: '<Root>/target_roll'
 
   0.0,
 
   // Expression: 0
-  //  Referenced by: '<Root>/Constant'
+  //  Referenced by: '<Root>/target_pitch'
 
   0.0,
 
   // Expression: 0
-  //  Referenced by: '<Root>/Constant1'
+  //  Referenced by: '<Root>/target_yaw'
 
   0.0,
 
-  // Expression: 85
+  // Expression: 90
   //  Referenced by: '<Root>/Saturation'
 
-  85.0,
+  90.0,
 
-  // Expression: 20
+  // Expression: 15
   //  Referenced by: '<Root>/Saturation'
 
-  20.0,
+  15.0,
 
   // Computed Parameter: Assertion_Enabled
   //  Referenced by: '<S1>/Assertion'

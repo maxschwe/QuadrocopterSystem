@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.100
+// Model version                  : 1.102
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Dec  1 15:00:20 2025
+// C/C++ source code generated on : Mon Dec 15 14:54:13 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -85,6 +85,10 @@ class Controller final
     real_T roll;                       // '<Root>/roll'
     real_T pitch;                      // '<Root>/pitch'
     real_T yaw;                        // '<Root>/yaw'
+    real_T roll_target;                // '<Root>/roll_target'
+    real_T pitch_target;               // '<Root>/pitch_target'
+    real_T yaw_target;                 // '<Root>/yaw_target'
+    real_T throttle;                   // '<Root>/throttle'
   };
 
   // External outputs (root outports fed by signals with default storage)
@@ -162,18 +166,6 @@ class Controller final
 
     real_T CheckStaticRange_min;       // Mask Parameter: CheckStaticRange_min
                                           //  Referenced by: '<S1>/min_val'
-
-    real_T Constant2_Value;            // Expression: 5
-                                          //  Referenced by: '<Root>/Constant2'
-
-    real_T target_roll_Value;          // Expression: 0
-                                          //  Referenced by: '<Root>/target_roll'
-
-    real_T target_pitch_Value;         // Expression: 0
-                                          //  Referenced by: '<Root>/target_pitch'
-
-    real_T target_yaw_Value;           // Expression: 0
-                                          //  Referenced by: '<Root>/target_yaw'
 
     real_T Saturation_UpperSat;        // Expression: 90
                                           //  Referenced by: '<Root>/Saturation'

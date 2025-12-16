@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.100
+// Model version                  : 1.102
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Dec  1 15:00:20 2025
+// C/C++ source code generated on : Mon Dec 15 14:54:13 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -120,27 +120,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: CheckStaticRange_min
   //  Referenced by: '<S1>/min_val'
 
-  20.0,
-
-  // Expression: 5
-  //  Referenced by: '<Root>/Constant2'
-
-  5.0,
-
-  // Expression: 0
-  //  Referenced by: '<Root>/target_roll'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<Root>/target_pitch'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<Root>/target_yaw'
-
-  0.0,
+  25.0,
 
   // Expression: 90
   //  Referenced by: '<Root>/Saturation'
@@ -150,7 +130,7 @@ Controller::P Controller::rtP{
   // Expression: 15
   //  Referenced by: '<Root>/Saturation'
 
-  15.0,
+  25,
 
   // Computed Parameter: Assertion_Enabled
   //  Referenced by: '<S1>/Assertion'

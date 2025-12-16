@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.100
+// Model version                  : 1.102
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Dec  1 15:00:20 2025
+// C/C++ source code generated on : Mon Dec 15 14:54:13 2025
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -172,10 +172,10 @@ void Controller::step()
   }
 
   // Sum: '<Root>/Sum' incorporates:
-  //   Constant: '<Root>/target_roll'
   //   Inport: '<Root>/roll'
+  //   Inport: '<Root>/roll_target'
 
-  rtb_Sum_e = rtP.target_roll_Value - rtU.roll;
+  rtb_Sum_e = rtU.roll_target - rtU.roll;
 
   // Gain: '<S43>/Filter Coefficient' incorporates:
   //   Gain: '<S33>/Derivative Gain'
@@ -186,10 +186,10 @@ void Controller::step()
     * rtP.PIDController_N;
 
   // Sum: '<Root>/Sum1' incorporates:
-  //   Constant: '<Root>/target_pitch'
   //   Inport: '<Root>/pitch'
+  //   Inport: '<Root>/pitch_target'
 
-  rtb_Sum1 = rtP.target_pitch_Value - rtU.pitch;
+  rtb_Sum1 = rtU.pitch_target - rtU.pitch;
 
   // Gain: '<S95>/Filter Coefficient' incorporates:
   //   Gain: '<S85>/Derivative Gain'
@@ -200,10 +200,10 @@ void Controller::step()
     rtX.Filter_CSTATE_d) * rtP.PIDController1_N;
 
   // Sum: '<Root>/Sum2' incorporates:
-  //   Constant: '<Root>/target_yaw'
   //   Inport: '<Root>/yaw'
+  //   Inport: '<Root>/yaw_target'
 
-  rtb_Sum2 = rtP.target_yaw_Value - rtU.yaw;
+  rtb_Sum2 = rtU.yaw_target - rtU.yaw;
 
   // Gain: '<S147>/Filter Coefficient' incorporates:
   //   Gain: '<S137>/Derivative Gain'
@@ -214,10 +214,10 @@ void Controller::step()
     rtX.Filter_CSTATE_j) * rtP.PIDController2_N;
 
   // SignalConversion generated from: '<S2>/ SFunction ' incorporates:
-  //   Constant: '<Root>/Constant2'
   //   Gain: '<S149>/Proportional Gain'
   //   Gain: '<S45>/Proportional Gain'
   //   Gain: '<S97>/Proportional Gain'
+  //   Inport: '<Root>/throttle'
   //   Integrator: '<S144>/Integrator'
   //   Integrator: '<S40>/Integrator'
   //   Integrator: '<S92>/Integrator'
@@ -226,7 +226,7 @@ void Controller::step()
   //   Sum: '<S153>/Sum'
   //   Sum: '<S49>/Sum'
 
-  rtb_Saturation[0] = rtP.Constant2_Value;
+  rtb_Saturation[0] = rtU.throttle;
   rtb_Saturation[1] = (rtP.PIDController_P * rtb_Sum_e + rtX.Integrator_CSTATE)
     + rtDW.FilterCoefficient;
   rtb_Saturation[2] = (rtP.PIDController1_P * rtb_Sum1 + rtX.Integrator_CSTATE_f)

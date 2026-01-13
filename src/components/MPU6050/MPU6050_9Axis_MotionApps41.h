@@ -338,7 +338,7 @@ uint8_t MPU6050::dmpInitialize() {
     // reset device
     DEBUG_PRINTLN(F("\n\nResetting MPU6050..."));
     reset();
-    delay(30); // wait after reset
+    vTaskDelay(30/portTICK_PERIOD_MS);; // wait after reset
 
     // disable sleep mode
     DEBUG_PRINTLN(F("Disabling sleep mode..."));
@@ -842,7 +842,7 @@ uint8_t MPU6050::dmpReadAndProcessFIFOPacket(uint8_t numPackets, uint8_t *proces
         if ((status = dmpProcessFIFOPacket(buf)) > 0) return status;
         
         // increment external process count variable, if supplied
-        if (processed != 0) *processed++;
+        // if (processed != 0) *processed++;
     }
     return 0;
 }

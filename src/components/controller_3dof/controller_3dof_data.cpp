@@ -20,17 +20,19 @@
 //
 #include "controller_3dof.h"
 
+
+
 // Block parameters (default storage)
 Controller::P Controller::rtP{
   // Mask Parameter: PIDController_D
   //  Referenced by: '<S33>/Derivative Gain'
 
-  0.0082,
+  0.0027,
 
   // Mask Parameter: PIDController1_D
   //  Referenced by: '<S85>/Derivative Gain'
 
-  0.0082,
+  0.0027,
 
   // Mask Parameter: PIDController2_D
   //  Referenced by: '<S137>/Derivative Gain'
@@ -45,12 +47,12 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_I
   //  Referenced by: '<S89>/Integral Gain'
 
-  0.02,
+  0.0,
 
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S37>/Integral Gain'
 
-  0.02,
+  0.0,
 
   // Mask Parameter: PIDController_InitialConditionF
   //  Referenced by: '<S35>/Filter'
@@ -100,12 +102,12 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_P
   //  Referenced by: '<S45>/Proportional Gain'
 
-  0.012,
+  0.013,
 
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S97>/Proportional Gain'
 
-  0.012,
+  0.013,
 
   // Mask Parameter: PIDController2_P
   //  Referenced by: '<S149>/Proportional Gain'

@@ -54,6 +54,19 @@ void drone_control(void*){
 	Controller controller;
 	controller.initialize();
 
+	bool motorsActive = false;
+	uint16_t lastToggleState = myInputs.toggle;
+
+	ESP_LOGI("TASK", "Waiting for controller to be toggled...");
+	while (true) {
+		if (myInputs.toggle != lastToggleState) {
+			lastToggleState = myInputs.toggle;
+			ESP_LOGI("TASK", "Controller connected");
+			break;
+		}
+		vTaskDelay(pdMS_TO_TICKS(10));
+	}
+
 	TickType_t xLastWakeTime = xTaskGetTickCount();
 	const TickType_t xFrequency = pdMS_TO_TICKS(5);
 	// good values: P: 0.009, D: 0.0013, N: 100
@@ -66,22 +79,31 @@ void drone_control(void*){
 		controller.rtU.yaw_target = myInputs.yaw;
 		controller.rtU.throttle = myInputs.throttle;
 
+		if (myInputs.toggle != lastToggleState) {
+			lastToggleState = myInputs.toggle;
+			motorsActive = !motorsActive;
+			ESP_LOGI("TASK", "Motors active toggled");
+		}
+
 		controller.rtU.roll = orientation.x;
 		controller.rtU.pitch = orientation.y;
 		controller.rtU.yaw = orientation.z;
 
 		controller.step();
 		Controller::ExtY outputs = controller.rtY;
+		if (motorsActive) {
+			drone.setThrottles(
+				outputs.throttle_1, 
+				outputs.throttle_2, 
+				outputs.throttle_3, 
+				outputs.throttle_4
+			);
+		} else {
+			drone.setThrottles(0, 0, 0, 0);
+		}
 
-		drone.setThrottles(
-			outputs.throttle_1, 
-			outputs.throttle_2, 
-			outputs.throttle_3, 
-			outputs.throttle_4
-		);
-		
 		printf(
-			"%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\n", 
+			"-- %.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\n", 
 			orientation.x, 
 			orientation.y, 
 			orientation.z, 
@@ -93,6 +115,7 @@ void drone_control(void*){
 			outputs.throttle_3, 
 			outputs.throttle_4
 		);
+		
 		BaseType_t xWasDelayed = xTaskDelayUntil( &xLastWakeTime, xFrequency );
 		
 		if (xWasDelayed != pdTRUE) {

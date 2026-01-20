@@ -2,11 +2,25 @@
 
 #include <driver/ledc.h>
 #include <driver/gpio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include "MPU6050.h"
 
 #include "rotor.h"
 #include "esc_timer.h"
+
+
+struct ControllerInputs {
+	float roll;
+	float pitch;
+	float yaw;
+	float throttle;
+
+	uint16_t toggle;
+
+	TickType_t last_update;
+};
 
 class Drone {
     public:
@@ -20,6 +34,9 @@ class Drone {
         void setThrottles(float throttle1, float throttle2, float throttle3, float throttle4);
         VectorFloat rpy();
         void printRpy();
+
+        void startReceiver();
+        ControllerInputs getInputs();
 
     private:
         EscTimer esc_timer;
@@ -42,4 +59,10 @@ class Drone {
         void mpuInterruptProcessor();
 
         void initRotors();
+
+        ControllerInputs inputs;
+        static void wrapperUartTask(void *drone);
+        void uartTask();
+        void processFrame(uint8_t* frame);
+        void parseUartBuffer(uint8_t* uart_buffer, uint32_t& uart_buffer_len);
 };

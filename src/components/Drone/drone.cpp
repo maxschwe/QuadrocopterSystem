@@ -5,12 +5,33 @@
 #include <freertos/task.h>
 #include <freertos/queue.h>
 #include "esp_mac.h"
+#include <string.h>
+#include "driver/uart.h"
 
 #include "MPU6050.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 
 #include "rotor.h"
 #include "esc_timer.h"
+
+#define UART_NUM UART_NUM_2
+#define RX_BUF_SIZE 1024
+#define TIMEOUT_UART 20
+#define FRAME_SIZE 16
+#define FRAME_1_TYPE 0x54
+#define FRAME_2_TYPE 0x5c
+
+#define RECEIVER_MIN 343
+#define RECEIVER_MAX 1705
+
+#define THROTTLE_MIN_MAP 2
+#define THROTTLE_MAX_MAP 10
+#define YAW_MIN_MAP 180
+#define YAW_MAX_MAP -180
+#define PITCH_MIN_MAP 20
+#define PITCH_MAX_MAP -20
+#define ROLL_MIN_MAP 20
+#define ROLL_MAX_MAP -20
 
 const char* TAG = "Drone";
 
@@ -45,14 +66,14 @@ Drone::Drone(
             rotor4(rotor4_pin, rotor4_channel, this->esc_timer)
 {
     bool mpuSuccess = initMpu(mpu_interrupt_pin);
-
     if (!mpuSuccess) {
         ESP_LOGE(TAG, "Failed to initialize MPU6050. Halting execution.");
         while (true) {
             vTaskDelay(pdMS_TO_TICKS(1000)); // Halt execution
         }
     }
-
+    
+    startReceiver();
     initRotors();
     
     ESP_LOGI(TAG, "Setup Complete");
@@ -188,6 +209,17 @@ VectorFloat Drone::rpy() {
     return VectorFloat(0.0f, 0.0f, 0.0f);
 }
 
+// VectorFloat Drone::gyro() {
+//     VectorFloat gyro;
+//     VectorInt16 rawGyro;
+//     mpu.getRotation(&rawGyro);
+//     const float GYRO_SCALE = 131.0f; // LSB/deg/s for +/- 250deg/s
+//     gyro.x = (float)rawGyro.x / GYRO_SCALE;
+//     gyro.y = (float)rawGyro.y / GYRO_SCALE;
+//     gyro.z = (float)rawGyro.z / GYRO_SCALE;
+//     return gyro;
+// }
+
 void Drone::printRpy() {
     VectorFloat rpy = this->rpy();
     printf("Roll: %f, Pitch: %f, Yaw: %f\n", rpy.x, rpy.y, rpy.z);
@@ -198,4 +230,122 @@ void Drone::setThrottles(float throttle1, float throttle2, float throttle3, floa
     rotor2.setThrottle(throttle2);
     rotor3.setThrottle(throttle3);
     rotor4.setThrottle(throttle4);
+}
+
+static uint16_t decode_channel(uint8_t msb, uint8_t lsb) {
+    return ((msb & 0x07) << 8) | lsb;
+}
+
+static float lin_map(uint16_t val, int16_t out_min, int16_t out_max) {
+    return out_min + (float)(val - RECEIVER_MIN) * (out_max - out_min) / (RECEIVER_MAX - RECEIVER_MIN);
+}
+
+void Drone::startReceiver() {
+    uart_config_t uart_config = {
+        .baud_rate = 115200,        // SRXL usually ~115200
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .rx_flow_ctrl_thresh = 0,
+        .source_clk = UART_SCLK_APB,
+    };
+
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM, RX_BUF_SIZE, 0, 0, NULL, 0));
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM, &uart_config));
+
+    ESP_ERROR_CHECK(uart_set_pin(
+        UART_NUM,
+        UART_PIN_NO_CHANGE,  // TX not used
+        16,                  // RX pin (change if needed)
+        UART_PIN_NO_CHANGE,
+        UART_PIN_NO_CHANGE
+    ));
+
+    xTaskCreate(this->wrapperUartTask, "uart_task", 4096, this, 2, NULL);
+}
+
+ControllerInputs Drone::getInputs() {
+    return this->inputs;
+}
+
+void Drone::wrapperUartTask(void *drone) {
+    static_cast<Drone*>(drone)->uartTask();
+}
+
+void Drone::processFrame(uint8_t* frame) {
+    uint8_t frame_type = frame[12]; // 13th byte
+    if (frame_type == 0x54) {
+        uint16_t roll_val = decode_channel(frame[2], frame[3]); // Channel 1
+        uint16_t pitch_val = decode_channel(frame[6], frame[7]); // Channel 2
+        uint16_t throttle_val = decode_channel(frame[4], frame[5]); // Channel 3
+
+        float throttle = lin_map(throttle_val, THROTTLE_MIN_MAP, THROTTLE_MAX_MAP);
+        float roll = lin_map(roll_val, ROLL_MIN_MAP, ROLL_MAX_MAP);
+        float pitch = lin_map(pitch_val, PITCH_MIN_MAP, PITCH_MAX_MAP);
+
+        this->inputs.roll = roll;
+        this->inputs.pitch = pitch;
+        this->inputs.throttle = throttle;
+        
+        this->inputs.last_update = xTaskGetTickCount();
+    } else if (frame_type == 0x5C) {
+        uint16_t yaw_val = decode_channel(frame[6], frame[7]); // Channel 4
+        uint16_t toggle_val = decode_channel(frame[2], frame[3]);
+
+        float yaw = lin_map(yaw_val, YAW_MIN_MAP, YAW_MAX_MAP);
+
+        this->inputs.yaw = yaw;
+        this->inputs.toggle = toggle_val;
+        
+        this->inputs.last_update = xTaskGetTickCount();
+    }
+}
+
+void Drone::parseUartBuffer(uint8_t* uart_buffer, uint32_t& uart_buffer_len) {
+    int i = 0;
+
+    if (uart_buffer_len < FRAME_SIZE) {
+        return;
+    }
+
+    while (i <= uart_buffer_len - FRAME_SIZE) {
+        if (uart_buffer[i] == 0x00 && uart_buffer[i+1] == 0x00 &&
+            uart_buffer[i + FRAME_SIZE - 2] == 0xFF &&
+            uart_buffer[i + FRAME_SIZE - 1] == 0xFF) {
+
+            processFrame(&uart_buffer[i]);
+            i += FRAME_SIZE;
+            continue;
+        }
+        i++;
+    }
+
+    if (i < uart_buffer_len) {
+        memmove(uart_buffer, &uart_buffer[i], uart_buffer_len - i);
+        uart_buffer_len -= i;
+    } else {
+        uart_buffer_len = 0;
+    }
+}
+
+void Drone::uartTask() {
+    uint8_t read_buf[128];
+    uint8_t uart_buffer[RX_BUF_SIZE];
+    uint32_t uart_buffer_len = 0;
+
+    while (1) {
+        int len = uart_read_bytes(UART_NUM, read_buf, sizeof(read_buf), pdMS_TO_TICKS(TIMEOUT_UART));
+        if (len > 0) {
+            if (uart_buffer_len + len > RX_BUF_SIZE) {
+                uart_buffer_len = 0;
+                ESP_LOGW("RECV", "UART buffer overflow, clearing buffer!\n");
+            }
+            
+            memcpy(&uart_buffer[uart_buffer_len], read_buf, len);
+            uart_buffer_len += len;
+            
+            parseUartBuffer(uart_buffer, uart_buffer_len);
+        }
+    }
 }

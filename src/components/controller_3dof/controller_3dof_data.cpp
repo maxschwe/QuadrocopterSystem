@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.102
+// Model version                  : 1.109
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Dec 15 14:54:13 2025
+// C/C++ source code generated on : Tue Jan 20 15:22:07 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -19,8 +19,6 @@
 // Validation result: Not run
 //
 #include "controller_3dof.h"
-
-
 
 // Block parameters (default storage)
 Controller::P Controller::rtP{
@@ -32,17 +30,17 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_D
   //  Referenced by: '<S85>/Derivative Gain'
 
-  0.0027,
+  0.0,
 
   // Mask Parameter: PIDController2_D
   //  Referenced by: '<S137>/Derivative Gain'
 
-  0.006,
+  0.0,
 
   // Mask Parameter: PIDController2_I
   //  Referenced by: '<S141>/Integral Gain'
 
-  0.005,
+  0.0,
 
   // Mask Parameter: PIDController1_I
   //  Referenced by: '<S89>/Integral Gain'
@@ -52,7 +50,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S37>/Integral Gain'
 
-  0.0,
+  0.015,
 
   // Mask Parameter: PIDController_InitialConditionF
   //  Referenced by: '<S35>/Filter'
@@ -84,6 +82,11 @@ Controller::P Controller::rtP{
 
   0.0,
 
+  // Mask Parameter: PIDController_LowerIntegratorSa
+  //  Referenced by: '<S40>/Integrator'
+
+  -0.1,
+
   // Mask Parameter: PIDController_N
   //  Referenced by: '<S43>/Filter Coefficient'
 
@@ -107,12 +110,17 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S97>/Proportional Gain'
 
-  0.013,
+  0.0,
 
   // Mask Parameter: PIDController2_P
   //  Referenced by: '<S149>/Proportional Gain'
 
-  0.006,
+  0.0,
+
+  // Mask Parameter: PIDController_UpperIntegratorSa
+  //  Referenced by: '<S40>/Integrator'
+
+  0.1,
 
   // Mask Parameter: CheckStaticRange_max
   //  Referenced by: '<S1>/max_val'
@@ -122,7 +130,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: CheckStaticRange_min
   //  Referenced by: '<S1>/min_val'
 
-  25.0,
+  20.0,
 
   // Expression: 90
   //  Referenced by: '<Root>/Saturation'
@@ -132,7 +140,7 @@ Controller::P Controller::rtP{
   // Expression: 15
   //  Referenced by: '<Root>/Saturation'
 
-  25,
+  15.0,
 
   // Computed Parameter: Assertion_Enabled
   //  Referenced by: '<S1>/Assertion'

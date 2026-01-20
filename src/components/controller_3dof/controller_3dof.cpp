@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.102
+// Model version                  : 1.109
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Dec 15 14:54:13 2025
+// C/C++ source code generated on : Tue Jan 20 15:22:07 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -176,6 +176,14 @@ void Controller::step()
   //   Inport: '<Root>/roll_target'
 
   rtb_Sum_e = rtU.roll_target - rtU.roll;
+
+  // Integrator: '<S40>/Integrator'
+  // Limited  Integrator
+  if (rtX.Integrator_CSTATE >= rtP.PIDController_UpperIntegratorSa) {
+    rtX.Integrator_CSTATE = rtP.PIDController_UpperIntegratorSa;
+  } else if (rtX.Integrator_CSTATE <= rtP.PIDController_LowerIntegratorSa) {
+    rtX.Integrator_CSTATE = rtP.PIDController_LowerIntegratorSa;
+  }
 
   // Gain: '<S43>/Filter Coefficient' incorporates:
   //   Gain: '<S33>/Derivative Gain'
@@ -384,10 +392,22 @@ void Controller::step()
 void Controller::controller_3dof_derivatives()
 {
   Controller::XDot *_rtXdot;
+  boolean_T lsat;
+  boolean_T usat;
   _rtXdot = ((XDot *) (&rtM)->derivs);
 
   // Derivatives for Integrator: '<S40>/Integrator'
-  _rtXdot->Integrator_CSTATE = rtDW.IntegralGain_l;
+  lsat = (rtX.Integrator_CSTATE <= rtP.PIDController_LowerIntegratorSa);
+  usat = (rtX.Integrator_CSTATE >= rtP.PIDController_UpperIntegratorSa);
+  if (((!lsat) && (!usat)) || (lsat && (rtDW.IntegralGain_l > 0.0)) || (usat &&
+       (rtDW.IntegralGain_l < 0.0))) {
+    _rtXdot->Integrator_CSTATE = rtDW.IntegralGain_l;
+  } else {
+    // in saturation
+    _rtXdot->Integrator_CSTATE = 0.0;
+  }
+
+  // End of Derivatives for Integrator: '<S40>/Integrator'
 
   // Derivatives for Integrator: '<S35>/Filter'
   _rtXdot->Filter_CSTATE = rtDW.FilterCoefficient;

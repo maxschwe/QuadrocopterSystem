@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.102
+// Model version                  : 1.109
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Dec 15 14:54:13 2025
+// C/C++ source code generated on : Tue Jan 20 15:22:07 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -143,6 +143,10 @@ class Controller final
                               // Mask Parameter: PIDController2_InitialConditi_k
                                  //  Referenced by: '<S144>/Integrator'
 
+    real_T PIDController_LowerIntegratorSa;
+                              // Mask Parameter: PIDController_LowerIntegratorSa
+                                 //  Referenced by: '<S40>/Integrator'
+
     real_T PIDController_N;            // Mask Parameter: PIDController_N
                                           //  Referenced by: '<S43>/Filter Coefficient'
 
@@ -160,6 +164,10 @@ class Controller final
 
     real_T PIDController2_P;           // Mask Parameter: PIDController2_P
                                           //  Referenced by: '<S149>/Proportional Gain'
+
+    real_T PIDController_UpperIntegratorSa;
+                              // Mask Parameter: PIDController_UpperIntegratorSa
+                                 //  Referenced by: '<S40>/Integrator'
 
     real_T CheckStaticRange_max;       // Mask Parameter: CheckStaticRange_max
                                           //  Referenced by: '<S1>/max_val'
@@ -299,6 +307,7 @@ class Controller final
 //-
 //  These blocks were eliminated from the model due to optimizations:
 //
+//  Block '<Root>/Scope' : Unused code path elimination
 //  Block '<Root>/Scope1' : Unused code path elimination
 
 

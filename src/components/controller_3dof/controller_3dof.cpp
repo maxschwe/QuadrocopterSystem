@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.109
+// Model version                  : 1.128
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Tue Jan 20 15:22:07 2026
+// C/C++ source code generated on : Tue Jan 27 11:00:42 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -24,30 +24,6 @@
 
 // private model entry point functions
 extern void controller_3dof_derivatives();
-
-//=========*
-//  Asserts *
-// =========
-#ifndef utAssert
-#if defined(DOASSERTS)
-#if !defined(PRINT_ASSERTS)
-#include <assert.h>
-#define utAssert(exp)                  assert(exp)
-#else
-#include <stdio.h>
-
-static void _assert(char_T *statement, char_T *file, int line)
-{
-  printf("%s in %s on line %d\n", statement, file, line);
-}
-
-#define utAssert(_EX)                  ((_EX) ? (void)0 : _assert(#_EX, __FILE__, __LINE__))
-#endif
-
-#else
-#define utAssert(exp)                                            // do nothing
-#endif
-#endif
 
 //
 // This function updates continuous states using the ODE3 fixed-step
@@ -177,18 +153,10 @@ void Controller::step()
 
   rtb_Sum_e = rtU.roll_target - rtU.roll;
 
-  // Integrator: '<S40>/Integrator'
-  // Limited  Integrator
-  if (rtX.Integrator_CSTATE >= rtP.PIDController_UpperIntegratorSa) {
-    rtX.Integrator_CSTATE = rtP.PIDController_UpperIntegratorSa;
-  } else if (rtX.Integrator_CSTATE <= rtP.PIDController_LowerIntegratorSa) {
-    rtX.Integrator_CSTATE = rtP.PIDController_LowerIntegratorSa;
-  }
-
-  // Gain: '<S43>/Filter Coefficient' incorporates:
-  //   Gain: '<S33>/Derivative Gain'
-  //   Integrator: '<S35>/Filter'
-  //   Sum: '<S35>/SumD'
+  // Gain: '<S42>/Filter Coefficient' incorporates:
+  //   Gain: '<S32>/Derivative Gain'
+  //   Integrator: '<S34>/Filter'
+  //   Sum: '<S34>/SumD'
 
   rtDW.FilterCoefficient = (rtP.PIDController_D * rtb_Sum_e - rtX.Filter_CSTATE)
     * rtP.PIDController_N;
@@ -199,10 +167,10 @@ void Controller::step()
 
   rtb_Sum1 = rtU.pitch_target - rtU.pitch;
 
-  // Gain: '<S95>/Filter Coefficient' incorporates:
-  //   Gain: '<S85>/Derivative Gain'
-  //   Integrator: '<S87>/Filter'
-  //   Sum: '<S87>/SumD'
+  // Gain: '<S94>/Filter Coefficient' incorporates:
+  //   Gain: '<S84>/Derivative Gain'
+  //   Integrator: '<S86>/Filter'
+  //   Sum: '<S86>/SumD'
 
   rtDW.FilterCoefficient_p = (rtP.PIDController1_D * rtb_Sum1 -
     rtX.Filter_CSTATE_d) * rtP.PIDController1_N;
@@ -213,26 +181,26 @@ void Controller::step()
 
   rtb_Sum2 = rtU.yaw_target - rtU.yaw;
 
-  // Gain: '<S147>/Filter Coefficient' incorporates:
-  //   Gain: '<S137>/Derivative Gain'
-  //   Integrator: '<S139>/Filter'
-  //   Sum: '<S139>/SumD'
+  // Gain: '<S146>/Filter Coefficient' incorporates:
+  //   Gain: '<S136>/Derivative Gain'
+  //   Integrator: '<S138>/Filter'
+  //   Sum: '<S138>/SumD'
 
   rtDW.FilterCoefficient_d = (rtP.PIDController2_D * rtb_Sum2 -
     rtX.Filter_CSTATE_j) * rtP.PIDController2_N;
 
-  // SignalConversion generated from: '<S2>/ SFunction ' incorporates:
-  //   Gain: '<S149>/Proportional Gain'
-  //   Gain: '<S45>/Proportional Gain'
-  //   Gain: '<S97>/Proportional Gain'
+  // SignalConversion generated from: '<S1>/ SFunction ' incorporates:
+  //   Gain: '<S148>/Proportional Gain'
+  //   Gain: '<S44>/Proportional Gain'
+  //   Gain: '<S96>/Proportional Gain'
   //   Inport: '<Root>/throttle'
-  //   Integrator: '<S144>/Integrator'
-  //   Integrator: '<S40>/Integrator'
-  //   Integrator: '<S92>/Integrator'
+  //   Integrator: '<S143>/Integrator'
+  //   Integrator: '<S39>/Integrator'
+  //   Integrator: '<S91>/Integrator'
   //   MATLAB Function: '<Root>/MATLAB Function'
-  //   Sum: '<S101>/Sum'
-  //   Sum: '<S153>/Sum'
-  //   Sum: '<S49>/Sum'
+  //   Sum: '<S100>/Sum'
+  //   Sum: '<S152>/Sum'
+  //   Sum: '<S48>/Sum'
 
   rtb_Saturation[0] = rtU.throttle;
   rtb_Saturation[1] = (rtP.PIDController_P * rtb_Sum_e + rtX.Integrator_CSTATE)
@@ -291,24 +259,6 @@ void Controller::step()
     }
   }
 
-  if ((&rtM)->isMajorTimeStep()) {
-    // Assertion: '<S1>/Assertion' incorporates:
-    //   Constant: '<S1>/max_val'
-    //   Constant: '<S1>/min_val'
-    //   Logic: '<S1>/conjunction'
-    //   RelationalOperator: '<S1>/max_relop'
-    //   RelationalOperator: '<S1>/min_relop'
-
-    utAssert((rtP.CheckStaticRange_min <= rtb_u[0]) && (rtb_u[0] <=
-              rtP.CheckStaticRange_max));
-    utAssert((rtP.CheckStaticRange_min <= rtb_u[1]) && (rtb_u[1] <=
-              rtP.CheckStaticRange_max));
-    utAssert((rtP.CheckStaticRange_min <= rtb_u[2]) && (rtb_u[2] <=
-              rtP.CheckStaticRange_max));
-    utAssert((rtP.CheckStaticRange_min <= rtb_u[3]) && (rtb_u[3] <=
-              rtP.CheckStaticRange_max));
-  }
-
   // Saturate: '<Root>/Saturation'
   if (rtb_u[0] > rtP.Saturation_UpperSat) {
     // Outport: '<Root>/throttle_1'
@@ -356,14 +306,14 @@ void Controller::step()
 
   // End of Saturate: '<Root>/Saturation'
 
-  // Gain: '<S141>/Integral Gain'
+  // Gain: '<S140>/Integral Gain'
   rtDW.IntegralGain = rtP.PIDController2_I * rtb_Sum2;
 
-  // Gain: '<S89>/Integral Gain'
+  // Gain: '<S88>/Integral Gain'
   rtDW.IntegralGain_i = rtP.PIDController1_I * rtb_Sum1;
 
-  // Gain: '<S37>/Integral Gain'
-  rtDW.IntegralGain_l = rtP.PIDController_I * rtb_Sum_e;
+  // Gain: '<S36>/Integral Gain'
+  rtDW.IntegralGain_d = rtP.PIDController_I * rtb_Sum_e;
   if ((&rtM)->isMajorTimeStep()) {
     rt_ertODEUpdateContinuousStates(&(&rtM)->solverInfo);
 
@@ -392,36 +342,24 @@ void Controller::step()
 void Controller::controller_3dof_derivatives()
 {
   Controller::XDot *_rtXdot;
-  boolean_T lsat;
-  boolean_T usat;
   _rtXdot = ((XDot *) (&rtM)->derivs);
 
-  // Derivatives for Integrator: '<S40>/Integrator'
-  lsat = (rtX.Integrator_CSTATE <= rtP.PIDController_LowerIntegratorSa);
-  usat = (rtX.Integrator_CSTATE >= rtP.PIDController_UpperIntegratorSa);
-  if (((!lsat) && (!usat)) || (lsat && (rtDW.IntegralGain_l > 0.0)) || (usat &&
-       (rtDW.IntegralGain_l < 0.0))) {
-    _rtXdot->Integrator_CSTATE = rtDW.IntegralGain_l;
-  } else {
-    // in saturation
-    _rtXdot->Integrator_CSTATE = 0.0;
-  }
+  // Derivatives for Integrator: '<S39>/Integrator'
+  _rtXdot->Integrator_CSTATE = rtDW.IntegralGain_d;
 
-  // End of Derivatives for Integrator: '<S40>/Integrator'
-
-  // Derivatives for Integrator: '<S35>/Filter'
+  // Derivatives for Integrator: '<S34>/Filter'
   _rtXdot->Filter_CSTATE = rtDW.FilterCoefficient;
 
-  // Derivatives for Integrator: '<S92>/Integrator'
+  // Derivatives for Integrator: '<S91>/Integrator'
   _rtXdot->Integrator_CSTATE_f = rtDW.IntegralGain_i;
 
-  // Derivatives for Integrator: '<S87>/Filter'
+  // Derivatives for Integrator: '<S86>/Filter'
   _rtXdot->Filter_CSTATE_d = rtDW.FilterCoefficient_p;
 
-  // Derivatives for Integrator: '<S144>/Integrator'
+  // Derivatives for Integrator: '<S143>/Integrator'
   _rtXdot->Integrator_CSTATE_j = rtDW.IntegralGain;
 
-  // Derivatives for Integrator: '<S139>/Filter'
+  // Derivatives for Integrator: '<S138>/Filter'
   _rtXdot->Filter_CSTATE_j = rtDW.FilterCoefficient_d;
 }
 
@@ -464,22 +402,22 @@ void Controller::initialize()
   (&rtM)->setTPtr(&(&rtM)->Timing.tArray[0]);
   (&rtM)->Timing.stepSize0 = 0.005;
 
-  // InitializeConditions for Integrator: '<S40>/Integrator'
-  rtX.Integrator_CSTATE = rtP.PIDController_InitialConditio_d;
+  // InitializeConditions for Integrator: '<S39>/Integrator'
+  rtX.Integrator_CSTATE = rtP.PIDController_InitialConditio_i;
 
-  // InitializeConditions for Integrator: '<S35>/Filter'
+  // InitializeConditions for Integrator: '<S34>/Filter'
   rtX.Filter_CSTATE = rtP.PIDController_InitialConditionF;
 
-  // InitializeConditions for Integrator: '<S92>/Integrator'
+  // InitializeConditions for Integrator: '<S91>/Integrator'
   rtX.Integrator_CSTATE_f = rtP.PIDController1_InitialConditi_l;
 
-  // InitializeConditions for Integrator: '<S87>/Filter'
+  // InitializeConditions for Integrator: '<S86>/Filter'
   rtX.Filter_CSTATE_d = rtP.PIDController1_InitialCondition;
 
-  // InitializeConditions for Integrator: '<S144>/Integrator'
+  // InitializeConditions for Integrator: '<S143>/Integrator'
   rtX.Integrator_CSTATE_j = rtP.PIDController2_InitialConditi_k;
 
-  // InitializeConditions for Integrator: '<S139>/Filter'
+  // InitializeConditions for Integrator: '<S138>/Filter'
   rtX.Filter_CSTATE_j = rtP.PIDController2_InitialCondition;
 }
 

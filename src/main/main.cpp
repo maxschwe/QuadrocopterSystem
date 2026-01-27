@@ -3,13 +3,21 @@
 #include <freertos/task.h>
 #include "driver/uart.h"
 #include <string.h>
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #include "tests.h"
 #include "drone.h"
 #include "controller_3dof.h"
 #include "mpu6050.h"
 
-const bool USE_ON_DEVICE_CONTROLLER = false; // Set to false for remote control
+#define RADIANS_TO_DEGREES 57.2957795131
+
+const bool USE_ON_DEVICE_CONTROLLER = true; // Set to false for remote control
+const bool REMOTE_CONTROL_ENABLED = false;
 
 void drone_control(void*) {
     Drone drone(
@@ -33,18 +41,21 @@ void drone_control(void*) {
     uart_param_config(uart_num, &uart_config);
     uart_driver_install(uart_num, 1024, 0, 0, NULL, 0);
 
-    bool motorsActive = false;
     ControllerInputs inputs = drone.getInputs();
     uint16_t lastToggleState = inputs.toggle;
 
-    ESP_LOGI("TASK", "Waiting for controller toggle...");
-    while (true) {
-        inputs = drone.getInputs();
-        if (inputs.toggle != lastToggleState) {
-            lastToggleState = inputs.toggle;
-            break;
+    bool motorsActive = !REMOTE_CONTROL_ENABLED;
+
+    if (REMOTE_CONTROL_ENABLED) {
+        ESP_LOGI("TASK", "Waiting for controller toggle...");
+        while (true) {
+            inputs = drone.getInputs();
+            if (inputs.toggle != lastToggleState) {
+                lastToggleState = inputs.toggle;
+                break;
+            }
+            vTaskDelay(pdMS_TO_TICKS(10));
         }
-        vTaskDelay(pdMS_TO_TICKS(10));
     }
 
     Controller controller;
@@ -56,33 +67,58 @@ void drone_control(void*) {
     int rx_idx = 0;
 
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = pdMS_TO_TICKS(5);
+    const TickType_t xFrequency = pdMS_TO_TICKS(5); // 5ms loop time = 200Hz
 
     while (true) {
         inputs = drone.getInputs();
         VectorFloat orientation = drone.rpy();
 
-        // 1. Toggle Motor State
-        if (inputs.toggle != lastToggleState) {
-            lastToggleState = inputs.toggle;
-            motorsActive = !motorsActive;
-            ESP_LOGI("TASK", "Motors active: %s", motorsActive ? "ON" : "OFF");
-        }
+        uint8_t byte;
 
-        // 2. Failsafe: Connection Timeout
-        if (motorsActive && (xTaskGetTickCount() - inputs.last_update > pdMS_TO_TICKS(1000))) {
-            motorsActive = false;
-            ESP_LOGW("TASK", "Connection lost - Deactivating");
+        while (uart_read_bytes(uart_num, &byte, 1, 0) > 0) {
+            if (byte == '\n' || byte == '\r') {
+                if (rx_idx > 0) {
+                    rx_buffer[rx_idx] = '\0';
+                    // Parse: Expecting #p,i,d or #TRAJ,type,dur,amp,freq
+                    float p_val, i_val, d_val;
+                    
+                    float external_roll_input = 0.0f;
+                    if (sscanf(rx_buffer, "#%f,%f,%f", &p_val, &i_val, &d_val) == 3) {
+                        Controller::rtP.PIDController_P = p_val;
+                        Controller::rtP.PIDController_I = i_val;
+                        Controller::rtP.PIDController_D = d_val;
+                        ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", p_val, i_val, d_val);
+                    } else if (sscanf(rx_buffer, "#TG,%f", &external_roll_input) == 1) {
+                        inputs.roll += external_roll_input;
+                    } else {
+                        ESP_LOGW("PID", "Invalid command: %s", rx_buffer);
+                    }
+                    rx_idx = 0; // Reset for next line
+                    break;
+                }
+            } else if (rx_idx < sizeof(rx_buffer) - 1) {
+                rx_buffer[rx_idx++] = byte;
+            }
+        }
+        
+        if (REMOTE_CONTROL_ENABLED) {
+            // 1. Toggle Motor State
+            if (inputs.toggle != lastToggleState) {
+                lastToggleState = inputs.toggle;
+                motorsActive = !motorsActive;
+                ESP_LOGI("TASK", "Motors active: %s", motorsActive ? "ON" : "OFF");
+            }
+
+            // 2. Failsafe: Connection Timeout
+            if (motorsActive && (xTaskGetTickCount() - inputs.last_update > pdMS_TO_TICKS(1000))) {
+                motorsActive = false;
+                ESP_LOGW("TASK", "Connection lost - Deactivating");
+            }
         }
 
         float t1 = 0, t2 = 0, t3 = 0, t4 = 0;
 
         if (motorsActive) {
-            // ALWAYS Output measurements to Serial
-            printf("#%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-                   orientation.x, orientation.y, orientation.z,
-                   inputs.roll, inputs.pitch, inputs.yaw, inputs.throttle);
-
             if (USE_ON_DEVICE_CONTROLLER) {
                 // INTERNAL MODE
                 controller.rtU.roll_target = inputs.roll;
@@ -99,9 +135,18 @@ void drone_control(void*) {
                 t2 = controller.rtY.throttle_2;
                 t3 = controller.rtY.throttle_3;
                 t4 = controller.rtY.throttle_4;
+
+                printf("#%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",
+                   orientation.x * RADIANS_TO_DEGREES, orientation.y * RADIANS_TO_DEGREES, orientation.z * RADIANS_TO_DEGREES,
+                   inputs.roll * RADIANS_TO_DEGREES, inputs.pitch * RADIANS_TO_DEGREES, inputs.yaw * RADIANS_TO_DEGREES, inputs.throttle,
+                   t1, t2, t3, t4);
+                
             } else {
+                printf("#%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
+                   orientation.x , orientation.y, orientation.z,
+                   inputs.roll, inputs.pitch, inputs.yaw, inputs.throttle);
+                   
                 // EXTERNAL MODE: Wait for throttles back via Serial
-                uint8_t byte;
                 while (uart_read_bytes(uart_num, &byte, 1, 0) > 0) {
                     if (byte == '\n' || byte == '\r') {
                         if (rx_idx > 0) {
@@ -120,16 +165,16 @@ void drone_control(void*) {
             drone.setThrottles(0, 0, 0, 0);
         }
 
-        xTaskDelayUntil(&xLastWakeTime, xFrequency);
+        BaseType_t thisCallDelayedLoop = xTaskDelayUntil(&xLastWakeTime, xFrequency);
+        if (thisCallDelayedLoop != pdTRUE) {
+            ESP_LOGW("TASK", "Delayed");
+        }
     }
 }
 
- extern "C" void app_main(void)
-
+extern "C" void app_main(void)
 {
-
     start_onboard_led_test();
 
     xTaskCreate(&drone_control, "drone_control", 16384, NULL, 5, NULL);
-
 } 

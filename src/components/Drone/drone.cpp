@@ -24,14 +24,16 @@
 #define RECEIVER_MIN 343
 #define RECEIVER_MAX 1705
 
+#define DEGREES_TO_RADIANS 0.01745329252
+
 #define THROTTLE_MIN_MAP 2
 #define THROTTLE_MAX_MAP 10
-#define YAW_MIN_MAP 180
-#define YAW_MAX_MAP -180
-#define PITCH_MIN_MAP 20
-#define PITCH_MAX_MAP -20
-#define ROLL_MIN_MAP 20
-#define ROLL_MAX_MAP -20
+#define YAW_MIN_MAP 180 * DEGREES_TO_RADIANS
+#define YAW_MAX_MAP -180 * DEGREES_TO_RADIANS
+#define PITCH_MIN_MAP 20 * DEGREES_TO_RADIANS
+#define PITCH_MAX_MAP -20 * DEGREES_TO_RADIANS
+#define ROLL_MIN_MAP 20 * DEGREES_TO_RADIANS
+#define ROLL_MAX_MAP -20 * DEGREES_TO_RADIANS
 
 const char* TAG = "Drone";
 
@@ -150,8 +152,6 @@ void IRAM_ATTR Drone::wrapperMPUInterruptProcessor(void *drone) {
 void IRAM_ATTR Drone::mpuInterruptProcessor() {
     ESP_LOGI(TAG, "Starting MPU Interrupt Processor Task...");
 
-    const float RAD_TO_DEG = 180.0f / M_PI;
-
     while (1) {
         // Wait until notified of an interrupt
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -186,7 +186,7 @@ void IRAM_ATTR Drone::mpuInterruptProcessor() {
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-        VectorFloat rpy_vec(ypr[2] * RAD_TO_DEG, ypr[1] * RAD_TO_DEG, ypr[0] * RAD_TO_DEG);
+        VectorFloat rpy_vec(ypr[2], ypr[1], ypr[0]);
 
         xQueueOverwrite(mpuMailbox, &rpy_vec);
     }
@@ -236,13 +236,13 @@ static uint16_t decode_channel(uint8_t msb, uint8_t lsb) {
     return ((msb & 0x07) << 8) | lsb;
 }
 
-static float lin_map(uint16_t val, int16_t out_min, int16_t out_max) {
+static float lin_map(uint16_t val, float out_min, float out_max) {
     return out_min + (float)(val - RECEIVER_MIN) * (out_max - out_min) / (RECEIVER_MAX - RECEIVER_MIN);
 }
 
 void Drone::startReceiver() {
     uart_config_t uart_config = {
-        .baud_rate = 115200,        // SRXL usually ~115200
+        .baud_rate = 115200,        // SRXL usually ~115200s
         .data_bits = UART_DATA_8_BITS,
         .parity    = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
@@ -333,6 +333,8 @@ void Drone::uartTask() {
     uint8_t read_buf[128];
     uint8_t uart_buffer[RX_BUF_SIZE];
     uint32_t uart_buffer_len = 0;
+
+    this->inputs.throttle = 2.0f;
 
     while (1) {
         int len = uart_read_bytes(UART_NUM, read_buf, sizeof(read_buf), pdMS_TO_TICKS(TIMEOUT_UART));

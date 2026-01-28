@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.170
+// Model version                  : 1.128
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Wed Jan 28 17:18:42 2026
+// C/C++ source code generated on : Tue Jan 27 11:00:42 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -25,7 +25,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_D
   //  Referenced by: '<S32>/Derivative Gain'
 
-  0.249573148476834,
+  0.32,
 
   // Mask Parameter: PIDController1_D
   //  Referenced by: '<S84>/Derivative Gain'
@@ -50,7 +50,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S36>/Integral Gain'
 
-  0.281974792714875,
+  0.15,
 
   // Mask Parameter: PIDController_InitialConditionF
   //  Referenced by: '<S34>/Filter'
@@ -85,7 +85,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_N
   //  Referenced by: '<S42>/Filter Coefficient'
 
-  54.5397025421619,
+  100.0,
 
   // Mask Parameter: PIDController1_N
   //  Referenced by: '<S94>/Filter Coefficient'
@@ -100,7 +100,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_P
   //  Referenced by: '<S44>/Proportional Gain'
 
-  0.537937972347272,
+  0.82,
 
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S96>/Proportional Gain'
@@ -111,22 +111,6 @@ Controller::P Controller::rtP{
   //  Referenced by: '<S148>/Proportional Gain'
 
   0.0,
-
-  // Expression: E
-  //  Referenced by: '<Root>/MATLAB Function'
-
-  { 1.0, 0.0, 0.2, 0.0351, 1.0, -0.2, 0.0, -0.0351, 1.0, 0.0, -0.2, 0.0351, 1.0,
-    0.2, 0.0, -0.0351 },
-
-  // Expression: a
-  //  Referenced by: '<Root>/MATLAB Function'
-
-  0.0013,
-
-  // Expression: b
-  //  Referenced by: '<Root>/MATLAB Function'
-
-  8.5908,
 
   // Expression: 90
   //  Referenced by: '<Root>/Saturation'

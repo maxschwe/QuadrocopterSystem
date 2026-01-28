@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.170
+// Model version                  : 1.128
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Wed Jan 28 17:18:42 2026
+// C/C++ source code generated on : Tue Jan 27 11:00:42 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -23,12 +23,14 @@
 #include "rtwtypes.h"
 #include "rtw_continuous.h"
 #include "rtw_solver.h"
-#ifndef ODE1_INTG
-#define ODE1_INTG
+#include <cstring>
+#ifndef ODE3_INTG
+#define ODE3_INTG
 
-// ODE1 Integration Data
-struct ODE1_IntgData {
-  real_T *f[1];                        // derivatives
+// ODE3 Integration Data
+struct ODE3_IntgData {
+  real_T *y;                           // output
+  real_T *f[3];                        // derivatives
 };
 
 #endif
@@ -80,13 +82,21 @@ class Controller final
 
   // External inputs (root inport signals with default storage)
   struct ExtU {
-    real_T targets[4];                 // '<Root>/targets'
-    real_T y[3];                       // '<Root>/y'
+    real_T roll;                       // '<Root>/roll'
+    real_T pitch;                      // '<Root>/pitch'
+    real_T yaw;                        // '<Root>/yaw'
+    real_T roll_target;                // '<Root>/roll_target'
+    real_T pitch_target;               // '<Root>/pitch_target'
+    real_T yaw_target;                 // '<Root>/yaw_target'
+    real_T throttle;                   // '<Root>/throttle'
   };
 
   // External outputs (root outports fed by signals with default storage)
   struct ExtY {
-    real_T u[4];                       // '<Root>/u'
+    real_T throttle_1;                 // '<Root>/throttle_1'
+    real_T throttle_2;                 // '<Root>/throttle_2'
+    real_T throttle_3;                 // '<Root>/throttle_3'
+    real_T throttle_4;                 // '<Root>/throttle_4'
   };
 
   // Parameters (default storage)
@@ -151,15 +161,6 @@ class Controller final
     real_T PIDController2_P;           // Mask Parameter: PIDController2_P
                                           //  Referenced by: '<S148>/Proportional Gain'
 
-    real_T MATLABFunction_E[16];       // Expression: E
-                                          //  Referenced by: '<Root>/MATLAB Function'
-
-    real_T MATLABFunction_a;           // Expression: a
-                                          //  Referenced by: '<Root>/MATLAB Function'
-
-    real_T MATLABFunction_b;           // Expression: b
-                                          //  Referenced by: '<Root>/MATLAB Function'
-
     real_T Saturation_UpperSat;        // Expression: 90
                                           //  Referenced by: '<Root>/Saturation'
 
@@ -181,8 +182,9 @@ class Controller final
     boolean_T zCCacheNeedsReset;
     boolean_T derivCacheNeedsReset;
     boolean_T CTOutputIncnstWithState;
-    real_T odeF[1][6];
-    ODE1_IntgData intgData;
+    real_T odeY[6];
+    real_T odeF[3][6];
+    ODE3_IntgData intgData;
 
     //
     //  Sizes:
@@ -247,9 +249,6 @@ class Controller final
   // External outputs
   ExtY rtY;
 
-  // Tunable parameters
-  static P rtP;
-
   // model initialize function
   void initialize();
 
@@ -266,6 +265,9 @@ class Controller final
  private:
   // Block states
   DW rtDW;
+
+  // Tunable parameters
+  static P rtP;
 
   // Block continuous states
   X rtX;
@@ -289,7 +291,6 @@ class Controller final
 //  These blocks were eliminated from the model due to optimizations:
 //
 //  Block '<Root>/Scope' : Unused code path elimination
-//  Block '<Root>/Scope1' : Unused code path elimination
 
 
 //-

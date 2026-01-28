@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.170
+// Model version                  : 1.128
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Wed Jan 28 17:18:42 2026
+// C/C++ source code generated on : Tue Jan 27 11:00:42 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -19,7 +19,6 @@
 // Validation result: Not run
 //
 #include "controller_3dof.h"
-#include <cstring>
 #include <cmath>
 #include "rtwtypes.h"
 
@@ -27,57 +26,116 @@
 extern void controller_3dof_derivatives();
 
 //
-// This function updates continuous states using the ODE1 fixed-step
+// This function updates continuous states using the ODE3 fixed-step
 // solver algorithm
 //
 void Controller::rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
 {
+  // Solver Matrices
+  static const real_T rt_ODE3_A[3]{
+    1.0/2.0, 3.0/4.0, 1.0
+  };
+
+  static const real_T rt_ODE3_B[3][3]{
+    { 1.0/2.0, 0.0, 0.0 },
+
+    { 0.0, 3.0/4.0, 0.0 },
+
+    { 2.0/9.0, 1.0/3.0, 4.0/9.0 }
+  };
+
+  time_T t { rtsiGetT(si) };
+
   time_T tnew { rtsiGetSolverStopTime(si) };
 
   time_T h { rtsiGetStepSize(si) };
 
   real_T *x { rtsiGetContStates(si) };
 
-  ODE1_IntgData *id { static_cast<ODE1_IntgData *>(rtsiGetSolverData(si)) };
+  ODE3_IntgData *id { static_cast<ODE3_IntgData *>(rtsiGetSolverData(si)) };
+
+  real_T *y { id->y };
 
   real_T *f0 { id->f[0] };
 
+  real_T *f1 { id->f[1] };
+
+  real_T *f2 { id->f[2] };
+
+  real_T hB[3];
   int_T i;
   int_T nXc { 6 };
 
   rtsiSetSimTimeStep(si,MINOR_TIME_STEP);
+
+  // Save the state values at time t in y, we'll use x as ynew.
+  (void) std::memcpy(y, x,
+                     static_cast<uint_T>(nXc)*sizeof(real_T));
+
+  // Assumes that rtsiSetT and ModelOutputs are up-to-date
+  // f0 = f(t,y)
   rtsiSetdX(si, f0);
   controller_3dof_derivatives();
-  rtsiSetT(si, tnew);
-  for (i = 0; i < nXc; ++i) {
-    x[i] += h * f0[i];
+
+  // f(:,2) = feval(odefile, t + hA(1), y + f*hB(:,1), args(:)(*));
+  hB[0] = h * rt_ODE3_B[0][0];
+  for (i = 0; i < nXc; i++) {
+    x[i] = y[i] + (f0[i]*hB[0]);
   }
 
+  rtsiSetT(si, t + h*rt_ODE3_A[0]);
+  rtsiSetdX(si, f1);
+  this->step();
+  controller_3dof_derivatives();
+
+  // f(:,3) = feval(odefile, t + hA(2), y + f*hB(:,2), args(:)(*));
+  for (i = 0; i <= 1; i++) {
+    hB[i] = h * rt_ODE3_B[1][i];
+  }
+
+  for (i = 0; i < nXc; i++) {
+    x[i] = y[i] + (f0[i]*hB[0] + f1[i]*hB[1]);
+  }
+
+  rtsiSetT(si, t + h*rt_ODE3_A[1]);
+  rtsiSetdX(si, f2);
+  this->step();
+  controller_3dof_derivatives();
+
+  // tnew = t + hA(3);
+  // ynew = y + f*hB(:,3);
+  for (i = 0; i <= 2; i++) {
+    hB[i] = h * rt_ODE3_B[2][i];
+  }
+
+  for (i = 0; i < nXc; i++) {
+    x[i] = y[i] + (f0[i]*hB[0] + f1[i]*hB[1] + f2[i]*hB[2]);
+  }
+
+  rtsiSetT(si, tnew);
   rtsiSetSimTimeStep(si,MAJOR_TIME_STEP);
 }
 
 // Model step function
 void Controller::step()
 {
-  real_T A[16];
-  real_T B_0[4];
-  real_T c_data[4];
-  real_T throttle[4];
+  real_T b_data[4];
+  real_T rtb_Saturation[4];
+  real_T rtb_u[4];
+  real_T rtb_Saturation_0;
+  real_T rtb_Saturation_1;
+  real_T rtb_Saturation_2;
+  real_T rtb_Saturation_3;
   real_T rtb_Sum1;
   real_T rtb_Sum2;
   real_T rtb_Sum_e;
-  real_T s;
-  real_T smax;
-  int32_T b_a;
-  int32_T c_k;
-  int32_T f;
-  int32_T ijA;
-  int32_T j;
-  int32_T jA;
-  int32_T jj;
-  int8_T ipiv[4];
-  int8_T tmp_data[4];
-  int8_T ipiv_0;
+  real_T tmp;
+  int32_T i;
+  int32_T rtb_Saturation_tmp;
+  static const real_T a[16]{ 0.25, 0.25, 0.25, 0.25, 0.0, -2.5, 0.0, 2.5, 2.5,
+    0.0, -2.5, 0.0, 7.1225, -7.1225, 7.1225, -7.1225 };
+
+  int32_T b_size_idx_0;
   if ((&rtM)->isMajorTimeStep()) {
     // set solver stop time
     rtsiSetSolverStopTime(&(&rtM)->solverInfo,(((&rtM)->Timing.clockTick0+1)*
@@ -90,10 +148,10 @@ void Controller::step()
   }
 
   // Sum: '<Root>/Sum' incorporates:
-  //   Inport: '<Root>/targets'
-  //   Inport: '<Root>/y'
+  //   Inport: '<Root>/roll'
+  //   Inport: '<Root>/roll_target'
 
-  rtb_Sum_e = rtU.targets[1] - rtU.y[0];
+  rtb_Sum_e = rtU.roll_target - rtU.roll;
 
   // Gain: '<S42>/Filter Coefficient' incorporates:
   //   Gain: '<S32>/Derivative Gain'
@@ -104,10 +162,10 @@ void Controller::step()
     * rtP.PIDController_N;
 
   // Sum: '<Root>/Sum1' incorporates:
-  //   Inport: '<Root>/targets'
-  //   Inport: '<Root>/y'
+  //   Inport: '<Root>/pitch'
+  //   Inport: '<Root>/pitch_target'
 
-  rtb_Sum1 = rtU.targets[2] - rtU.y[1];
+  rtb_Sum1 = rtU.pitch_target - rtU.pitch;
 
   // Gain: '<S94>/Filter Coefficient' incorporates:
   //   Gain: '<S84>/Derivative Gain'
@@ -118,10 +176,10 @@ void Controller::step()
     rtX.Filter_CSTATE_d) * rtP.PIDController1_N;
 
   // Sum: '<Root>/Sum2' incorporates:
-  //   Inport: '<Root>/targets'
-  //   Inport: '<Root>/y'
+  //   Inport: '<Root>/yaw'
+  //   Inport: '<Root>/yaw_target'
 
-  rtb_Sum2 = rtU.targets[3] - rtU.y[2];
+  rtb_Sum2 = rtU.yaw_target - rtU.yaw;
 
   // Gain: '<S146>/Filter Coefficient' incorporates:
   //   Gain: '<S136>/Derivative Gain'
@@ -131,181 +189,119 @@ void Controller::step()
   rtDW.FilterCoefficient_d = (rtP.PIDController2_D * rtb_Sum2 -
     rtX.Filter_CSTATE_j) * rtP.PIDController2_N;
 
-  // MATLAB Function: '<Root>/MATLAB Function' incorporates:
+  // SignalConversion generated from: '<S1>/ SFunction ' incorporates:
   //   Gain: '<S148>/Proportional Gain'
   //   Gain: '<S44>/Proportional Gain'
   //   Gain: '<S96>/Proportional Gain'
-  //   Inport: '<Root>/targets'
+  //   Inport: '<Root>/throttle'
   //   Integrator: '<S143>/Integrator'
   //   Integrator: '<S39>/Integrator'
   //   Integrator: '<S91>/Integrator'
-  //   SignalConversion generated from: '<S1>/ SFunction '
+  //   MATLAB Function: '<Root>/MATLAB Function'
   //   Sum: '<S100>/Sum'
   //   Sum: '<S152>/Sum'
   //   Sum: '<S48>/Sum'
 
-  B_0[0] = rtU.targets[0];
-  B_0[1] = (rtP.PIDController_P * rtb_Sum_e + rtX.Integrator_CSTATE) +
-    rtDW.FilterCoefficient;
-  B_0[2] = (rtP.PIDController1_P * rtb_Sum1 + rtX.Integrator_CSTATE_f) +
-    rtDW.FilterCoefficient_p;
-  B_0[3] = (rtP.PIDController2_P * rtb_Sum2 + rtX.Integrator_CSTATE_j) +
-    rtDW.FilterCoefficient_d;
-  std::memcpy(&A[0], &rtP.MATLABFunction_E[0], sizeof(real_T) << 4U);
-  ipiv[0] = 1;
-  ipiv[1] = 2;
-  ipiv[2] = 3;
-  ipiv[3] = 4;
-  for (j = 0; j < 3; j++) {
-    jj = j * 5;
-    jA = 5 - j;
-    b_a = 0;
-    smax = std::abs(A[jj]);
-    for (c_k = 2; c_k < jA; c_k++) {
-      s = std::abs(A[(jj + c_k) - 1]);
-      if (s > smax) {
-        b_a = c_k - 1;
-        smax = s;
-      }
-    }
+  rtb_Saturation[0] = rtU.throttle;
+  rtb_Saturation[1] = (rtP.PIDController_P * rtb_Sum_e + rtX.Integrator_CSTATE)
+    + rtDW.FilterCoefficient;
+  rtb_Saturation[2] = (rtP.PIDController1_P * rtb_Sum1 + rtX.Integrator_CSTATE_f)
+    + rtDW.FilterCoefficient_p;
+  rtb_Saturation[3] = (rtP.PIDController2_P * rtb_Sum2 + rtX.Integrator_CSTATE_j)
+    + rtDW.FilterCoefficient_d;
 
-    if (A[jj + b_a] != 0.0) {
-      if (b_a != 0) {
-        jA = j + b_a;
-        ipiv[j] = static_cast<int8_T>(jA + 1);
-        smax = A[j];
-        A[j] = A[jA];
-        A[jA] = smax;
-        smax = A[j + 4];
-        A[j + 4] = A[jA + 4];
-        A[jA + 4] = smax;
-        smax = A[j + 8];
-        A[j + 8] = A[jA + 8];
-        A[jA + 8] = smax;
-        smax = A[j + 12];
-        A[j + 12] = A[jA + 12];
-        A[jA + 12] = smax;
-      }
+  // MATLAB Function: '<Root>/MATLAB Function'
+  rtb_Saturation_0 = 0.0;
+  rtb_Saturation_1 = 0.0;
+  rtb_Saturation_2 = 0.0;
+  rtb_Saturation_3 = 0.0;
+  for (i = 0; i < 4; i++) {
+    tmp = rtb_Saturation[i];
+    rtb_Saturation_tmp = i << 2;
+    rtb_Saturation_0 += a[rtb_Saturation_tmp] * tmp;
+    rtb_Saturation_1 += a[rtb_Saturation_tmp + 1] * tmp;
+    rtb_Saturation_2 += a[rtb_Saturation_tmp + 2] * tmp;
+    rtb_Saturation_3 += a[rtb_Saturation_tmp + 3] * tmp;
+    rtb_u[i] = 0.0;
+  }
 
-      jA = (jj - j) + 4;
-      for (b_a = jj + 2; b_a <= jA; b_a++) {
-        A[b_a - 1] /= A[jj];
-      }
-    }
-
-    jA = jj + 6;
-    b_a = 2 - j;
-    for (c_k = 0; c_k <= b_a; c_k++) {
-      smax = A[((c_k << 2) + jj) + 4];
-      if (smax != 0.0) {
-        f = (jA - j) + 2;
-        for (ijA = jA; ijA <= f; ijA++) {
-          A[ijA - 1] += A[((jj + ijA) - jA) + 1] * -smax;
-        }
-      }
-
-      jA += 4;
-    }
-
-    ipiv_0 = ipiv[j];
-    if (j + 1 != ipiv_0) {
-      smax = B_0[j];
-      B_0[j] = B_0[ipiv_0 - 1];
-      B_0[ipiv_0 - 1] = smax;
+  rtb_Saturation[3] = rtb_Saturation_3;
+  rtb_Saturation[2] = rtb_Saturation_2;
+  rtb_Saturation[1] = rtb_Saturation_1;
+  rtb_Saturation[0] = rtb_Saturation_0;
+  rtb_Saturation_tmp = 0;
+  for (i = 0; i < 4; i++) {
+    if (rtb_Saturation[i] / 0.0013 >= 0.0) {
+      rtb_Saturation_tmp++;
     }
   }
 
-  for (j = 0; j < 4; j++) {
-    jj = j << 2;
-    if (B_0[j] != 0.0) {
-      for (jA = j + 2; jA < 5; jA++) {
-        B_0[jA - 1] -= A[(jA + jj) - 1] * B_0[j];
-      }
+  b_size_idx_0 = rtb_Saturation_tmp;
+  rtb_Saturation_tmp = 0;
+  for (i = 0; i < 4; i++) {
+    tmp = rtb_Saturation[i] / 0.0013;
+    if (tmp >= 0.0) {
+      b_data[rtb_Saturation_tmp] = tmp;
+      rtb_Saturation_tmp++;
     }
   }
 
-  for (j = 3; j >= 0; j--) {
-    jj = j << 2;
-    smax = B_0[j];
-    if (smax != 0.0) {
-      B_0[j] = smax / A[j + jj];
-      for (jA = 0; jA < j; jA++) {
-        B_0[jA] -= A[jA + jj] * B_0[j];
-      }
+  for (rtb_Saturation_tmp = 0; rtb_Saturation_tmp < b_size_idx_0;
+       rtb_Saturation_tmp++) {
+    b_data[rtb_Saturation_tmp] = std::sqrt(b_data[rtb_Saturation_tmp]);
+  }
+
+  rtb_Saturation_tmp = 0;
+  for (i = 0; i < 4; i++) {
+    if (rtb_Saturation[i] / 0.0013 >= 0.0) {
+      rtb_u[i] = b_data[rtb_Saturation_tmp] + 8.5908;
+      rtb_Saturation_tmp++;
     }
   }
 
-  throttle[0] = 0.0;
-  throttle[1] = 0.0;
-  throttle[2] = 0.0;
-  throttle[3] = 0.0;
-  jj = 0;
-  for (j = 0; j < 4; j++) {
-    if (B_0[j] / rtP.MATLABFunction_a >= 0.0) {
-      jj++;
-    }
-  }
-
-  jA = jj;
-  jj = 0;
-  for (j = 0; j < 4; j++) {
-    if (B_0[j] / rtP.MATLABFunction_a >= 0.0) {
-      tmp_data[jj] = static_cast<int8_T>(j);
-      jj++;
-    }
-  }
-
-  for (jj = 0; jj < jA; jj++) {
-    c_data[jj] = B_0[tmp_data[jj]] / rtP.MATLABFunction_a;
-    c_data[jj] = std::sqrt(c_data[jj]);
-    throttle[tmp_data[jj]] = c_data[jj] + rtP.MATLABFunction_b;
-  }
-
-  // Saturate: '<Root>/Saturation' incorporates:
-  //   MATLAB Function: '<Root>/MATLAB Function'
-
-  if (throttle[0] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[0] = rtP.Saturation_UpperSat;
-  } else if (throttle[0] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[0] = rtP.Saturation_LowerSat;
+  // Saturate: '<Root>/Saturation'
+  if (rtb_u[0] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_1'
+    rtY.throttle_1 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[0] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_1'
+    rtY.throttle_1 = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[0] = throttle[0];
+    // Outport: '<Root>/throttle_1'
+    rtY.throttle_1 = rtb_u[0];
   }
 
-  if (throttle[1] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[1] = rtP.Saturation_UpperSat;
-  } else if (throttle[1] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[1] = rtP.Saturation_LowerSat;
+  if (rtb_u[1] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_2'
+    rtY.throttle_2 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[1] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_2'
+    rtY.throttle_2 = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[1] = throttle[1];
+    // Outport: '<Root>/throttle_2'
+    rtY.throttle_2 = rtb_u[1];
   }
 
-  if (throttle[2] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[2] = rtP.Saturation_UpperSat;
-  } else if (throttle[2] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[2] = rtP.Saturation_LowerSat;
+  if (rtb_u[2] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_3'
+    rtY.throttle_3 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[2] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_3'
+    rtY.throttle_3 = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[2] = throttle[2];
+    // Outport: '<Root>/throttle_3'
+    rtY.throttle_3 = rtb_u[2];
   }
 
-  if (throttle[3] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[3] = rtP.Saturation_UpperSat;
-  } else if (throttle[3] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[3] = rtP.Saturation_LowerSat;
+  if (rtb_u[3] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttle_4'
+    rtY.throttle_4 = rtP.Saturation_UpperSat;
+  } else if (rtb_u[3] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttle_4'
+    rtY.throttle_4 = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[3] = throttle[3];
+    // Outport: '<Root>/throttle_4'
+    rtY.throttle_4 = rtb_u[3];
   }
 
   // End of Saturate: '<Root>/Saturation'
@@ -394,12 +390,15 @@ void Controller::initialize()
   rtsiSetSimTimeStep(&(&rtM)->solverInfo, MAJOR_TIME_STEP);
   rtsiSetIsMinorTimeStepWithModeChange(&(&rtM)->solverInfo, false);
   rtsiSetIsContModeFrozen(&(&rtM)->solverInfo, false);
+  (&rtM)->intgData.y = (&rtM)->odeY;
   (&rtM)->intgData.f[0] = (&rtM)->odeF[0];
+  (&rtM)->intgData.f[1] = (&rtM)->odeF[1];
+  (&rtM)->intgData.f[2] = (&rtM)->odeF[2];
   (&rtM)->contStates = ((X *) &rtX);
   (&rtM)->contStateDisabled = ((XDis *) &rtXDis);
   (&rtM)->Timing.tStart = (0.0);
   rtsiSetSolverData(&(&rtM)->solverInfo, static_cast<void *>(&(&rtM)->intgData));
-  rtsiSetSolverName(&(&rtM)->solverInfo,"ode1");
+  rtsiSetSolverName(&(&rtM)->solverInfo,"ode3");
   (&rtM)->setTPtr(&(&rtM)->Timing.tArray[0]);
   (&rtM)->Timing.stepSize0 = 0.005;
 

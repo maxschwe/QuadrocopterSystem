@@ -121,20 +121,20 @@ void drone_control(void*) {
         if (motorsActive) {
             if (USE_ON_DEVICE_CONTROLLER) {
                 // INTERNAL MODE
-                controller.rtU.roll_target = inputs.roll;
-                controller.rtU.pitch_target = inputs.pitch;
-                controller.rtU.yaw_target = inputs.yaw;
-                controller.rtU.throttle = inputs.throttle;
-                controller.rtU.roll = orientation.x;
-                controller.rtU.pitch = orientation.y;
-                controller.rtU.yaw = orientation.z;
+                controller.rtU.targets[0] = inputs.throttle;
+                controller.rtU.targets[1] = inputs.roll;
+                controller.rtU.targets[2] = inputs.pitch;
+                controller.rtU.targets[3] = inputs.yaw;
+                controller.rtU.y[0] = orientation.x;
+                controller.rtU.y[1] = orientation.y;
+                controller.rtU.y[2] = orientation.z;
 
                 controller.step();
                 
-                t1 = controller.rtY.throttle_1;
-                t2 = controller.rtY.throttle_2;
-                t3 = controller.rtY.throttle_3;
-                t4 = controller.rtY.throttle_4;
+                t1 = controller.rtY.u[0];
+                t2 = controller.rtY.u[1];
+                t3 = controller.rtY.u[2];
+                t4 = controller.rtY.u[3];
 
                 printf("#%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",
                    orientation.x * RADIANS_TO_DEGREES, orientation.y * RADIANS_TO_DEGREES, orientation.z * RADIANS_TO_DEGREES,

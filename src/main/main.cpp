@@ -26,13 +26,14 @@ void drone_control(void*) {
         GPIO_NUM_4, LEDC_CHANNEL_1,
         GPIO_NUM_18, LEDC_CHANNEL_2,
         GPIO_NUM_19, LEDC_CHANNEL_3,
-        GPIO_NUM_5
+        GPIO_NUM_5,
+        REMOTE_CONTROL_ENABLED
     );
 
     // Initialize UART for communication if using external controller
     const uart_port_t uart_num = UART_NUM_0;
     uart_config_t uart_config = {
-        .baud_rate = 115200,
+        .baud_rate = 921600,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
@@ -41,17 +42,16 @@ void drone_control(void*) {
     uart_param_config(uart_num, &uart_config);
     uart_driver_install(uart_num, 1024, 0, 0, NULL, 0);
 
-    ControllerInputs inputs = drone.getInputs();
-    uint16_t lastToggleState = inputs.toggle;
+    ReferenceInputs& referenceInputs = drone.getReferenceInputs();
+    uint16_t lastToggleState = referenceInputs.toggle;
 
     bool motorsActive = !REMOTE_CONTROL_ENABLED;
 
     if (REMOTE_CONTROL_ENABLED) {
         ESP_LOGI("TASK", "Waiting for controller toggle...");
         while (true) {
-            inputs = drone.getInputs();
-            if (inputs.toggle != lastToggleState) {
-                lastToggleState = inputs.toggle;
+            if (referenceInputs.toggle != lastToggleState) {
+                lastToggleState = referenceInputs.toggle;
                 break;
             }
             vTaskDelay(pdMS_TO_TICKS(10));
@@ -70,28 +70,47 @@ void drone_control(void*) {
     const TickType_t xFrequency = pdMS_TO_TICKS(5); // 5ms loop time = 200Hz
 
     while (true) {
-        inputs = drone.getInputs();
-        VectorFloat orientation = drone.rpy();
+        OrientationData orientation = drone.rpy();
+
+        if (motorsActive && (xTaskGetTickCount() - orientation.lastUpdate > pdMS_TO_TICKS(1000))) {
+            motorsActive = false;
+            ESP_LOGE("TASK", "MPU Connection lost - Deactivating");
+        }
+        
+        if (REMOTE_CONTROL_ENABLED) {
+            // 1. Toggle Motor State
+            if (referenceInputs.toggle != lastToggleState) {
+                lastToggleState = referenceInputs.toggle;
+                motorsActive = !motorsActive;
+                ESP_LOGI("TASK", "Motors active: %s", motorsActive ? "ON" : "OFF");
+            }
+
+            // 2. Failsafe: Connection Timeout
+            if (motorsActive && (xTaskGetTickCount() - referenceInputs.lastUpdate > pdMS_TO_TICKS(1000))) {
+                motorsActive = false;
+                ESP_LOGE("TASK", "Remote Controller Connection lost - Deactivating");
+            }
+        }
 
         uint8_t byte;
-
         while (uart_read_bytes(uart_num, &byte, 1, 0) > 0) {
             if (byte == '\n' || byte == '\r') {
                 if (rx_idx > 0) {
                     rx_buffer[rx_idx] = '\0';
                     // Parse: Expecting #p,i,d or #TRAJ,type,dur,amp,freq
-                    float p_val, i_val, d_val;
                     
-                    float external_roll_input = 0.0f;
-                    if (sscanf(rx_buffer, "#%f,%f,%f", &p_val, &i_val, &d_val) == 3) {
-                        Controller::rtP.PIDController_P = p_val;
-                        Controller::rtP.PIDController_I = i_val;
-                        Controller::rtP.PIDController_D = d_val;
-                        ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", p_val, i_val, d_val);
-                    } else if (sscanf(rx_buffer, "#TG,%f", &external_roll_input) == 1) {
-                        inputs.roll += external_roll_input;
+                    float input1, input2, input3;
+                    if (sscanf(rx_buffer, "#PID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller::rtP.PIDController_P_f = input1;
+                        Controller::rtP.PIDController_I_a = input2;
+                        Controller::rtP.PIDController_D_c = input3;
+                        ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#TR;%f", &input1) == 1) {
+                        referenceInputs.roll = input1;
+                    } else if (sscanf(rx_buffer, "#TT;%f", &input1) == 1) {
+                        referenceInputs.throttle = input1;
                     } else {
-                        ESP_LOGW("PID", "Invalid command: %s", rx_buffer);
+                        ESP_LOGW("ExternalInputs", "Invalid command: %s", rx_buffer);
                     }
                     rx_idx = 0; // Reset for next line
                     break;
@@ -100,34 +119,19 @@ void drone_control(void*) {
                 rx_buffer[rx_idx++] = byte;
             }
         }
-        
-        if (REMOTE_CONTROL_ENABLED) {
-            // 1. Toggle Motor State
-            if (inputs.toggle != lastToggleState) {
-                lastToggleState = inputs.toggle;
-                motorsActive = !motorsActive;
-                ESP_LOGI("TASK", "Motors active: %s", motorsActive ? "ON" : "OFF");
-            }
-
-            // 2. Failsafe: Connection Timeout
-            if (motorsActive && (xTaskGetTickCount() - inputs.last_update > pdMS_TO_TICKS(1000))) {
-                motorsActive = false;
-                ESP_LOGW("TASK", "Connection lost - Deactivating");
-            }
-        }
 
         float t1 = 0, t2 = 0, t3 = 0, t4 = 0;
 
         if (motorsActive) {
             if (USE_ON_DEVICE_CONTROLLER) {
                 // INTERNAL MODE
-                controller.rtU.targets[0] = inputs.throttle;
-                controller.rtU.targets[1] = inputs.roll;
-                controller.rtU.targets[2] = inputs.pitch;
-                controller.rtU.targets[3] = inputs.yaw;
-                controller.rtU.y[0] = orientation.x;
-                controller.rtU.y[1] = orientation.y;
-                controller.rtU.y[2] = orientation.z;
+                controller.rtU.w[0] = referenceInputs.throttle;
+                controller.rtU.w[1] = referenceInputs.roll;
+                controller.rtU.w[2] = referenceInputs.pitch;
+                controller.rtU.w[3] = referenceInputs.yaw;
+                controller.rtU.y[0] = orientation.roll;
+                controller.rtU.y[1] = orientation.pitch;
+                controller.rtU.y[2] = orientation.yaw;
 
                 controller.step();
                 
@@ -136,15 +140,17 @@ void drone_control(void*) {
                 t3 = controller.rtY.u[2];
                 t4 = controller.rtY.u[3];
 
-                printf("#%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",
-                   orientation.x * RADIANS_TO_DEGREES, orientation.y * RADIANS_TO_DEGREES, orientation.z * RADIANS_TO_DEGREES,
-                   inputs.roll * RADIANS_TO_DEGREES, inputs.pitch * RADIANS_TO_DEGREES, inputs.yaw * RADIANS_TO_DEGREES, inputs.throttle,
-                   t1, t2, t3, t4);
+                printf("#%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\n",
+                   orientation.roll * RADIANS_TO_DEGREES, orientation.pitch * RADIANS_TO_DEGREES, orientation.yaw * RADIANS_TO_DEGREES,
+                   referenceInputs.roll * RADIANS_TO_DEGREES, referenceInputs.pitch * RADIANS_TO_DEGREES, referenceInputs.yaw * RADIANS_TO_DEGREES, referenceInputs.throttle,
+                   t1, t2, t3, t4,
+                   controller.rtY.y_pred[0] * RADIANS_TO_DEGREES, controller.rtY.y_pred[1] * RADIANS_TO_DEGREES, controller.rtY.y_pred[2] * RADIANS_TO_DEGREES
+                );
                 
             } else {
                 printf("#%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-                   orientation.x , orientation.y, orientation.z,
-                   inputs.roll, inputs.pitch, inputs.yaw, inputs.throttle);
+                   orientation.roll, orientation.pitch, orientation.yaw,
+                   referenceInputs.roll, referenceInputs.pitch, referenceInputs.yaw, referenceInputs.throttle);
                    
                 // EXTERNAL MODE: Wait for throttles back via Serial
                 while (uart_read_bytes(uart_num, &byte, 1, 0) > 0) {

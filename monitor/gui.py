@@ -14,7 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Default configuration
 DEFAULT_PORT = 'COM4'
-BAUD_RATE = 115200
+BAUD_RATE = 921600
 
 class DroneMonitorApp:
     def __init__(self, root):
@@ -27,6 +27,7 @@ class DroneMonitorApp:
         self.running = False
         
         self.is_recording = False
+        self.log_file = None
         self.recording_trajectory_type = ""
         self.recorded_data = []
         self.record_start_time = None
@@ -94,6 +95,17 @@ class DroneMonitorApp:
         self.error_lbl = ttk.Label(traj_frame, text="Error: N/A")
         self.error_lbl.pack(side="left", padx=10)
 
+        # --- Throttle Control Frame ---
+        throttle_frame = ttk.LabelFrame(root, text="Throttle Control")
+        throttle_frame.pack(fill="x", padx=10, pady=5)
+
+        self.throttle_val = tk.DoubleVar()
+        self.throttle_scale = ttk.Scale(throttle_frame, from_=0, to=10, variable=self.throttle_val, command=self.send_throttle)
+        self.throttle_scale.pack(side="left", fill="x", expand=True, padx=5, pady=5)
+        
+        self.throttle_lbl = ttk.Label(throttle_frame, text="0.0")
+        self.throttle_lbl.pack(side="right", padx=5)
+
         # --- Monitor Output ---
         term_frame = ttk.LabelFrame(root, text="Monitor Output")
         term_frame.pack(fill="both", expand=True, padx=10, pady=5)
@@ -153,27 +165,32 @@ class DroneMonitorApp:
         self.log_message("Disconnected.")
 
     def read_serial_loop(self):
+
         while self.running and self.serial_port and self.serial_port.is_open:
             try:
                 if self.serial_port.in_waiting:
                     line = self.serial_port.readline()
                     if line:
-                        
                         msg = line.decode('utf-8', errors='replace').strip()
                         timestamp = datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]
                         print(f"[{timestamp}] {msg}", flush=True)
+                        
+                        if self.is_recording and self.log_file:
+                            self.log_file.write(f"{timestamp}\t{msg}\n")
+                            self.log_file.flush()
+
                         # Output to terminal only
                         # Data Collection for Trajectory Error
                         if self.is_recording and msg.startswith('#'):
                             # Expected format: #Roll, Pitch, Yaw, RollTarget, ... (tab separated)
                             parts = msg[1:].split('\t')
-                            if len(parts) >= 4:
-                                try:
-                                    roll_meas = float(parts[0])
-                                    roll_target = float(parts[3])
-                                    self.recorded_data.append((time.time(), roll_target, roll_meas))
-                                except ValueError:
-                                    pass
+                            try:
+                                roll_meas = float(parts[0])
+                                roll_target = float(parts[3])
+                                roll_model = float(parts[11])
+                                self.recorded_data.append((time.time(), roll_target, roll_meas, roll_model))
+                            except ValueError:
+                                print(f"[{timestamp}] Data Parse Error: {msg}", flush=True)
 
                             passed_time = time.time() - self.record_start_time if self.record_start_time else 0
 
@@ -182,7 +199,7 @@ class DroneMonitorApp:
                             
                             value_in_radians = math.radians(value)
 
-                            msg = f"#TG,{value_in_radians}\n".encode('utf-8')
+                            msg = f"#TR;{value_in_radians}\n".encode('utf-8')
                             # print(f"[{timestamp}] Sending: {msg.decode().strip()}", flush=True)
 
                             self.serial_port.write(msg)
@@ -223,9 +240,9 @@ class DroneMonitorApp:
             i = float(i_val)
             d = float(d_val)
             
-            # Format expected by main.cpp: #p,i,d
+            # Format expected by main.cpp: #PID;p,i,d
             # Using formatting to ensure significant digits if needed, though default float str is usually fine
-            cmd = f"#{p},{i},{d}\n"
+            cmd = f"#PID;{p},{i},{d}\n"
             
             self.serial_port.write(cmd.encode('utf-8'))
             self.log_message(f"Sent: {cmd.strip()}")
@@ -234,6 +251,16 @@ class DroneMonitorApp:
             self.log_message("Error: PID values must be valid numbers")
         except Exception as e:
             self.log_message(f"Error sending PID: {e}")
+
+    def send_throttle(self, val):
+        try:
+            val_float = float(val)
+            self.throttle_lbl.configure(text=f"{val_float:.1f}")
+            if self.serial_port and self.serial_port.is_open:
+                cmd = f"#TT;{val_float:.2f}\n"
+                self.serial_port.write(cmd.encode('utf-8'))
+        except Exception:
+            pass
 
     def start_trajectory(self):
         if not self.serial_port or not self.serial_port.is_open:
@@ -249,9 +276,18 @@ class DroneMonitorApp:
             self.record_start_time = time.time()
             self.start_traj_btn.configure(state="disabled")
             self.error_lbl.configure(text="Error: Recording...")
+            
+            # Open Log File
+            try:
+                filename = f"recordings/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.recording_trajectory_type}.txt"
+                self.log_file = open(filename, 'w')
+                self.log_message(f"Logging to {filename}")
+            except Exception as e:
+                self.log_message(f"Failed to open log file: {e}")
             self.is_recording = True
 
             self.log_message(f"Started Trajectory: {self.recording_trajectory_type}")
+
 
             # Schedule Stop
             self.root.after(int(20 * 1000), self.finish_trajectory)
@@ -261,6 +297,8 @@ class DroneMonitorApp:
 
     def finish_trajectory(self):
         self.is_recording = False
+        self.log_file.close()
+        self.log_file = None
         self.start_traj_btn.configure(state="normal")
         
         if not self.recorded_data:
@@ -276,8 +314,8 @@ class DroneMonitorApp:
         
         if len(self.recorded_data) > 1:
             for i in range(1, len(self.recorded_data)):
-                t0, ref0, meas0 = self.recorded_data[i-1]
-                t1, ref1, meas1 = self.recorded_data[i]
+                t0, ref0, meas0, model0 = self.recorded_data[i-1]
+                t1, ref1, meas1, model1 = self.recorded_data[i]
                 
                 dt = t1 - t0
                 # Trapezoidal approx for error? Or just rect at i?
@@ -304,12 +342,14 @@ class DroneMonitorApp:
         times = [d[0] - self.recorded_data[0][0] for d in self.recorded_data]
         targets = [d[1] for d in self.recorded_data]
         measured = [d[2] for d in self.recorded_data]
+        modeled = [d[3] for d in self.recorded_data]
 
         # Create Plot
         fig = Figure(figsize=(5, 3), dpi=100)
         ax = fig.add_subplot(111)
         ax.plot(times, targets, label='Target', linestyle='--', color='orange')
         ax.plot(times, measured, label='Measured', color='blue')
+        ax.plot(times, modeled, label='Modeled', color='green')
         
         ax.set_title(f"Trajectory: {self.recording_trajectory_type}")
         ax.set_xlabel('Time (s)')

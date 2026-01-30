@@ -11,7 +11,7 @@
 #include "esc_timer.h"
 
 
-struct ControllerInputs {
+struct ReferenceInputs {
 	float roll;
 	float pitch;
 	float yaw;
@@ -19,7 +19,15 @@ struct ControllerInputs {
 
 	uint16_t toggle;
 
-	TickType_t last_update;
+	TickType_t lastUpdate;
+};
+
+struct OrientationData {
+    float roll;
+    float pitch;
+    float yaw;
+
+    TickType_t lastUpdate;
 };
 
 class Drone {
@@ -29,14 +37,13 @@ class Drone {
               gpio_num_t rotor2_pin, ledc_channel_t rotor2_channel,
               gpio_num_t rotor3_pin, ledc_channel_t rotor3_channel,
               gpio_num_t rotor4_pin, ledc_channel_t rotor4_channel,
-              gpio_num_t mpu_interrupt_pin);
+              gpio_num_t mpu_interrupt_pin, bool remote_control_enabled);
 
         void setThrottles(float throttle1, float throttle2, float throttle3, float throttle4);
-        VectorFloat rpy();
+        OrientationData rpy();
         void printRpy();
 
-        void startReceiver();
-        ControllerInputs getInputs();
+        ReferenceInputs& getReferenceInputs();
 
     private:
         EscTimer esc_timer;
@@ -49,6 +56,7 @@ class Drone {
         TaskHandle_t mpuProcessingTaskHandle;
         QueueHandle_t mpuMailbox;
 
+        ReferenceInputs w;
 
         bool initMpu(gpio_num_t mpu_interrupt_pin);
 
@@ -59,10 +67,10 @@ class Drone {
         void mpuInterruptProcessor();
 
         void initRotors();
-
-        ControllerInputs inputs;
-        static void wrapperUartTask(void *drone);
-        void uartTask();
+        
+        void startRemoteControlReceiver();
+        static void wrapperRemoteControlReceiver(void *drone);
+        void remoteControlReceiver();
         void processFrame(uint8_t* frame);
         void parseUartBuffer(uint8_t* uart_buffer, uint32_t& uart_buffer_len);
 };

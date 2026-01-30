@@ -13,6 +13,8 @@ a = 0.0013;
 b = 8.5908;
 c = 0.0351;
 
+T_thrusters = 0.2;
+
 % Abstand Rotoren zu COG
 l = 0.20;
 
@@ -26,7 +28,6 @@ E = [
     l 0 -l 0;
     c -c c -c;
 ];
-E_inv = inv(E);
 
 % Systemmatrizen des linearisierten Modells
 A = [

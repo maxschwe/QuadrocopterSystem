@@ -60,7 +60,7 @@ Drone::Drone(
     gpio_num_t rotor2_pin, ledc_channel_t rotor2_channel,
     gpio_num_t rotor3_pin, ledc_channel_t rotor3_channel,
     gpio_num_t rotor4_pin, ledc_channel_t rotor4_channel,
-    gpio_num_t mpu_interrupt_pin) : 
+    gpio_num_t mpu_interrupt_pin, bool remote_control_enabled) : 
             esc_timer(timer_num),
             rotor1(rotor1_pin, rotor1_channel, this->esc_timer),
             rotor2(rotor2_pin, rotor2_channel, this->esc_timer),
@@ -74,8 +74,11 @@ Drone::Drone(
             vTaskDelay(pdMS_TO_TICKS(1000)); // Halt execution
         }
     }
-    
-    startReceiver();
+
+    if (remote_control_enabled) {
+        startRemoteControlReceiver();
+    }    
+
     initRotors();
     
     ESP_LOGI(TAG, "Setup Complete");
@@ -85,19 +88,18 @@ Drone::Drone(
 bool Drone::initMpu(gpio_num_t mpu_interrupt_pin) {
     ESP_LOGI(TAG, "Initializing MPU6050...");
 
-    mpuMailbox = xQueueCreate(1, sizeof(VectorFloat));
     initI2C();
-
+    
     mpu = MPU6050();
 	mpu.initialize();
-
+    
     if (!mpu.testConnection()) {
         ESP_LOGE(TAG, "MPU6050 connection test failed!");
         return false; // Return failure
     }
-
+    
 	mpu.dmpInitialize();
-
+    
 	// This need to be setup individually
 	// mpu.setXGyroOffset(220);
 	// mpu.setYGyroOffset(76);
@@ -106,9 +108,10 @@ bool Drone::initMpu(gpio_num_t mpu_interrupt_pin) {
     
     mpu.CalibrateAccel(6);
     mpu.CalibrateGyro(6);
-
+    
 	mpu.setDMPEnabled(true);
-
+    
+    this->mpuMailbox = xQueueCreate(1, sizeof(OrientationData));
     xTaskCreate(this->wrapperMPUInterruptProcessor, "mpu_processor", 4096, this, 10, &(this->mpuProcessingTaskHandle));
 
     gpio_config_t io_conf = {};
@@ -186,9 +189,9 @@ void IRAM_ATTR Drone::mpuInterruptProcessor() {
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-        VectorFloat rpy_vec(ypr[2], ypr[1], ypr[0]);
+        OrientationData orientation{ypr[2], ypr[1], ypr[0], xTaskGetTickCount()}; // Roll, Pitch, Yaw
 
-        xQueueOverwrite(mpuMailbox, &rpy_vec);
+        xQueueOverwrite(mpuMailbox, &orientation);
     }
 }
 
@@ -199,14 +202,14 @@ void Drone::initRotors() {
     ESP_LOGI(TAG, "Rotors initialized.");
 }
 
-VectorFloat Drone::rpy() {
-    VectorFloat rpy;
+OrientationData Drone::rpy() {
+    OrientationData rpy;
     if (xQueuePeek(mpuMailbox, &rpy, 0)) {
         return rpy;
     }
 
     ESP_LOGW(TAG, "Failed to peek data from MPU mailbox.");
-    return VectorFloat(0.0f, 0.0f, 0.0f);
+    return OrientationData{0.0f, 0.0f, 0.0f, 0};
 }
 
 // VectorFloat Drone::gyro() {
@@ -221,8 +224,8 @@ VectorFloat Drone::rpy() {
 // }
 
 void Drone::printRpy() {
-    VectorFloat rpy = this->rpy();
-    printf("Roll: %f, Pitch: %f, Yaw: %f\n", rpy.x, rpy.y, rpy.z);
+    OrientationData rpy = this->rpy();
+    printf("Roll: %f, Pitch: %f, Yaw: %f\n", rpy.roll, rpy.pitch, rpy.yaw);
 }
 
 void Drone::setThrottles(float throttle1, float throttle2, float throttle3, float throttle4) {
@@ -240,7 +243,7 @@ static float lin_map(uint16_t val, float out_min, float out_max) {
     return out_min + (float)(val - RECEIVER_MIN) * (out_max - out_min) / (RECEIVER_MAX - RECEIVER_MIN);
 }
 
-void Drone::startReceiver() {
+void Drone::startRemoteControlReceiver() {
     uart_config_t uart_config = {
         .baud_rate = 115200,        // SRXL usually ~115200s
         .data_bits = UART_DATA_8_BITS,
@@ -262,15 +265,15 @@ void Drone::startReceiver() {
         UART_PIN_NO_CHANGE
     ));
 
-    xTaskCreate(this->wrapperUartTask, "uart_task", 4096, this, 2, NULL);
+    xTaskCreate(this->wrapperRemoteControlReceiver, "remote_control_receiver", 4096, this, 2, NULL);
 }
 
-ControllerInputs Drone::getInputs() {
-    return this->inputs;
+ReferenceInputs& Drone::getReferenceInputs() {
+    return this->w;
 }
 
-void Drone::wrapperUartTask(void *drone) {
-    static_cast<Drone*>(drone)->uartTask();
+void Drone::wrapperRemoteControlReceiver(void *drone) {
+    static_cast<Drone*>(drone)->remoteControlReceiver();
 }
 
 void Drone::processFrame(uint8_t* frame) {
@@ -284,21 +287,21 @@ void Drone::processFrame(uint8_t* frame) {
         float roll = lin_map(roll_val, ROLL_MIN_MAP, ROLL_MAX_MAP);
         float pitch = lin_map(pitch_val, PITCH_MIN_MAP, PITCH_MAX_MAP);
 
-        this->inputs.roll = roll;
-        this->inputs.pitch = pitch;
-        this->inputs.throttle = throttle;
+        this->w.roll = roll;
+        this->w.pitch = pitch;
+        this->w.throttle = throttle;
         
-        this->inputs.last_update = xTaskGetTickCount();
+        this->w.lastUpdate = xTaskGetTickCount();
     } else if (frame_type == 0x5C) {
         uint16_t yaw_val = decode_channel(frame[6], frame[7]); // Channel 4
         uint16_t toggle_val = decode_channel(frame[2], frame[3]);
 
         float yaw = lin_map(yaw_val, YAW_MIN_MAP, YAW_MAX_MAP);
 
-        this->inputs.yaw = yaw;
-        this->inputs.toggle = toggle_val;
+        this->w.yaw = yaw;
+        this->w.toggle = toggle_val;
         
-        this->inputs.last_update = xTaskGetTickCount();
+        this->w.lastUpdate = xTaskGetTickCount();
     }
 }
 
@@ -329,12 +332,10 @@ void Drone::parseUartBuffer(uint8_t* uart_buffer, uint32_t& uart_buffer_len) {
     }
 }
 
-void Drone::uartTask() {
+void Drone::remoteControlReceiver() {
     uint8_t read_buf[128];
     uint8_t uart_buffer[RX_BUF_SIZE];
     uint32_t uart_buffer_len = 0;
-
-    this->inputs.throttle = 2.0f;
 
     while (1) {
         int len = uart_read_bytes(UART_NUM, read_buf, sizeof(read_buf), pdMS_TO_TICKS(TIMEOUT_UART));

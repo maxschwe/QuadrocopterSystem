@@ -1,5 +1,6 @@
 - Erstellen eines Controller Subsystems
 - Rechtsklick auf Subsystem -> Block Parameters -> Check "Treat as atomic unit"
+- dann Subsystem am besten noch zu
 - Embedded Coder runterladen
 - Quick Start ausführen in Embedded Coder Tab
     - Subsystem für Code Generation auswählen (nicht gesamtes Modell)

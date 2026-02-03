@@ -9,7 +9,7 @@
 //
 // Model version                  : 1.234
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Jan 30 16:12:57 2026
+// C/C++ source code generated on : Tue Feb  3 11:10:18 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -705,9 +705,9 @@ void Controller::step()
     (&rtM)->Timing.t[0] = rtsiGetSolverStopTime(&(&rtM)->solverInfo);
 
     {
-      // Update absolute timer for sample time: [0.005s, 0.0s]
+      // Update absolute timer for sample time: [0.01s, 0.0s]
       // The "clockTick1" counts the number of times the code of this task has
-      //  been executed. The resolution of this integer timer is 0.005, which is the step size
+      //  been executed. The resolution of this integer timer is 0.01, which is the step size
       //  of the task. Size of "clockTick1" ensures timer will not overflow during the
       //  application lifespan selected.
 
@@ -801,7 +801,7 @@ void Controller::initialize()
   rtsiSetSolverData(&(&rtM)->solverInfo, static_cast<void *>(&(&rtM)->intgData));
   rtsiSetSolverName(&(&rtM)->solverInfo,"ode1");
   (&rtM)->setTPtr(&(&rtM)->Timing.tArray[0]);
-  (&rtM)->Timing.stepSize0 = 0.005;
+  (&rtM)->Timing.stepSize0 = 0.01;
 
   {
     int32_T i;

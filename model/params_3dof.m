@@ -59,3 +59,9 @@ D = [
     0 0 0;
     0 0 0;
 ];
+
+Q = ;
+R = ;
+
+K = lqr(A, B, )
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8667170

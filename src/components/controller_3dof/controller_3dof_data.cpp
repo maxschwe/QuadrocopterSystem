@@ -9,7 +9,7 @@
 //
 // Model version                  : 1.234
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Jan 30 16:12:57 2026
+// C/C++ source code generated on : Tue Feb  3 11:10:18 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -25,7 +25,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_D
   //  Referenced by: '<S37>/Derivative Gain'
 
-  0.35599180792732,
+  0.35,
 
   // Mask Parameter: PIDController1_D
   //  Referenced by: '<S89>/Derivative Gain'
@@ -40,7 +40,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_D_c
   //  Referenced by: '<S198>/Derivative Gain'
 
-  0.35599180792732,
+  0.35,
 
   // Mask Parameter: PIDController1_D_k
   //  Referenced by: '<S250>/Derivative Gain'
@@ -65,7 +65,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S41>/Integral Gain'
 
-  6.32075696798099,
+  0.8,
 
   // Mask Parameter: PIDController2_I_i
   //  Referenced by: '<S306>/Integral Gain'
@@ -80,7 +80,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_I_a
   //  Referenced by: '<S202>/Integral Gain'
 
-  6.32075696798099,
+  0.8,
 
   // Mask Parameter: PIDController_InitialConditionF
   //  Referenced by: '<S39>/Filter'
@@ -145,7 +145,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_N
   //  Referenced by: '<S47>/Filter Coefficient'
 
-  109.340666481817,
+  100.0,
 
   // Mask Parameter: PIDController1_N
   //  Referenced by: '<S99>/Filter Coefficient'
@@ -160,7 +160,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_N_o
   //  Referenced by: '<S208>/Filter Coefficient'
 
-  109.340666481817,
+  100.0,
 
   // Mask Parameter: PIDController1_N_l
   //  Referenced by: '<S260>/Filter Coefficient'
@@ -175,7 +175,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_P
   //  Referenced by: '<S49>/Proportional Gain'
 
-  4.70813243049012,
+  0.8,
 
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S101>/Proportional Gain'
@@ -190,7 +190,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_P_f
   //  Referenced by: '<S210>/Proportional Gain'
 
-  4.70813243049012,
+  0.8,
 
   // Mask Parameter: PIDController1_P_k
   //  Referenced by: '<S262>/Proportional Gain'

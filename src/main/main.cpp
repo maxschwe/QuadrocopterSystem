@@ -67,7 +67,7 @@ void drone_control(void*) {
     int rx_idx = 0;
 
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = pdMS_TO_TICKS(5); // 5ms loop time = 200Hz
+    const TickType_t xFrequency = pdMS_TO_TICKS(10); // 5ms loop time = 200Hz
 
     while (true) {
         OrientationData orientation = drone.rpy();

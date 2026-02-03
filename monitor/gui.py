@@ -154,7 +154,7 @@ class DroneMonitorApp:
         if self.serial_port:
             try:
                 self.serial_port.close()
-            except:
+            except Exception:
                 pass
             self.serial_port = None
             
@@ -173,15 +173,14 @@ class DroneMonitorApp:
                     if line:
                         msg = line.decode('utf-8', errors='replace').strip()
                         timestamp = datetime.datetime.now().strftime('%H:%M:%S.%f')[:-3]
-                        print(f"[{timestamp}] {msg}", flush=True)
-                        
-                        if self.is_recording and self.log_file:
-                            self.log_file.write(f"{timestamp}\t{msg}\n")
-                            self.log_file.flush()
+                        # print(f"[{timestamp}] {msg}")
 
                         # Output to terminal only
                         # Data Collection for Trajectory Error
                         if self.is_recording and msg.startswith('#'):
+                            if self.log_file:
+                                self.log_file.write(f"{msg}\n")
+
                             # Expected format: #Roll, Pitch, Yaw, RollTarget, ... (tab separated)
                             parts = msg[1:].split('\t')
                             try:
@@ -203,7 +202,8 @@ class DroneMonitorApp:
                             # print(f"[{timestamp}] Sending: {msg.decode().strip()}", flush=True)
 
                             self.serial_port.write(msg)
-                            
+                        else:
+                            print(line)
                 else:
                     time.sleep(0.01)
             except Exception as e:

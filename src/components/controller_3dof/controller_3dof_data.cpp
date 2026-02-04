@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.234
+// Model version                  : 1.281
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Tue Feb  3 11:10:18 2026
+// C/C++ source code generated on : Wed Feb  4 17:22:20 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -22,6 +22,61 @@
 
 // Block parameters (default storage)
 Controller::P Controller::rtP{
+  // Variable: E
+  //  Referenced by:
+  //    '<S1>/Mixer'
+  //    '<S9>/MATLAB Function'
+  //    '<S170>/MATLAB Function'
+
+  { 1.0, 0.0, 0.2, 0.0351, 1.0, -0.2, 0.0, -0.0351, 1.0, 0.0, -0.2, 0.0351, 1.0,
+    0.2, 0.0, -0.0351 },
+
+  // Variable: I
+  //  Referenced by: '<S1>/MATLAB Function2'
+
+  { 0.0258, 0.0, 0.0, 0.0, 0.0268, 0.0, 0.0, 0.0, 0.068 },
+
+  // Variable: a
+  //  Referenced by:
+  //    '<S1>/MATLAB Function1'
+  //    '<S9>/MATLAB Function'
+  //    '<S170>/MATLAB Function'
+
+  0.0013,
+
+  // Variable: b
+  //  Referenced by:
+  //    '<S1>/MATLAB Function1'
+  //    '<S9>/MATLAB Function'
+  //    '<S170>/MATLAB Function'
+
+  8.5908,
+
+  // Variable: d
+  //  Referenced by: '<S1>/MATLAB Function2'
+
+  0.03,
+
+  // Variable: g
+  //  Referenced by: '<S1>/MATLAB Function2'
+
+  9.81,
+
+  // Variable: guenther
+  //  Referenced by: '<S1>/MATLAB Function1'
+
+  1.2,
+
+  // Variable: m
+  //  Referenced by: '<S1>/MATLAB Function2'
+
+  1.014,
+
+  // Variable: p
+  //  Referenced by: '<S1>/MATLAB Function2'
+
+  0.2,
+
   // Mask Parameter: PIDController_D
   //  Referenced by: '<S37>/Derivative Gain'
 
@@ -30,7 +85,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_D
   //  Referenced by: '<S89>/Derivative Gain'
 
-  0.0,
+  0.35,
 
   // Mask Parameter: PIDController2_D
   //  Referenced by: '<S141>/Derivative Gain'
@@ -45,7 +100,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_D_k
   //  Referenced by: '<S250>/Derivative Gain'
 
-  0.0,
+  0.35,
 
   // Mask Parameter: PIDController2_D_m
   //  Referenced by: '<S302>/Derivative Gain'
@@ -60,7 +115,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_I
   //  Referenced by: '<S93>/Integral Gain'
 
-  0.0,
+  0.8,
 
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S41>/Integral Gain'
@@ -75,7 +130,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_I_m
   //  Referenced by: '<S254>/Integral Gain'
 
-  0.0,
+  0.8,
 
   // Mask Parameter: PIDController_I_a
   //  Referenced by: '<S202>/Integral Gain'
@@ -180,7 +235,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S101>/Proportional Gain'
 
-  0.0,
+  0.8,
 
   // Mask Parameter: PIDController2_P
   //  Referenced by: '<S153>/Proportional Gain'
@@ -195,67 +250,15 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_P_k
   //  Referenced by: '<S262>/Proportional Gain'
 
-  0.0,
+  0.8,
 
   // Mask Parameter: PIDController2_P_n
   //  Referenced by: '<S314>/Proportional Gain'
 
   0.0,
 
-  // Expression: a
-  //  Referenced by: '<S1>/MATLAB Function1'
-
-  0.0013,
-
-  // Expression: b
-  //  Referenced by: '<S1>/MATLAB Function1'
-
-  8.5908,
-
-  // Expression: I
-  //  Referenced by: '<S1>/MATLAB Function2'
-
-  { 0.0258, 0.0, 0.0, 0.0, 0.0268, 0.0, 0.0, 0.0, 0.068 },
-
-  // Expression: E
-  //  Referenced by: '<S9>/MATLAB Function'
-
-  { 1.0, 0.0, 0.2, 0.0351, 1.0, -0.2, 0.0, -0.0351, 1.0, 0.0, -0.2, 0.0351, 1.0,
-    0.2, 0.0, -0.0351 },
-
-  // Expression: a
-  //  Referenced by: '<S9>/MATLAB Function'
-
-  0.0013,
-
-  // Expression: b
-  //  Referenced by: '<S9>/MATLAB Function'
-
-  8.5908,
-
-  // Expression: E
-  //  Referenced by: '<S170>/MATLAB Function'
-
-  { 1.0, 0.0, 0.2, 0.0351, 1.0, -0.2, 0.0, -0.0351, 1.0, 0.0, -0.2, 0.0351, 1.0,
-    0.2, 0.0, -0.0351 },
-
-  // Expression: a
-  //  Referenced by: '<S170>/MATLAB Function'
-
-  0.0013,
-
-  // Expression: b
-  //  Referenced by: '<S170>/MATLAB Function'
-
-  8.5908,
-
   // Expression: 0
   //  Referenced by: '<S1>/Integrator'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<Root>/Unit Delay'
 
   0.0,
 
@@ -269,11 +272,25 @@ Controller::P Controller::rtP{
 
   15.0,
 
-  // Expression: E
-  //  Referenced by: '<S1>/Mixer'
+  // Computed Parameter: TransferFcn_D
+  //  Referenced by: '<S1>/Transfer Fcn'
 
-  { 1.0, 0.0, 0.2, 0.0351, 1.0, -0.2, 0.0, -0.0351, 1.0, 0.0, -0.2, 0.0351, 1.0,
-    0.2, 0.0, -0.0351 },
+  1.0,
+
+  // Computed Parameter: TransferFcn1_D
+  //  Referenced by: '<S1>/Transfer Fcn1'
+
+  1.0,
+
+  // Computed Parameter: TransferFcn2_D
+  //  Referenced by: '<S1>/Transfer Fcn2'
+
+  1.0,
+
+  // Computed Parameter: TransferFcn3_D
+  //  Referenced by: '<S1>/Transfer Fcn3'
+
+  1.0,
 
   // Expression: 90
   //  Referenced by: '<S170>/Saturation'

@@ -5,7 +5,6 @@ from tkinter import scrolledtext
 import serial
 import threading
 import datetime
-import sys
 import time
 import matplotlib
 matplotlib.use("TkAgg")
@@ -87,6 +86,11 @@ class DroneMonitorApp:
         self.freq_entry = ttk.Entry(traj_frame, width=5)
         self.freq_entry.insert(0, "0.2")
         self.freq_entry.pack(side="left", padx=5)
+
+        ttk.Label(traj_frame, text="Dur (s):").pack(side="left", padx=5)
+        self.duration_entry = ttk.Entry(traj_frame, width=5)
+        self.duration_entry.insert(0, "20.0")
+        self.duration_entry.pack(side="left", padx=5)
 
         self.start_traj_btn = ttk.Button(traj_frame, text="Start Trajectory", command=self.start_trajectory)
         self.start_traj_btn.pack(side="left", padx=10)
@@ -179,7 +183,7 @@ class DroneMonitorApp:
                         # Data Collection for Trajectory Error
                         if self.is_recording and msg.startswith('#'):
                             if self.log_file:
-                                self.log_file.write(f"{msg}\n")
+                                self.log_file.write(f"{msg[1:].replace('\t', ',')}\n")
 
                             # Expected format: #Roll, Pitch, Yaw, RollTarget, ... (tab separated)
                             parts = msg[1:].split('\t')
@@ -203,7 +207,7 @@ class DroneMonitorApp:
 
                             self.serial_port.write(msg)
                         else:
-                            print(line)
+                            print(line.decode(), end='')
                 else:
                     time.sleep(0.01)
             except Exception as e:
@@ -270,6 +274,7 @@ class DroneMonitorApp:
             self.recording_trajectory_type = self.traj_type_var.get()
             self.record_amplitude = float(self.amp_entry.get())
             self.record_frequency = float(self.freq_entry.get())
+            self.record_duration = float(self.duration_entry.get())
 
              # Start Recording State
             self.recorded_data = []
@@ -279,18 +284,18 @@ class DroneMonitorApp:
             
             # Open Log File
             try:
-                filename = f"recordings/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.recording_trajectory_type}.txt"
+                filename = f"recordings/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.recording_trajectory_type}.csv"
                 self.log_file = open(filename, 'w')
                 self.log_message(f"Logging to {filename}")
             except Exception as e:
                 self.log_message(f"Failed to open log file: {e}")
             self.is_recording = True
 
-            self.log_message(f"Started Trajectory: {self.recording_trajectory_type}")
+            self.log_message(f"Started Trajectory: {self.recording_trajectory_type}, Duration: {self.record_duration}s")
 
 
             # Schedule Stop
-            self.root.after(int(20 * 1000), self.finish_trajectory)
+            self.root.after(int(self.record_duration * 1000), self.finish_trajectory)
             
         except ValueError:
             self.log_message("Error: Invalid trajectory parameters.")

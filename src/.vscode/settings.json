@@ -22,5 +22,6 @@
     "i2c_master.h": "c",
     "mpu6050.h": "c",
     "cmath": "cpp"
-  }
+  },
+  "idf.currentSetup": "C:\\Users\\schwmaxi\\esp\\v5.5.1\\esp-idf"
 }

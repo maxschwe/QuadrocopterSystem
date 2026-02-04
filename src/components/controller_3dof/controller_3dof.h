@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.234
+// Model version                  : 1.281
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Tue Feb  3 11:10:18 2026
+// C/C++ source code generated on : Wed Feb  4 17:22:20 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -40,10 +40,7 @@ class Controller final
  public:
   // Block signals and states (default storage) for system '<Root>'
   struct DW {
-    real_T Integrator[6];              // '<S1>/Integrator'
-    real_T UnitDelay[3];               // '<Root>/Unit Delay'
     real_T dx[6];                      // '<S1>/MATLAB Function2'
-    real_T UnitDelay_DSTATE[3];        // '<Root>/Unit Delay'
     real_T FilterCoefficient;          // '<S47>/Filter Coefficient'
     real_T FilterCoefficient_g;        // '<S99>/Filter Coefficient'
     real_T FilterCoefficient_e;        // '<S151>/Filter Coefficient'
@@ -123,6 +120,42 @@ class Controller final
 
   // Parameters (default storage)
   struct P {
+    real_T E[16];                      // Variable: E
+                                          //  Referenced by:
+                                          //    '<S1>/Mixer'
+                                          //    '<S9>/MATLAB Function'
+                                          //    '<S170>/MATLAB Function'
+
+    real_T I[9];                       // Variable: I
+                                          //  Referenced by: '<S1>/MATLAB Function2'
+
+    real_T a;                          // Variable: a
+                                          //  Referenced by:
+                                          //    '<S1>/MATLAB Function1'
+                                          //    '<S9>/MATLAB Function'
+                                          //    '<S170>/MATLAB Function'
+
+    real_T b;                          // Variable: b
+                                          //  Referenced by:
+                                          //    '<S1>/MATLAB Function1'
+                                          //    '<S9>/MATLAB Function'
+                                          //    '<S170>/MATLAB Function'
+
+    real_T d;                          // Variable: d
+                                          //  Referenced by: '<S1>/MATLAB Function2'
+
+    real_T g;                          // Variable: g
+                                          //  Referenced by: '<S1>/MATLAB Function2'
+
+    real_T guenther;                   // Variable: guenther
+                                          //  Referenced by: '<S1>/MATLAB Function1'
+
+    real_T m;                          // Variable: m
+                                          //  Referenced by: '<S1>/MATLAB Function2'
+
+    real_T p;                          // Variable: p
+                                          //  Referenced by: '<S1>/MATLAB Function2'
+
     real_T PIDController_D;            // Mask Parameter: PIDController_D
                                           //  Referenced by: '<S37>/Derivative Gain'
 
@@ -243,38 +276,8 @@ class Controller final
     real_T PIDController2_P_n;         // Mask Parameter: PIDController2_P_n
                                           //  Referenced by: '<S314>/Proportional Gain'
 
-    real_T MATLABFunction1_a;          // Expression: a
-                                          //  Referenced by: '<S1>/MATLAB Function1'
-
-    real_T MATLABFunction1_b;          // Expression: b
-                                          //  Referenced by: '<S1>/MATLAB Function1'
-
-    real_T MATLABFunction2_I[9];       // Expression: I
-                                          //  Referenced by: '<S1>/MATLAB Function2'
-
-    real_T MATLABFunction_E[16];       // Expression: E
-                                          //  Referenced by: '<S9>/MATLAB Function'
-
-    real_T MATLABFunction_a;           // Expression: a
-                                          //  Referenced by: '<S9>/MATLAB Function'
-
-    real_T MATLABFunction_b;           // Expression: b
-                                          //  Referenced by: '<S9>/MATLAB Function'
-
-    real_T MATLABFunction_E_a[16];     // Expression: E
-                                          //  Referenced by: '<S170>/MATLAB Function'
-
-    real_T MATLABFunction_a_c;         // Expression: a
-                                          //  Referenced by: '<S170>/MATLAB Function'
-
-    real_T MATLABFunction_b_j;         // Expression: b
-                                          //  Referenced by: '<S170>/MATLAB Function'
-
     real_T Integrator_IC;              // Expression: 0
                                           //  Referenced by: '<S1>/Integrator'
-
-    real_T UnitDelay_InitialCondition; // Expression: 0
-                                          //  Referenced by: '<Root>/Unit Delay'
 
     real_T Saturation_UpperSat;        // Expression: 90
                                           //  Referenced by: '<S9>/Saturation'
@@ -282,8 +285,17 @@ class Controller final
     real_T Saturation_LowerSat;        // Expression: 15
                                           //  Referenced by: '<S9>/Saturation'
 
-    real_T Mixer_Gain[16];             // Expression: E
-                                          //  Referenced by: '<S1>/Mixer'
+    real_T TransferFcn_D;              // Computed Parameter: TransferFcn_D
+                                          //  Referenced by: '<S1>/Transfer Fcn'
+
+    real_T TransferFcn1_D;             // Computed Parameter: TransferFcn1_D
+                                          //  Referenced by: '<S1>/Transfer Fcn1'
+
+    real_T TransferFcn2_D;             // Computed Parameter: TransferFcn2_D
+                                          //  Referenced by: '<S1>/Transfer Fcn2'
+
+    real_T TransferFcn3_D;             // Computed Parameter: TransferFcn3_D
+                                          //  Referenced by: '<S1>/Transfer Fcn3'
 
     real_T Saturation_UpperSat_o;      // Expression: 90
                                           //  Referenced by: '<S170>/Saturation'

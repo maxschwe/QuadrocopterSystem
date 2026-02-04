@@ -13,13 +13,11 @@ a = 0.0013;
 b = 8.5908;
 c = 0.0351;
 
-T_thrusters = 0.2;
-
 % Abstand Rotoren zu COG
 l = 0.20;
 
 % Abstand COG zu Fixed Point
-d = 0.05;
+d = 0.03;
 
 % Control Effektivitätsmodell
 E = [
@@ -60,8 +58,7 @@ D = [
     0 0 0;
 ];
 
-Q = ;
-R = ;
+p = 0.2;
+guenther = 1.2;
 
-K = lqr(A, B, )
-https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8667170
+T_delay_actor = 0; %20e-3 * 0.25;

@@ -59,6 +59,6 @@ D = [
 ];
 
 p = 0.2;
-guenther = 1.2;
+guenther = 1.0;
 
 T_delay_actor = 0; %20e-3 * 0.25;

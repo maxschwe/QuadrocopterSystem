@@ -17,7 +17,7 @@ c = 0.0351;
 l = 0.20;
 
 % Abstand COG zu Fixed Point
-d = 0.03;
+d = 0.05;
 
 % Control Effektivitätsmodell
 E = [

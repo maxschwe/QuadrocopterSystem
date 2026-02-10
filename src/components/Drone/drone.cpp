@@ -265,7 +265,7 @@ void Drone::startRemoteControlReceiver() {
         UART_PIN_NO_CHANGE
     ));
 
-    xTaskCreate(this->wrapperRemoteControlReceiver, "remote_control_receiver", 4096, this, 2, NULL);
+    xTaskCreate(this->wrapperRemoteControlReceiver, "remote_control_receiver", 4096, this, 3, NULL);
 }
 
 ReferenceInputs& Drone::getReferenceInputs() {

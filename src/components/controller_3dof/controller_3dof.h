@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.281
+// Model version                  : 1.283
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Wed Feb  4 17:22:20 2026
+// C/C++ source code generated on : Tue Feb 10 14:11:41 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -279,28 +279,16 @@ class Controller final
     real_T Integrator_IC;              // Expression: 0
                                           //  Referenced by: '<S1>/Integrator'
 
-    real_T Saturation_UpperSat;        // Expression: 90
+    real_T Saturation_UpperSat;        // Expression: 0.90
                                           //  Referenced by: '<S9>/Saturation'
 
-    real_T Saturation_LowerSat;        // Expression: 15
+    real_T Saturation_LowerSat;        // Expression: 0.15
                                           //  Referenced by: '<S9>/Saturation'
 
-    real_T TransferFcn_D;              // Computed Parameter: TransferFcn_D
-                                          //  Referenced by: '<S1>/Transfer Fcn'
-
-    real_T TransferFcn1_D;             // Computed Parameter: TransferFcn1_D
-                                          //  Referenced by: '<S1>/Transfer Fcn1'
-
-    real_T TransferFcn2_D;             // Computed Parameter: TransferFcn2_D
-                                          //  Referenced by: '<S1>/Transfer Fcn2'
-
-    real_T TransferFcn3_D;             // Computed Parameter: TransferFcn3_D
-                                          //  Referenced by: '<S1>/Transfer Fcn3'
-
-    real_T Saturation_UpperSat_o;      // Expression: 90
+    real_T Saturation_UpperSat_o;      // Expression: 0.90
                                           //  Referenced by: '<S170>/Saturation'
 
-    real_T Saturation_LowerSat_g;      // Expression: 15
+    real_T Saturation_LowerSat_g;      // Expression: 0.15
                                           //  Referenced by: '<S170>/Saturation'
 
   };
@@ -425,8 +413,20 @@ class Controller final
 //-
 //  These blocks were eliminated from the model due to optimizations:
 //
+//  Block '<S1>/Transfer Fcn' : Unused code path elimination
+//  Block '<S1>/Transfer Fcn1' : Unused code path elimination
+//  Block '<S1>/Transfer Fcn2' : Unused code path elimination
+//  Block '<S1>/Transfer Fcn3' : Unused code path elimination
+//  Block '<S2>/Constant' : Unused code path elimination
+//  Block '<S2>/Constant1' : Unused code path elimination
+//  Block '<S2>/Constant2' : Unused code path elimination
+//  Block '<S2>/Sine Wave' : Unused code path elimination
 //  Block '<S9>/Scope' : Unused code path elimination
 //  Block '<S9>/Scope1' : Unused code path elimination
+//  Block '<S3>/Constant' : Unused code path elimination
+//  Block '<S3>/Constant1' : Unused code path elimination
+//  Block '<S3>/Constant2' : Unused code path elimination
+//  Block '<S3>/Sine Wave' : Unused code path elimination
 //  Block '<S170>/Scope' : Unused code path elimination
 //  Block '<S170>/Scope1' : Unused code path elimination
 

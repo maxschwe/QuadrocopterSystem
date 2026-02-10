@@ -9,8 +9,8 @@ m = 1.014;
 g = 9.81;
 
 % Antriebsparameter
-a = 0.0013;
-b = 8.5908;
+a = 13.00;
+b = 0.085908;
 c = 0.0351;
 
 % Abstand Rotoren zu COG
@@ -58,7 +58,7 @@ D = [
     0 0 0;
 ];
 
-p = 0.2;
+p = 0.1;
 guenther = 1.0;
 
 T_delay_actor = 0; %20e-3 * 0.25;

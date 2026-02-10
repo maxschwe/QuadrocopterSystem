@@ -188,10 +188,11 @@ class DroneMonitorApp:
                             # Expected format: #Roll, Pitch, Yaw, RollTarget, ... (tab separated)
                             parts = msg[1:].split('\t')
                             try:
-                                roll_meas = float(parts[0])
-                                roll_target = float(parts[3])
-                                roll_model = float(parts[11])
-                                self.recorded_data.append((time.time(), roll_target, roll_meas, roll_model))
+                                t = int(parts[0]) / 1000.0  # Convert ms to seconds
+                                roll_meas = float(parts[1])
+                                roll_target = float(parts[4])
+                                roll_model = float(parts[12])
+                                self.recorded_data.append((t, roll_target, roll_meas, roll_model))
                             except ValueError:
                                 print(f"[{timestamp}] Data Parse Error: {msg}", flush=True)
 
@@ -212,8 +213,6 @@ class DroneMonitorApp:
                     time.sleep(0.01)
             except Exception as e:
                 self.root.after(0, self.log_message, f"Read Error: {e}")
-                self.root.after(0, self.disconnect)
-                break
 
     def log_message(self, message, is_data=False):
         self.terminal.configure(state='normal')
@@ -262,6 +261,7 @@ class DroneMonitorApp:
             self.throttle_lbl.configure(text=f"{val_float:.1f}")
             if self.serial_port and self.serial_port.is_open:
                 cmd = f"#TT;{val_float:.2f}\n"
+                print(cmd)
                 self.serial_port.write(cmd.encode('utf-8'))
         except Exception:
             pass
@@ -286,6 +286,7 @@ class DroneMonitorApp:
             try:
                 filename = f"recordings/log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.recording_trajectory_type}.csv"
                 self.log_file = open(filename, 'w')
+                self.log_file.write("time,roll_actual,pitch_actual,yaw_actual,roll_cmd,pitch_cmd,yaw_cmd,throttle_cmd,throttle_1,throttle_2,throttle_3,throttle_4,roll_modeled,pitch_modeled,yaw_modeled\n")
                 self.log_message(f"Logging to {filename}")
             except Exception as e:
                 self.log_message(f"Failed to open log file: {e}")

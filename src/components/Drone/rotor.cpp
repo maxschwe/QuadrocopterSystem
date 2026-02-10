@@ -26,7 +26,7 @@ void Rotor::init()
     vTaskDelay(pdMS_TO_TICKS(3000));
 }
 
-void Rotor::setThrottle(float throttle_percent)
+void Rotor::setThrottle(float throttle)
 {
     // Map 0-100% throttle to 1-2ms pulse width
     float min_pulse_ms = 1.0f;
@@ -34,7 +34,7 @@ void Rotor::setThrottle(float throttle_percent)
     const float pulse_range = max_pulse_ms - min_pulse_ms;
     const float period_ms = 1000.0f / ESC_PWM_FREQ_HZ;
 
-    float pulse_ms = min_pulse_ms + (throttle_percent / 100.0f) * pulse_range;
+    float pulse_ms = min_pulse_ms + throttle * pulse_range;
     uint32_t max_duty = (1 << ESC_PWM_RESOLUTION) - 1;
     uint32_t duty = (uint32_t)((pulse_ms / period_ms) * max_duty);
 

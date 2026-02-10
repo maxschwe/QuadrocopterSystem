@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.281
+// Model version                  : 1.283
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Wed Feb  4 17:22:20 2026
+// C/C++ source code generated on : Tue Feb 10 14:11:41 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -42,7 +42,7 @@ Controller::P Controller::rtP{
   //    '<S9>/MATLAB Function'
   //    '<S170>/MATLAB Function'
 
-  0.0013,
+  13.0,
 
   // Variable: b
   //  Referenced by:
@@ -50,12 +50,12 @@ Controller::P Controller::rtP{
   //    '<S9>/MATLAB Function'
   //    '<S170>/MATLAB Function'
 
-  8.5908,
+  0.085908,
 
   // Variable: d
   //  Referenced by: '<S1>/MATLAB Function2'
 
-  0.03,
+  0.05,
 
   // Variable: g
   //  Referenced by: '<S1>/MATLAB Function2'
@@ -65,7 +65,7 @@ Controller::P Controller::rtP{
   // Variable: guenther
   //  Referenced by: '<S1>/MATLAB Function1'
 
-  1.2,
+  1.0,
 
   // Variable: m
   //  Referenced by: '<S1>/MATLAB Function2'
@@ -75,7 +75,7 @@ Controller::P Controller::rtP{
   // Variable: p
   //  Referenced by: '<S1>/MATLAB Function2'
 
-  0.2,
+  0.1,
 
   // Mask Parameter: PIDController_D
   //  Referenced by: '<S37>/Derivative Gain'
@@ -85,7 +85,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_D
   //  Referenced by: '<S89>/Derivative Gain'
 
-  0.35,
+  0.0,
 
   // Mask Parameter: PIDController2_D
   //  Referenced by: '<S141>/Derivative Gain'
@@ -100,7 +100,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_D_k
   //  Referenced by: '<S250>/Derivative Gain'
 
-  0.35,
+  0.0,
 
   // Mask Parameter: PIDController2_D_m
   //  Referenced by: '<S302>/Derivative Gain'
@@ -115,7 +115,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_I
   //  Referenced by: '<S93>/Integral Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S41>/Integral Gain'
@@ -130,7 +130,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_I_m
   //  Referenced by: '<S254>/Integral Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController_I_a
   //  Referenced by: '<S202>/Integral Gain'
@@ -235,7 +235,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S101>/Proportional Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController2_P
   //  Referenced by: '<S153>/Proportional Gain'
@@ -250,7 +250,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_P_k
   //  Referenced by: '<S262>/Proportional Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController2_P_n
   //  Referenced by: '<S314>/Proportional Gain'
@@ -262,45 +262,25 @@ Controller::P Controller::rtP{
 
   0.0,
 
-  // Expression: 90
+  // Expression: 0.90
   //  Referenced by: '<S9>/Saturation'
 
-  90.0,
+  0.9,
 
-  // Expression: 15
+  // Expression: 0.15
   //  Referenced by: '<S9>/Saturation'
 
-  15.0,
+  0.15,
 
-  // Computed Parameter: TransferFcn_D
-  //  Referenced by: '<S1>/Transfer Fcn'
-
-  1.0,
-
-  // Computed Parameter: TransferFcn1_D
-  //  Referenced by: '<S1>/Transfer Fcn1'
-
-  1.0,
-
-  // Computed Parameter: TransferFcn2_D
-  //  Referenced by: '<S1>/Transfer Fcn2'
-
-  1.0,
-
-  // Computed Parameter: TransferFcn3_D
-  //  Referenced by: '<S1>/Transfer Fcn3'
-
-  1.0,
-
-  // Expression: 90
+  // Expression: 0.90
   //  Referenced by: '<S170>/Saturation'
 
-  90.0,
+  0.9,
 
-  // Expression: 15
+  // Expression: 0.15
   //  Referenced by: '<S170>/Saturation'
 
-  15.0
+  0.15
 };
 
 //

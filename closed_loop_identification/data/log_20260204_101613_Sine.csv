@@ -1,3 +1,4 @@
+roll_actual,pitch_actual,yaw_actual,roll_cmd,pitch_cmd,yaw_cmd,throttle_cmd,throttle_1,throttle_2,throttle_3,throttle_4,roll_modeled,pitch_modeled,yaw_modeled
 0.0,0.0,-1.0,-0.0,-0.0,-0.0,2.0,28.2,27.7,28.2,28.7,-0.0,-0.0,-0.0
 0.0,0.0,-1.0,-0.0,-0.0,-0.0,2.0,28.2,27.8,28.2,28.6,-0.0,-0.0,-0.0
 0.0,0.0,-1.0,0.0,-0.0,-0.0,2.0,28.2,26.5,28.2,29.8,-0.0,-0.0,-0.0

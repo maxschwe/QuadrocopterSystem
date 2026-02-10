@@ -21,5 +21,5 @@ static void onboard_led_test(void *pvParameters)
 
 void start_onboard_led_test()
 {
-    xTaskCreate(onboard_led_test, "Blink Task", 2048, NULL, 5, NULL);
+    xTaskCreate(onboard_led_test, "Blink Task", 2048, NULL, 1, NULL);
 }

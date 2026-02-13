@@ -169,7 +169,6 @@ class DroneMonitorApp:
         self.log_message("Disconnected.")
 
     def read_serial_loop(self):
-
         while self.running and self.serial_port and self.serial_port.is_open:
             try:
                 if self.serial_port.in_waiting:

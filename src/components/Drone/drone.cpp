@@ -4,6 +4,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
+#include <numbers>
 #include "esp_mac.h"
 #include <string.h>
 #include "driver/uart.h"
@@ -39,6 +40,8 @@ const char* TAG = "Drone";
 
 const gpio_num_t PIN_SDA = (gpio_num_t)21;
 const gpio_num_t PIN_CLK = (gpio_num_t)22;
+
+const float TO_RAD = std::numbers::pi_v<float> / 180.0f;
 
 
 void initI2C() {
@@ -212,16 +215,16 @@ OrientationData Drone::rpy() {
     return OrientationData{0.0f, 0.0f, 0.0f, 0};
 }
 
-// VectorFloat Drone::gyro() {
-//     VectorFloat gyro;
-//     VectorInt16 rawGyro;
-//     mpu.getRotation(&rawGyro);
-//     const float GYRO_SCALE = 131.0f; // LSB/deg/s for +/- 250deg/s
-//     gyro.x = (float)rawGyro.x / GYRO_SCALE;
-//     gyro.y = (float)rawGyro.y / GYRO_SCALE;
-//     gyro.z = (float)rawGyro.z / GYRO_SCALE;
-//     return gyro;
-// }
+VectorFloat Drone::gyro() {
+    VectorFloat gyro;
+    int16_t rawGyroX, rawGyroY, rawGyroZ;
+    mpu.getRotation(&rawGyroX, &rawGyroY, &rawGyroZ);
+    const float GYRO_SCALE = 131.0f; // LSB/deg/s for +/- 250deg/s
+    gyro.x = (float)rawGyroX / GYRO_SCALE * TO_RAD;
+    gyro.y = (float)rawGyroY / GYRO_SCALE * TO_RAD;
+    gyro.z = (float)rawGyroZ / GYRO_SCALE * TO_RAD;
+    return gyro;
+}
 
 void Drone::printRpy() {
     OrientationData rpy = this->rpy();

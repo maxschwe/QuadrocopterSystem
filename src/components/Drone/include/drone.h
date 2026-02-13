@@ -42,6 +42,7 @@ class Drone {
         void setThrottles(float throttle1, float throttle2, float throttle3, float throttle4);
         OrientationData rpy();
         void printRpy();
+        VectorFloat gyro();
 
         ReferenceInputs& getReferenceInputs();
 

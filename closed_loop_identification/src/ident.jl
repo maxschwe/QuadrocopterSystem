@@ -14,7 +14,7 @@ const P = (
     m = 1.014,
     g = 9.81,
     d = 0.05,
-    dt_ctrl = 0.05
+    dt_ctrl = 0.005
 )
 
 # --- 2. Controller & Allocation ---

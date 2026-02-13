@@ -17,7 +17,7 @@
 struct ControllerState {
     ReferenceInputs referenceInputs;
     real_T throttles[4];
-    real_T y_pred[3];
+    real_T y_pred[6];
 };
 
 struct SystemState {
@@ -40,17 +40,19 @@ void host_com(void* params) {
     uint8_t byte;
 
     TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = pdMS_TO_TICKS(10); // 10ms loop time = 100Hz
+    const TickType_t xFrequency = pdMS_TO_TICKS(20); // 20ms loop time = 50Hz
 
     while (1) {
         OrientationData orientation = drone->rpy();
+        VectorFloat gyro = drone->gyro();
 
-        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
             portTICK_PERIOD_MS * xTaskGetTickCount(),
             orientation.roll, orientation.pitch, orientation.yaw,
+            gyro.x, gyro.y, gyro.z,
             controllerState.referenceInputs.roll, controllerState.referenceInputs.pitch, controllerState.referenceInputs.yaw, controllerState.referenceInputs.throttle,
             controllerState.throttles[0], controllerState.throttles[1], controllerState.throttles[2], controllerState.throttles[3],
-            controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2]
+            controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2] // , controllerState.y_pred[3], controllerState.y_pred[4], controllerState.y_pred[5]
         );
 
         while (uart_read_bytes(UART_NUM_0, &byte, 1, 0) > 0) {
@@ -138,6 +140,7 @@ void drone_control(void*) {
     float t1 = 0, t2 = 0, t3 = 0, t4 = 0;
     while (true) {
         OrientationData orientation = drone.rpy();
+        VectorFloat gyro = drone.gyro();
         if (motorsActive && (xTaskGetTickCount() - orientation.lastUpdate > pdMS_TO_TICKS(1000))) {
             motorsActive = false;
             ESP_LOGE("TASK", "MPU Connection lost - Deactivating");
@@ -166,6 +169,9 @@ void drone_control(void*) {
             controller.rtU.y[0] = orientation.roll;
             controller.rtU.y[1] = orientation.pitch;
             controller.rtU.y[2] = orientation.yaw;
+            controller.rtU.y[3] = gyro.x;
+            controller.rtU.y[4] = gyro.y;
+            controller.rtU.y[5] = gyro.z;
 
             controller.step();
             
@@ -188,6 +194,9 @@ void drone_control(void*) {
         systemState.controllerState.y_pred[0] = controller.rtY.y_pred[0];
         systemState.controllerState.y_pred[1] = controller.rtY.y_pred[1];
         systemState.controllerState.y_pred[2] = controller.rtY.y_pred[2];
+        systemState.controllerState.y_pred[3] = controller.rtY.y_pred[3];
+        systemState.controllerState.y_pred[4] = controller.rtY.y_pred[4];
+        systemState.controllerState.y_pred[5] = controller.rtY.y_pred[5];
 
         BaseType_t thisCallDelayedLoop = xTaskDelayUntil(&xLastWakeTime, xFrequency);
         if (thisCallDelayedLoop != pdTRUE) {

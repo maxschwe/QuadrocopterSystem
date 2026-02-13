@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.283
+// Model version                  : 1.288
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Tue Feb 10 14:11:41 2026
+// C/C++ source code generated on : Fri Feb 13 18:14:35 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -65,7 +65,7 @@ void Controller::step()
   real_T c_data[4];
   real_T rtb_Mixer[4];
   real_T rtb_thrust[4];
-  real_T rtb_u_f[4];
+  real_T rtb_u_p[4];
   real_T B_0[3];
   real_T a21;
   real_T b_idx_0;
@@ -81,10 +81,10 @@ void Controller::step()
   real_T smax;
   int32_T c_k;
   int32_T f;
+  int32_T i;
   int32_T ijA;
   int32_T jA;
   int32_T jj;
-  int32_T r1;
   int32_T rtemp;
   int8_T ipiv[4];
   int8_T tmp_data[4];
@@ -104,9 +104,11 @@ void Controller::step()
   // Outport: '<Root>/y_pred' incorporates:
   //   Integrator: '<S1>/Integrator'
 
-  rtY.y_pred[0] = rtX.Integrator_CSTATE[0];
-  rtY.y_pred[1] = rtX.Integrator_CSTATE[1];
-  rtY.y_pred[2] = rtX.Integrator_CSTATE[2];
+  for (i = 0; i < 6; i++) {
+    rtY.y_pred[i] = rtX.Integrator_CSTATE[i];
+  }
+
+  // End of Outport: '<Root>/y_pred'
 
   // Sum: '<S2>/Sum' incorporates:
   //   Inport: '<Root>/w'
@@ -133,8 +135,8 @@ void Controller::step()
   //   Integrator: '<S91>/Filter'
   //   Sum: '<S91>/SumD'
 
-  rtDW.FilterCoefficient_g = (rtP.PIDController1_D * rtb_Sum2 -
-    rtX.Filter_CSTATE_d) * rtP.PIDController1_N;
+  rtDW.FilterCoefficient_h = (rtP.PIDController1_D * rtb_Sum2 -
+    rtX.Filter_CSTATE_g) * rtP.PIDController1_N;
 
   // Sum: '<S2>/Sum2' incorporates:
   //   Inport: '<Root>/w'
@@ -147,8 +149,8 @@ void Controller::step()
   //   Integrator: '<S143>/Filter'
   //   Sum: '<S143>/SumD'
 
-  rtDW.FilterCoefficient_e = (rtP.PIDController2_D * rtb_Sum1 -
-    rtX.Filter_CSTATE_a) * rtP.PIDController2_N;
+  rtDW.FilterCoefficient_o = (rtP.PIDController2_D * rtb_Sum1 -
+    rtX.Filter_CSTATE_e) * rtP.PIDController2_N;
 
   // MATLAB Function: '<S9>/MATLAB Function' incorporates:
   //   Gain: '<S101>/Proportional Gain'
@@ -164,20 +166,20 @@ void Controller::step()
   //   Sum: '<S53>/Sum'
 
   rtb_Mixer[0] = rtU.w[0];
-  rtb_Mixer[1] = (rtP.PIDController_P * rtb_Filter + rtX.Integrator_CSTATE_b) +
+  rtb_Mixer[1] = (rtP.PIDController_P * rtb_Filter + rtX.Integrator_CSTATE_c) +
     rtDW.FilterCoefficient;
-  rtb_Mixer[2] = (rtP.PIDController1_P * rtb_Sum2 + rtX.Integrator_CSTATE_n) +
-    rtDW.FilterCoefficient_g;
-  rtb_Mixer[3] = (rtP.PIDController2_P * rtb_Sum1 + rtX.Integrator_CSTATE_f) +
-    rtDW.FilterCoefficient_e;
+  rtb_Mixer[2] = (rtP.PIDController1_P * rtb_Sum2 + rtX.Integrator_CSTATE_e) +
+    rtDW.FilterCoefficient_h;
+  rtb_Mixer[3] = (rtP.PIDController2_P * rtb_Sum1 + rtX.Integrator_CSTATE_i) +
+    rtDW.FilterCoefficient_o;
   std::memcpy(&A[0], &rtP.E[0], sizeof(real_T) << 4U);
   ipiv[0] = 1;
   ipiv[1] = 2;
   ipiv[2] = 3;
   ipiv[3] = 4;
-  for (r1 = 0; r1 < 3; r1++) {
-    jj = r1 * 5;
-    jA = 5 - r1;
+  for (i = 0; i < 3; i++) {
+    jj = i * 5;
+    jA = 5 - i;
     rtemp = 0;
     smax = std::abs(A[jj]);
     for (c_k = 2; c_k < jA; c_k++) {
@@ -190,34 +192,34 @@ void Controller::step()
 
     if (A[jj + rtemp] != 0.0) {
       if (rtemp != 0) {
-        jA = r1 + rtemp;
-        ipiv[r1] = static_cast<int8_T>(jA + 1);
-        smax = A[r1];
-        A[r1] = A[jA];
+        jA = i + rtemp;
+        ipiv[i] = static_cast<int8_T>(jA + 1);
+        smax = A[i];
+        A[i] = A[jA];
         A[jA] = smax;
-        smax = A[r1 + 4];
-        A[r1 + 4] = A[jA + 4];
+        smax = A[i + 4];
+        A[i + 4] = A[jA + 4];
         A[jA + 4] = smax;
-        smax = A[r1 + 8];
-        A[r1 + 8] = A[jA + 8];
+        smax = A[i + 8];
+        A[i + 8] = A[jA + 8];
         A[jA + 8] = smax;
-        smax = A[r1 + 12];
-        A[r1 + 12] = A[jA + 12];
+        smax = A[i + 12];
+        A[i + 12] = A[jA + 12];
         A[jA + 12] = smax;
       }
 
-      jA = (jj - r1) + 4;
+      jA = (jj - i) + 4;
       for (rtemp = jj + 2; rtemp <= jA; rtemp++) {
         A[rtemp - 1] /= A[jj];
       }
     }
 
     jA = jj + 6;
-    rtemp = 2 - r1;
+    rtemp = 2 - i;
     for (c_k = 0; c_k <= rtemp; c_k++) {
       smax = A[((c_k << 2) + jj) + 4];
       if (smax != 0.0) {
-        f = (jA - r1) + 2;
+        f = (jA - i) + 2;
         for (ijA = jA; ijA <= f; ijA++) {
           A[ijA - 1] += A[((jj + ijA) - jA) + 1] * -smax;
         }
@@ -226,50 +228,50 @@ void Controller::step()
       jA += 4;
     }
 
-    ipiv_0 = ipiv[r1];
-    if (r1 + 1 != ipiv_0) {
-      smax = rtb_Mixer[r1];
-      rtb_Mixer[r1] = rtb_Mixer[ipiv_0 - 1];
+    ipiv_0 = ipiv[i];
+    if (i + 1 != ipiv_0) {
+      smax = rtb_Mixer[i];
+      rtb_Mixer[i] = rtb_Mixer[ipiv_0 - 1];
       rtb_Mixer[ipiv_0 - 1] = smax;
     }
   }
 
-  for (r1 = 0; r1 < 4; r1++) {
-    jj = r1 << 2;
-    if (rtb_Mixer[r1] != 0.0) {
-      for (jA = r1 + 2; jA < 5; jA++) {
-        rtb_Mixer[jA - 1] -= A[(jA + jj) - 1] * rtb_Mixer[r1];
+  for (i = 0; i < 4; i++) {
+    jj = i << 2;
+    if (rtb_Mixer[i] != 0.0) {
+      for (jA = i + 2; jA < 5; jA++) {
+        rtb_Mixer[jA - 1] -= A[(jA + jj) - 1] * rtb_Mixer[i];
       }
     }
   }
 
-  for (r1 = 3; r1 >= 0; r1--) {
-    jj = r1 << 2;
-    smax = rtb_Mixer[r1];
+  for (i = 3; i >= 0; i--) {
+    jj = i << 2;
+    smax = rtb_Mixer[i];
     if (smax != 0.0) {
-      rtb_Mixer[r1] = smax / A[r1 + jj];
-      for (jA = 0; jA < r1; jA++) {
-        rtb_Mixer[jA] -= A[jA + jj] * rtb_Mixer[r1];
+      rtb_Mixer[i] = smax / A[i + jj];
+      for (jA = 0; jA < i; jA++) {
+        rtb_Mixer[jA] -= A[jA + jj] * rtb_Mixer[i];
       }
     }
   }
 
-  rtb_u_f[0] = 0.0;
-  rtb_u_f[1] = 0.0;
-  rtb_u_f[2] = 0.0;
-  rtb_u_f[3] = 0.0;
+  rtb_u_p[0] = 0.0;
+  rtb_u_p[1] = 0.0;
+  rtb_u_p[2] = 0.0;
+  rtb_u_p[3] = 0.0;
   jj = 0;
-  for (r1 = 0; r1 < 4; r1++) {
-    if (rtb_Mixer[r1] / rtP.a >= 0.0) {
+  for (i = 0; i < 4; i++) {
+    if (rtb_Mixer[i] / rtP.a >= 0.0) {
       jj++;
     }
   }
 
   jA = jj;
   jj = 0;
-  for (r1 = 0; r1 < 4; r1++) {
-    if (rtb_Mixer[r1] / rtP.a >= 0.0) {
-      tmp_data[jj] = static_cast<int8_T>(r1);
+  for (i = 0; i < 4; i++) {
+    if (rtb_Mixer[i] / rtP.a >= 0.0) {
+      tmp_data[jj] = static_cast<int8_T>(i);
       jj++;
     }
   }
@@ -277,19 +279,16 @@ void Controller::step()
   for (jj = 0; jj < jA; jj++) {
     c_data[jj] = rtb_Mixer[tmp_data[jj]] / rtP.a;
     c_data[jj] = std::sqrt(c_data[jj]);
-    rtb_u_f[tmp_data[jj]] = c_data[jj] + rtP.b;
+    rtb_u_p[tmp_data[jj]] = c_data[jj] + rtP.b;
   }
 
-  // MATLAB Function: '<S1>/MATLAB Function1'
-  s = rtP.guenther * rtP.a;
-
   // Saturate: '<S9>/Saturation'
-  if (rtb_u_f[0] > rtP.Saturation_UpperSat) {
+  if (rtb_u_p[0] > rtP.Saturation_UpperSat) {
     a21 = rtP.Saturation_UpperSat;
-  } else if (rtb_u_f[0] < rtP.Saturation_LowerSat) {
+  } else if (rtb_u_p[0] < rtP.Saturation_LowerSat) {
     a21 = rtP.Saturation_LowerSat;
   } else {
-    a21 = rtb_u_f[0];
+    a21 = rtb_u_p[0];
   }
 
   // MATLAB Function: '<S1>/MATLAB Function1' incorporates:
@@ -299,12 +298,12 @@ void Controller::step()
   rtb_thrust[0] = smax * smax;
 
   // Saturate: '<S9>/Saturation'
-  if (rtb_u_f[1] > rtP.Saturation_UpperSat) {
+  if (rtb_u_p[1] > rtP.Saturation_UpperSat) {
     a21 = rtP.Saturation_UpperSat;
-  } else if (rtb_u_f[1] < rtP.Saturation_LowerSat) {
+  } else if (rtb_u_p[1] < rtP.Saturation_LowerSat) {
     a21 = rtP.Saturation_LowerSat;
   } else {
-    a21 = rtb_u_f[1];
+    a21 = rtb_u_p[1];
   }
 
   // MATLAB Function: '<S1>/MATLAB Function1' incorporates:
@@ -314,12 +313,12 @@ void Controller::step()
   rtb_thrust[1] = smax * smax;
 
   // Saturate: '<S9>/Saturation'
-  if (rtb_u_f[2] > rtP.Saturation_UpperSat) {
+  if (rtb_u_p[2] > rtP.Saturation_UpperSat) {
     a21 = rtP.Saturation_UpperSat;
-  } else if (rtb_u_f[2] < rtP.Saturation_LowerSat) {
+  } else if (rtb_u_p[2] < rtP.Saturation_LowerSat) {
     a21 = rtP.Saturation_LowerSat;
   } else {
-    a21 = rtb_u_f[2];
+    a21 = rtb_u_p[2];
   }
 
   // MATLAB Function: '<S1>/MATLAB Function1' incorporates:
@@ -329,12 +328,12 @@ void Controller::step()
   rtb_thrust[2] = smax * smax;
 
   // Saturate: '<S9>/Saturation'
-  if (rtb_u_f[3] > rtP.Saturation_UpperSat) {
+  if (rtb_u_p[3] > rtP.Saturation_UpperSat) {
     a21 = rtP.Saturation_UpperSat;
-  } else if (rtb_u_f[3] < rtP.Saturation_LowerSat) {
+  } else if (rtb_u_p[3] < rtP.Saturation_LowerSat) {
     a21 = rtP.Saturation_LowerSat;
   } else {
-    a21 = rtb_u_f[3];
+    a21 = rtb_u_p[3];
   }
 
   // MATLAB Function: '<S1>/MATLAB Function1' incorporates:
@@ -350,11 +349,11 @@ void Controller::step()
   omega_dot_idx_2 = 0.0;
   rtb_Mixer_0 = 0.0;
   for (jj = 0; jj < 4; jj++) {
-    a21 = s * rtb_thrust[jj];
-    r1 = jj << 2;
-    smax += rtP.E[r1 + 1] * a21;
-    omega_dot_idx_2 += rtP.E[r1 + 2] * a21;
-    rtb_Mixer_0 += rtP.E[r1 + 3] * a21;
+    a21 = rtP.a * rtb_thrust[jj];
+    i = jj << 2;
+    smax += rtP.E[i + 1] * a21;
+    omega_dot_idx_2 += rtP.E[i + 2] * a21;
+    rtb_Mixer_0 += rtP.E[i + 3] * a21;
   }
 
   // MATLAB Function: '<S1>/MATLAB Function2' incorporates:
@@ -382,29 +381,29 @@ void Controller::step()
     - (b_idx_0 * rtX.Integrator_CSTATE[5] - b_idx_2 * rtX.Integrator_CSTATE[3]);
   B_0[2] = rtb_Mixer_0 - (b_idx_1 * rtX.Integrator_CSTATE[3] - b_idx_0 *
     rtX.Integrator_CSTATE[4]);
-  r1 = 0;
+  i = 0;
   jj = 1;
   jA = 2;
   smax = std::abs(rtP.I[0]);
   a21 = std::abs(rtP.I[1]);
   if (a21 > smax) {
     smax = a21;
-    r1 = 1;
+    i = 1;
     jj = 0;
   }
 
   if (std::abs(rtP.I[2]) > smax) {
-    r1 = 2;
+    i = 2;
     jj = 1;
     jA = 0;
   }
 
-  A_0[jj] = rtP.I[jj] / rtP.I[r1];
-  A_0[jA] /= A_0[r1];
-  A_0[jj + 3] -= A_0[r1 + 3] * A_0[jj];
-  A_0[jA + 3] -= A_0[r1 + 3] * A_0[jA];
-  A_0[jj + 6] -= A_0[r1 + 6] * A_0[jj];
-  A_0[jA + 6] -= A_0[r1 + 6] * A_0[jA];
+  A_0[jj] = rtP.I[jj] / rtP.I[i];
+  A_0[jA] /= A_0[i];
+  A_0[jj + 3] -= A_0[i + 3] * A_0[jj];
+  A_0[jA + 3] -= A_0[i + 3] * A_0[jA];
+  A_0[jj + 6] -= A_0[i + 6] * A_0[jj];
+  A_0[jA + 6] -= A_0[i + 6] * A_0[jA];
   if (std::abs(A_0[jA + 3]) > std::abs(A_0[jj + 3])) {
     rtemp = jj;
     jj = jA;
@@ -413,9 +412,9 @@ void Controller::step()
 
   A_0[jA + 3] /= A_0[jj + 3];
   A_0[jA + 6] -= A_0[jA + 3] * A_0[jj + 6];
-  smax = B_0[jj] - B_0[r1] * A_0[jj];
-  omega_dot_idx_2 = ((B_0[jA] - B_0[r1] * A_0[jA]) - A_0[jA + 3] * smax) /
-    A_0[jA + 6];
+  smax = B_0[jj] - B_0[i] * A_0[jj];
+  omega_dot_idx_2 = ((B_0[jA] - B_0[i] * A_0[jA]) - A_0[jA + 3] * smax) / A_0[jA
+    + 6];
   smax = (smax - A_0[jj + 6] * omega_dot_idx_2) / A_0[jj + 3];
   a21 = std::tan(rtX.Integrator_CSTATE[1]);
   rtb_Mixer_0 = std::cos(rtX.Integrator_CSTATE[0]);
@@ -439,8 +438,8 @@ void Controller::step()
   }
 
   rtDW.dx[0] = s;
-  rtDW.dx[3] = ((B_0[r1] - A_0[r1 + 6] * omega_dot_idx_2) - A_0[r1 + 3] * smax) /
-    A_0[r1];
+  rtDW.dx[3] = ((B_0[i] - A_0[i + 6] * omega_dot_idx_2) - A_0[i + 3] * smax) /
+    A_0[i];
   rtDW.dx[1] = omega_dot_tmp;
   rtDW.dx[4] = smax;
   rtDW.dx[2] = rtb_Mixer_0;
@@ -452,10 +451,10 @@ void Controller::step()
   rtDW.IntegralGain = rtP.PIDController2_I * rtb_Sum1;
 
   // Gain: '<S93>/Integral Gain'
-  rtDW.IntegralGain_b = rtP.PIDController1_I * rtb_Sum2;
+  rtDW.IntegralGain_e = rtP.PIDController1_I * rtb_Sum2;
 
   // Gain: '<S41>/Integral Gain'
-  rtDW.IntegralGain_f = rtP.PIDController_I * rtb_Filter;
+  rtDW.IntegralGain_j = rtP.PIDController_I * rtb_Filter;
 
   // Sum: '<S3>/Sum' incorporates:
   //   Inport: '<Root>/w'
@@ -469,7 +468,7 @@ void Controller::step()
   //   Sum: '<S200>/SumD'
 
   rtDW.FilterCoefficient_b = (rtP.PIDController_D_c * rtb_Filter -
-    rtX.Filter_CSTATE_g) * rtP.PIDController_N_o;
+    rtX.Filter_CSTATE_gs) * rtP.PIDController_N_o;
 
   // Sum: '<S3>/Sum1' incorporates:
   //   Inport: '<Root>/w'
@@ -516,8 +515,8 @@ void Controller::step()
   rtb_Mixer[0] = rtU.w[0];
   rtb_Mixer[1] = (rtP.PIDController_P_f * rtb_Filter + rtX.Integrator_CSTATE_p)
     + rtDW.FilterCoefficient_b;
-  rtb_Mixer[2] = (rtP.PIDController1_P_k * rtb_Sum1 + rtX.Integrator_CSTATE_i) +
-    rtDW.FilterCoefficient_bz;
+  rtb_Mixer[2] = (rtP.PIDController1_P_k * rtb_Sum1 + rtX.Integrator_CSTATE_iz)
+    + rtDW.FilterCoefficient_bz;
   rtb_Mixer[3] = (rtP.PIDController2_P_n * rtb_Sum2 + rtX.Integrator_CSTATE_j) +
     rtDW.FilterCoefficient_a;
   std::memcpy(&A[0], &rtP.E[0], sizeof(real_T) << 4U);
@@ -525,9 +524,9 @@ void Controller::step()
   ipiv[1] = 2;
   ipiv[2] = 3;
   ipiv[3] = 4;
-  for (r1 = 0; r1 < 3; r1++) {
-    jj = r1 * 5;
-    jA = 5 - r1;
+  for (i = 0; i < 3; i++) {
+    jj = i * 5;
+    jA = 5 - i;
     rtemp = 0;
     smax = std::abs(A[jj]);
     for (c_k = 2; c_k < jA; c_k++) {
@@ -540,34 +539,34 @@ void Controller::step()
 
     if (A[jj + rtemp] != 0.0) {
       if (rtemp != 0) {
-        jA = r1 + rtemp;
-        ipiv[r1] = static_cast<int8_T>(jA + 1);
-        smax = A[r1];
-        A[r1] = A[jA];
+        jA = i + rtemp;
+        ipiv[i] = static_cast<int8_T>(jA + 1);
+        smax = A[i];
+        A[i] = A[jA];
         A[jA] = smax;
-        smax = A[r1 + 4];
-        A[r1 + 4] = A[jA + 4];
+        smax = A[i + 4];
+        A[i + 4] = A[jA + 4];
         A[jA + 4] = smax;
-        smax = A[r1 + 8];
-        A[r1 + 8] = A[jA + 8];
+        smax = A[i + 8];
+        A[i + 8] = A[jA + 8];
         A[jA + 8] = smax;
-        smax = A[r1 + 12];
-        A[r1 + 12] = A[jA + 12];
+        smax = A[i + 12];
+        A[i + 12] = A[jA + 12];
         A[jA + 12] = smax;
       }
 
-      jA = (jj - r1) + 4;
+      jA = (jj - i) + 4;
       for (rtemp = jj + 2; rtemp <= jA; rtemp++) {
         A[rtemp - 1] /= A[jj];
       }
     }
 
     jA = jj + 6;
-    rtemp = 2 - r1;
+    rtemp = 2 - i;
     for (c_k = 0; c_k <= rtemp; c_k++) {
       smax = A[((c_k << 2) + jj) + 4];
       if (smax != 0.0) {
-        f = (jA - r1) + 2;
+        f = (jA - i) + 2;
         for (ijA = jA; ijA <= f; ijA++) {
           A[ijA - 1] += A[((jj + ijA) - jA) + 1] * -smax;
         }
@@ -576,30 +575,30 @@ void Controller::step()
       jA += 4;
     }
 
-    ipiv_0 = ipiv[r1];
-    if (r1 + 1 != ipiv_0) {
-      smax = rtb_Mixer[r1];
-      rtb_Mixer[r1] = rtb_Mixer[ipiv_0 - 1];
+    ipiv_0 = ipiv[i];
+    if (i + 1 != ipiv_0) {
+      smax = rtb_Mixer[i];
+      rtb_Mixer[i] = rtb_Mixer[ipiv_0 - 1];
       rtb_Mixer[ipiv_0 - 1] = smax;
     }
   }
 
-  for (r1 = 0; r1 < 4; r1++) {
-    jj = r1 << 2;
-    if (rtb_Mixer[r1] != 0.0) {
-      for (jA = r1 + 2; jA < 5; jA++) {
-        rtb_Mixer[jA - 1] -= A[(jA + jj) - 1] * rtb_Mixer[r1];
+  for (i = 0; i < 4; i++) {
+    jj = i << 2;
+    if (rtb_Mixer[i] != 0.0) {
+      for (jA = i + 2; jA < 5; jA++) {
+        rtb_Mixer[jA - 1] -= A[(jA + jj) - 1] * rtb_Mixer[i];
       }
     }
   }
 
-  for (r1 = 3; r1 >= 0; r1--) {
-    jj = r1 << 2;
-    smax = rtb_Mixer[r1];
+  for (i = 3; i >= 0; i--) {
+    jj = i << 2;
+    smax = rtb_Mixer[i];
     if (smax != 0.0) {
-      rtb_Mixer[r1] = smax / A[r1 + jj];
-      for (jA = 0; jA < r1; jA++) {
-        rtb_Mixer[jA] -= A[jA + jj] * rtb_Mixer[r1];
+      rtb_Mixer[i] = smax / A[i + jj];
+      for (jA = 0; jA < i; jA++) {
+        rtb_Mixer[jA] -= A[jA + jj] * rtb_Mixer[i];
       }
     }
   }
@@ -609,17 +608,17 @@ void Controller::step()
   rtb_thrust[2] = 0.0;
   rtb_thrust[3] = 0.0;
   jj = 0;
-  for (r1 = 0; r1 < 4; r1++) {
-    if (rtb_Mixer[r1] / rtP.a >= 0.0) {
+  for (i = 0; i < 4; i++) {
+    if (rtb_Mixer[i] / rtP.a >= 0.0) {
       jj++;
     }
   }
 
   jA = jj;
   jj = 0;
-  for (r1 = 0; r1 < 4; r1++) {
-    if (rtb_Mixer[r1] / rtP.a >= 0.0) {
-      tmp_data_0[jj] = static_cast<int8_T>(r1);
+  for (i = 0; i < 4; i++) {
+    if (rtb_Mixer[i] / rtP.a >= 0.0) {
+      tmp_data_0[jj] = static_cast<int8_T>(i);
       jj++;
     }
   }
@@ -726,31 +725,31 @@ void Controller::controller_3dof_derivatives()
   // End of Derivatives for Integrator: '<S1>/Integrator'
 
   // Derivatives for Integrator: '<S44>/Integrator'
-  _rtXdot->Integrator_CSTATE_b = rtDW.IntegralGain_f;
+  _rtXdot->Integrator_CSTATE_c = rtDW.IntegralGain_j;
 
   // Derivatives for Integrator: '<S39>/Filter'
   _rtXdot->Filter_CSTATE = rtDW.FilterCoefficient;
 
   // Derivatives for Integrator: '<S96>/Integrator'
-  _rtXdot->Integrator_CSTATE_n = rtDW.IntegralGain_b;
+  _rtXdot->Integrator_CSTATE_e = rtDW.IntegralGain_e;
 
   // Derivatives for Integrator: '<S91>/Filter'
-  _rtXdot->Filter_CSTATE_d = rtDW.FilterCoefficient_g;
+  _rtXdot->Filter_CSTATE_g = rtDW.FilterCoefficient_h;
 
   // Derivatives for Integrator: '<S148>/Integrator'
-  _rtXdot->Integrator_CSTATE_f = rtDW.IntegralGain;
+  _rtXdot->Integrator_CSTATE_i = rtDW.IntegralGain;
 
   // Derivatives for Integrator: '<S143>/Filter'
-  _rtXdot->Filter_CSTATE_a = rtDW.FilterCoefficient_e;
+  _rtXdot->Filter_CSTATE_e = rtDW.FilterCoefficient_o;
 
   // Derivatives for Integrator: '<S205>/Integrator'
   _rtXdot->Integrator_CSTATE_p = rtDW.IntegralGain_od;
 
   // Derivatives for Integrator: '<S200>/Filter'
-  _rtXdot->Filter_CSTATE_g = rtDW.FilterCoefficient_b;
+  _rtXdot->Filter_CSTATE_gs = rtDW.FilterCoefficient_b;
 
   // Derivatives for Integrator: '<S257>/Integrator'
-  _rtXdot->Integrator_CSTATE_i = rtDW.IntegralGain_o;
+  _rtXdot->Integrator_CSTATE_iz = rtDW.IntegralGain_o;
 
   // Derivatives for Integrator: '<S252>/Filter'
   _rtXdot->Filter_CSTATE_m = rtDW.FilterCoefficient_bz;
@@ -809,31 +808,31 @@ void Controller::initialize()
     // End of InitializeConditions for Integrator: '<S1>/Integrator'
 
     // InitializeConditions for Integrator: '<S44>/Integrator'
-    rtX.Integrator_CSTATE_b = rtP.PIDController_InitialConditio_g;
+    rtX.Integrator_CSTATE_c = rtP.PIDController_InitialConditio_l;
 
     // InitializeConditions for Integrator: '<S39>/Filter'
     rtX.Filter_CSTATE = rtP.PIDController_InitialConditionF;
 
     // InitializeConditions for Integrator: '<S96>/Integrator'
-    rtX.Integrator_CSTATE_n = rtP.PIDController1_InitialConditi_k;
+    rtX.Integrator_CSTATE_e = rtP.PIDController1_InitialConditi_d;
 
     // InitializeConditions for Integrator: '<S91>/Filter'
-    rtX.Filter_CSTATE_d = rtP.PIDController1_InitialCondition;
+    rtX.Filter_CSTATE_g = rtP.PIDController1_InitialCondition;
 
     // InitializeConditions for Integrator: '<S148>/Integrator'
-    rtX.Integrator_CSTATE_f = rtP.PIDController2_InitialConditi_p;
+    rtX.Integrator_CSTATE_i = rtP.PIDController2_InitialConditi_n;
 
     // InitializeConditions for Integrator: '<S143>/Filter'
-    rtX.Filter_CSTATE_a = rtP.PIDController2_InitialCondition;
+    rtX.Filter_CSTATE_e = rtP.PIDController2_InitialCondition;
 
     // InitializeConditions for Integrator: '<S205>/Integrator'
     rtX.Integrator_CSTATE_p = rtP.PIDController_InitialConditio_d;
 
     // InitializeConditions for Integrator: '<S200>/Filter'
-    rtX.Filter_CSTATE_g = rtP.PIDController_InitialConditio_e;
+    rtX.Filter_CSTATE_gs = rtP.PIDController_InitialConditio_e;
 
     // InitializeConditions for Integrator: '<S257>/Integrator'
-    rtX.Integrator_CSTATE_i = rtP.PIDController1_InitialConditi_m;
+    rtX.Integrator_CSTATE_iz = rtP.PIDController1_InitialConditi_m;
 
     // InitializeConditions for Integrator: '<S252>/Filter'
     rtX.Filter_CSTATE_m = rtP.PIDController1_InitialConditi_j;

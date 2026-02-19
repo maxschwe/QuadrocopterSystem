@@ -27,6 +27,10 @@ struct OrientationData {
     float pitch;
     float yaw;
 
+    float roll_rate;
+    float pitch_rate;
+    float yaw_rate;
+
     TickType_t lastUpdate;
 };
 
@@ -40,9 +44,8 @@ class Drone {
               gpio_num_t mpu_interrupt_pin, bool remote_control_enabled);
 
         void setThrottles(float throttle1, float throttle2, float throttle3, float throttle4);
-        OrientationData rpy();
+        OrientationData orientation();
         void printRpy();
-        VectorFloat gyro();
 
         ReferenceInputs& getReferenceInputs();
 

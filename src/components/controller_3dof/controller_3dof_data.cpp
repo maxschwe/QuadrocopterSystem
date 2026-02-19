@@ -9,7 +9,7 @@
 //
 // Model version                  : 1.288
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Feb 13 18:14:35 2026
+// C/C++ source code generated on : Thu Feb 19 11:20:31 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -72,18 +72,28 @@ Controller::P Controller::rtP{
 
   0.1,
 
+  // Mask Parameter: PIDController1_D
+  //  Referenced by: '<S89>/Derivative Gain'
+
+  0.0,
+
+  // Mask Parameter: PIDController2_D
+  //  Referenced by: '<S141>/Derivative Gain'
+
+  0.0,
+
   // Mask Parameter: PIDController_D
   //  Referenced by: '<S37>/Derivative Gain'
 
   0.32,
 
-  // Mask Parameter: PIDController1_D
-  //  Referenced by: '<S89>/Derivative Gain'
+  // Mask Parameter: PIDController1_D_k
+  //  Referenced by: '<S250>/Derivative Gain'
 
-  0.35,
+  0.0,
 
-  // Mask Parameter: PIDController2_D
-  //  Referenced by: '<S141>/Derivative Gain'
+  // Mask Parameter: PIDController2_D_m
+  //  Referenced by: '<S302>/Derivative Gain'
 
   0.0,
 
@@ -91,16 +101,6 @@ Controller::P Controller::rtP{
   //  Referenced by: '<S198>/Derivative Gain'
 
   0.32,
-
-  // Mask Parameter: PIDController1_D_k
-  //  Referenced by: '<S250>/Derivative Gain'
-
-  0.35,
-
-  // Mask Parameter: PIDController2_D_m
-  //  Referenced by: '<S302>/Derivative Gain'
-
-  0.0,
 
   // Mask Parameter: PIDController2_I
   //  Referenced by: '<S145>/Integral Gain'
@@ -110,7 +110,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_I
   //  Referenced by: '<S93>/Integral Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S41>/Integral Gain'
@@ -125,7 +125,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_I_m
   //  Referenced by: '<S254>/Integral Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController_I_a
   //  Referenced by: '<S202>/Integral Gain'
@@ -230,7 +230,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S101>/Proportional Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController2_P
   //  Referenced by: '<S153>/Proportional Gain'
@@ -245,7 +245,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController1_P_k
   //  Referenced by: '<S262>/Proportional Gain'
 
-  0.8,
+  0.0,
 
   // Mask Parameter: PIDController2_P_n
   //  Referenced by: '<S314>/Proportional Gain'

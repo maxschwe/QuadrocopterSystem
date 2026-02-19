@@ -9,7 +9,7 @@
 //
 // Model version                  : 1.288
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Feb 13 18:14:35 2026
+// C/C++ source code generated on : Thu Feb 19 11:20:31 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -74,9 +74,10 @@ void Controller::step()
   real_T omega_dot_idx_2;
   real_T omega_dot_tmp;
   real_T rtb_Filter;
+  real_T rtb_Integrator_o;
   real_T rtb_Mixer_0;
-  real_T rtb_Sum1;
   real_T rtb_Sum2;
+  real_T rtb_UnaryMinus;
   real_T s;
   real_T smax;
   int32_T c_k;
@@ -117,39 +118,36 @@ void Controller::step()
   rtb_Filter = rtU.w[1] - rtX.Integrator_CSTATE[0];
 
   // Gain: '<S47>/Filter Coefficient' incorporates:
-  //   Gain: '<S37>/Derivative Gain'
   //   Integrator: '<S39>/Filter'
-  //   Sum: '<S39>/SumD'
 
-  rtDW.FilterCoefficient = (rtP.PIDController_D * rtb_Filter - rtX.Filter_CSTATE)
-    * rtP.PIDController_N;
+  rtb_Sum2 = rtP.PIDController_N * rtX.Filter_CSTATE;
 
   // Sum: '<S2>/Sum1' incorporates:
   //   Inport: '<Root>/w'
   //   Integrator: '<S1>/Integrator'
 
-  rtb_Sum2 = rtU.w[2] - rtX.Integrator_CSTATE[1];
+  rtb_Integrator_o = rtU.w[2] - rtX.Integrator_CSTATE[1];
 
   // Gain: '<S99>/Filter Coefficient' incorporates:
   //   Gain: '<S89>/Derivative Gain'
   //   Integrator: '<S91>/Filter'
   //   Sum: '<S91>/SumD'
 
-  rtDW.FilterCoefficient_h = (rtP.PIDController1_D * rtb_Sum2 -
+  rtDW.FilterCoefficient = (rtP.PIDController1_D * rtb_Integrator_o -
     rtX.Filter_CSTATE_g) * rtP.PIDController1_N;
 
   // Sum: '<S2>/Sum2' incorporates:
   //   Inport: '<Root>/w'
   //   Integrator: '<S1>/Integrator'
 
-  rtb_Sum1 = rtU.w[3] - rtX.Integrator_CSTATE[2];
+  rtb_UnaryMinus = rtU.w[3] - rtX.Integrator_CSTATE[2];
 
   // Gain: '<S151>/Filter Coefficient' incorporates:
   //   Gain: '<S141>/Derivative Gain'
   //   Integrator: '<S143>/Filter'
   //   Sum: '<S143>/SumD'
 
-  rtDW.FilterCoefficient_o = (rtP.PIDController2_D * rtb_Sum1 -
+  rtDW.FilterCoefficient_o = (rtP.PIDController2_D * rtb_UnaryMinus -
     rtX.Filter_CSTATE_e) * rtP.PIDController2_N;
 
   // MATLAB Function: '<S9>/MATLAB Function' incorporates:
@@ -167,11 +165,11 @@ void Controller::step()
 
   rtb_Mixer[0] = rtU.w[0];
   rtb_Mixer[1] = (rtP.PIDController_P * rtb_Filter + rtX.Integrator_CSTATE_c) +
-    rtDW.FilterCoefficient;
-  rtb_Mixer[2] = (rtP.PIDController1_P * rtb_Sum2 + rtX.Integrator_CSTATE_e) +
-    rtDW.FilterCoefficient_h;
-  rtb_Mixer[3] = (rtP.PIDController2_P * rtb_Sum1 + rtX.Integrator_CSTATE_i) +
-    rtDW.FilterCoefficient_o;
+    rtb_Sum2;
+  rtb_Mixer[2] = (rtP.PIDController1_P * rtb_Integrator_o +
+                  rtX.Integrator_CSTATE_e) + rtDW.FilterCoefficient;
+  rtb_Mixer[3] = (rtP.PIDController2_P * rtb_UnaryMinus +
+                  rtX.Integrator_CSTATE_i) + rtDW.FilterCoefficient_o;
   std::memcpy(&A[0], &rtP.E[0], sizeof(real_T) << 4U);
   ipiv[0] = 1;
   ipiv[1] = 2;
@@ -448,10 +446,17 @@ void Controller::step()
   // End of MATLAB Function: '<S1>/MATLAB Function2'
 
   // Gain: '<S145>/Integral Gain'
-  rtDW.IntegralGain = rtP.PIDController2_I * rtb_Sum1;
+  rtDW.IntegralGain = rtP.PIDController2_I * rtb_UnaryMinus;
 
   // Gain: '<S93>/Integral Gain'
-  rtDW.IntegralGain_e = rtP.PIDController1_I * rtb_Sum2;
+  rtDW.IntegralGain_e = rtP.PIDController1_I * rtb_Integrator_o;
+
+  // Sum: '<S39>/SumD' incorporates:
+  //   Gain: '<S37>/Derivative Gain'
+  //   Integrator: '<S1>/Integrator'
+  //   UnaryMinus: '<S38>/Unary Minus'
+
+  rtDW.SumD = rtP.PIDController_D * -rtX.Integrator_CSTATE[3] - rtb_Sum2;
 
   // Gain: '<S41>/Integral Gain'
   rtDW.IntegralGain_j = rtP.PIDController_I * rtb_Filter;
@@ -463,25 +468,22 @@ void Controller::step()
   rtb_Filter = rtU.w[1] - rtU.y[0];
 
   // Gain: '<S208>/Filter Coefficient' incorporates:
-  //   Gain: '<S198>/Derivative Gain'
   //   Integrator: '<S200>/Filter'
-  //   Sum: '<S200>/SumD'
 
-  rtDW.FilterCoefficient_b = (rtP.PIDController_D_c * rtb_Filter -
-    rtX.Filter_CSTATE_gs) * rtP.PIDController_N_o;
+  rtb_Integrator_o = rtP.PIDController_N_o * rtX.Filter_CSTATE_b;
 
   // Sum: '<S3>/Sum1' incorporates:
   //   Inport: '<Root>/w'
   //   Inport: '<Root>/y'
 
-  rtb_Sum1 = rtU.w[2] - rtU.y[1];
+  rtb_UnaryMinus = rtU.w[2] - rtU.y[1];
 
   // Gain: '<S260>/Filter Coefficient' incorporates:
   //   Gain: '<S250>/Derivative Gain'
   //   Integrator: '<S252>/Filter'
   //   Sum: '<S252>/SumD'
 
-  rtDW.FilterCoefficient_bz = (rtP.PIDController1_D_k * rtb_Sum1 -
+  rtDW.FilterCoefficient_b = (rtP.PIDController1_D_k * rtb_UnaryMinus -
     rtX.Filter_CSTATE_m) * rtP.PIDController1_N_l;
 
   // Sum: '<S3>/Sum2' incorporates:
@@ -514,9 +516,9 @@ void Controller::step()
 
   rtb_Mixer[0] = rtU.w[0];
   rtb_Mixer[1] = (rtP.PIDController_P_f * rtb_Filter + rtX.Integrator_CSTATE_p)
-    + rtDW.FilterCoefficient_b;
-  rtb_Mixer[2] = (rtP.PIDController1_P_k * rtb_Sum1 + rtX.Integrator_CSTATE_iz)
-    + rtDW.FilterCoefficient_bz;
+    + rtb_Integrator_o;
+  rtb_Mixer[2] = (rtP.PIDController1_P_k * rtb_UnaryMinus +
+                  rtX.Integrator_CSTATE_iz) + rtDW.FilterCoefficient_b;
   rtb_Mixer[3] = (rtP.PIDController2_P_n * rtb_Sum2 + rtX.Integrator_CSTATE_j) +
     rtDW.FilterCoefficient_a;
   std::memcpy(&A[0], &rtP.E[0], sizeof(real_T) << 4U);
@@ -682,7 +684,14 @@ void Controller::step()
   rtDW.IntegralGain_p = rtP.PIDController2_I_i * rtb_Sum2;
 
   // Gain: '<S254>/Integral Gain'
-  rtDW.IntegralGain_o = rtP.PIDController1_I_m * rtb_Sum1;
+  rtDW.IntegralGain_o = rtP.PIDController1_I_m * rtb_UnaryMinus;
+
+  // Sum: '<S200>/SumD' incorporates:
+  //   Gain: '<S198>/Derivative Gain'
+  //   Inport: '<Root>/y'
+  //   UnaryMinus: '<S199>/Unary Minus'
+
+  rtDW.SumD_p = rtP.PIDController_D_c * -rtU.y[3] - rtb_Integrator_o;
 
   // Gain: '<S202>/Integral Gain'
   rtDW.IntegralGain_od = rtP.PIDController_I_a * rtb_Filter;
@@ -728,13 +737,13 @@ void Controller::controller_3dof_derivatives()
   _rtXdot->Integrator_CSTATE_c = rtDW.IntegralGain_j;
 
   // Derivatives for Integrator: '<S39>/Filter'
-  _rtXdot->Filter_CSTATE = rtDW.FilterCoefficient;
+  _rtXdot->Filter_CSTATE = rtDW.SumD;
 
   // Derivatives for Integrator: '<S96>/Integrator'
   _rtXdot->Integrator_CSTATE_e = rtDW.IntegralGain_e;
 
   // Derivatives for Integrator: '<S91>/Filter'
-  _rtXdot->Filter_CSTATE_g = rtDW.FilterCoefficient_h;
+  _rtXdot->Filter_CSTATE_g = rtDW.FilterCoefficient;
 
   // Derivatives for Integrator: '<S148>/Integrator'
   _rtXdot->Integrator_CSTATE_i = rtDW.IntegralGain;
@@ -746,13 +755,13 @@ void Controller::controller_3dof_derivatives()
   _rtXdot->Integrator_CSTATE_p = rtDW.IntegralGain_od;
 
   // Derivatives for Integrator: '<S200>/Filter'
-  _rtXdot->Filter_CSTATE_gs = rtDW.FilterCoefficient_b;
+  _rtXdot->Filter_CSTATE_b = rtDW.SumD_p;
 
   // Derivatives for Integrator: '<S257>/Integrator'
   _rtXdot->Integrator_CSTATE_iz = rtDW.IntegralGain_o;
 
   // Derivatives for Integrator: '<S252>/Filter'
-  _rtXdot->Filter_CSTATE_m = rtDW.FilterCoefficient_bz;
+  _rtXdot->Filter_CSTATE_m = rtDW.FilterCoefficient_b;
 
   // Derivatives for Integrator: '<S309>/Integrator'
   _rtXdot->Integrator_CSTATE_j = rtDW.IntegralGain_p;
@@ -829,7 +838,7 @@ void Controller::initialize()
     rtX.Integrator_CSTATE_p = rtP.PIDController_InitialConditio_d;
 
     // InitializeConditions for Integrator: '<S200>/Filter'
-    rtX.Filter_CSTATE_gs = rtP.PIDController_InitialConditio_e;
+    rtX.Filter_CSTATE_b = rtP.PIDController_InitialConditio_e;
 
     // InitializeConditions for Integrator: '<S257>/Integrator'
     rtX.Integrator_CSTATE_iz = rtP.PIDController1_InitialConditi_m;

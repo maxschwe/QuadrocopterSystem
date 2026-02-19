@@ -43,16 +43,15 @@ void host_com(void* params) {
     const TickType_t xFrequency = pdMS_TO_TICKS(20); // 20ms loop time = 50Hz
 
     while (1) {
-        OrientationData orientation = drone->rpy();
-        VectorFloat gyro = drone->gyro();
+        OrientationData orientation = drone->orientation();
 
-        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
             portTICK_PERIOD_MS * xTaskGetTickCount(),
             orientation.roll, orientation.pitch, orientation.yaw,
-            gyro.x, gyro.y, gyro.z,
+            orientation.roll_rate, orientation.pitch_rate, orientation.yaw_rate,
             controllerState.referenceInputs.roll, controllerState.referenceInputs.pitch, controllerState.referenceInputs.yaw, controllerState.referenceInputs.throttle,
             controllerState.throttles[0], controllerState.throttles[1], controllerState.throttles[2], controllerState.throttles[3],
-            controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2] // , controllerState.y_pred[3], controllerState.y_pred[4], controllerState.y_pred[5]
+            controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2], controllerState.y_pred[3], controllerState.y_pred[4], controllerState.y_pred[5]
         );
 
         while (uart_read_bytes(UART_NUM_0, &byte, 1, 0) > 0) {
@@ -75,7 +74,6 @@ void host_com(void* params) {
                         ESP_LOGW("ExternalInputs", "Invalid command: %s", rx_buffer);
                     }
                     rx_idx = 0; // Reset for next line
-                    break;
                 }
             } else if (rx_idx < sizeof(rx_buffer) - 1) {
                 rx_buffer[rx_idx++] = byte;
@@ -139,8 +137,7 @@ void drone_control(void*) {
 
     float t1 = 0, t2 = 0, t3 = 0, t4 = 0;
     while (true) {
-        OrientationData orientation = drone.rpy();
-        VectorFloat gyro = drone.gyro();
+        OrientationData orientation = drone.orientation();
         if (motorsActive && (xTaskGetTickCount() - orientation.lastUpdate > pdMS_TO_TICKS(1000))) {
             motorsActive = false;
             ESP_LOGE("TASK", "MPU Connection lost - Deactivating");
@@ -169,9 +166,9 @@ void drone_control(void*) {
             controller.rtU.y[0] = orientation.roll;
             controller.rtU.y[1] = orientation.pitch;
             controller.rtU.y[2] = orientation.yaw;
-            controller.rtU.y[3] = gyro.x;
-            controller.rtU.y[4] = gyro.y;
-            controller.rtU.y[5] = gyro.z;
+            controller.rtU.y[3] = orientation.roll_rate;
+            controller.rtU.y[4] = orientation.pitch_rate;
+            controller.rtU.y[5] = orientation.yaw_rate;
 
             controller.step();
             

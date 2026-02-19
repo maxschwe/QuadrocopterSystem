@@ -9,7 +9,7 @@
 //
 // Model version                  : 1.288
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Feb 13 18:14:35 2026
+// C/C++ source code generated on : Thu Feb 19 11:20:31 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -41,17 +41,17 @@ class Controller final
   // Block signals and states (default storage) for system '<Root>'
   struct DW {
     real_T dx[6];                      // '<S1>/MATLAB Function2'
-    real_T FilterCoefficient;          // '<S47>/Filter Coefficient'
-    real_T FilterCoefficient_h;        // '<S99>/Filter Coefficient'
+    real_T FilterCoefficient;          // '<S99>/Filter Coefficient'
     real_T FilterCoefficient_o;        // '<S151>/Filter Coefficient'
     real_T IntegralGain;               // '<S145>/Integral Gain'
     real_T IntegralGain_e;             // '<S93>/Integral Gain'
+    real_T SumD;                       // '<S39>/SumD'
     real_T IntegralGain_j;             // '<S41>/Integral Gain'
-    real_T FilterCoefficient_b;        // '<S208>/Filter Coefficient'
-    real_T FilterCoefficient_bz;       // '<S260>/Filter Coefficient'
+    real_T FilterCoefficient_b;        // '<S260>/Filter Coefficient'
     real_T FilterCoefficient_a;        // '<S312>/Filter Coefficient'
     real_T IntegralGain_p;             // '<S306>/Integral Gain'
     real_T IntegralGain_o;             // '<S254>/Integral Gain'
+    real_T SumD_p;                     // '<S200>/SumD'
     real_T IntegralGain_od;            // '<S202>/Integral Gain'
   };
 
@@ -65,7 +65,7 @@ class Controller final
     real_T Integrator_CSTATE_i;        // '<S148>/Integrator'
     real_T Filter_CSTATE_e;            // '<S143>/Filter'
     real_T Integrator_CSTATE_p;        // '<S205>/Integrator'
-    real_T Filter_CSTATE_gs;           // '<S200>/Filter'
+    real_T Filter_CSTATE_b;            // '<S200>/Filter'
     real_T Integrator_CSTATE_iz;       // '<S257>/Integrator'
     real_T Filter_CSTATE_m;            // '<S252>/Filter'
     real_T Integrator_CSTATE_j;        // '<S309>/Integrator'
@@ -82,7 +82,7 @@ class Controller final
     real_T Integrator_CSTATE_i;        // '<S148>/Integrator'
     real_T Filter_CSTATE_e;            // '<S143>/Filter'
     real_T Integrator_CSTATE_p;        // '<S205>/Integrator'
-    real_T Filter_CSTATE_gs;           // '<S200>/Filter'
+    real_T Filter_CSTATE_b;            // '<S200>/Filter'
     real_T Integrator_CSTATE_iz;       // '<S257>/Integrator'
     real_T Filter_CSTATE_m;            // '<S252>/Filter'
     real_T Integrator_CSTATE_j;        // '<S309>/Integrator'
@@ -99,7 +99,7 @@ class Controller final
     boolean_T Integrator_CSTATE_i;     // '<S148>/Integrator'
     boolean_T Filter_CSTATE_e;         // '<S143>/Filter'
     boolean_T Integrator_CSTATE_p;     // '<S205>/Integrator'
-    boolean_T Filter_CSTATE_gs;        // '<S200>/Filter'
+    boolean_T Filter_CSTATE_b;         // '<S200>/Filter'
     boolean_T Integrator_CSTATE_iz;    // '<S257>/Integrator'
     boolean_T Filter_CSTATE_m;         // '<S252>/Filter'
     boolean_T Integrator_CSTATE_j;     // '<S309>/Integrator'
@@ -153,23 +153,23 @@ class Controller final
     real_T p;                          // Variable: p
                                           //  Referenced by: '<S1>/MATLAB Function2'
 
-    real_T PIDController_D;            // Mask Parameter: PIDController_D
-                                          //  Referenced by: '<S37>/Derivative Gain'
-
     real_T PIDController1_D;           // Mask Parameter: PIDController1_D
                                           //  Referenced by: '<S89>/Derivative Gain'
 
     real_T PIDController2_D;           // Mask Parameter: PIDController2_D
                                           //  Referenced by: '<S141>/Derivative Gain'
 
-    real_T PIDController_D_c;          // Mask Parameter: PIDController_D_c
-                                          //  Referenced by: '<S198>/Derivative Gain'
+    real_T PIDController_D;            // Mask Parameter: PIDController_D
+                                          //  Referenced by: '<S37>/Derivative Gain'
 
     real_T PIDController1_D_k;         // Mask Parameter: PIDController1_D_k
                                           //  Referenced by: '<S250>/Derivative Gain'
 
     real_T PIDController2_D_m;         // Mask Parameter: PIDController2_D_m
                                           //  Referenced by: '<S302>/Derivative Gain'
+
+    real_T PIDController_D_c;          // Mask Parameter: PIDController_D_c
+                                          //  Referenced by: '<S198>/Derivative Gain'
 
     real_T PIDController2_I;           // Mask Parameter: PIDController2_I
                                           //  Referenced by: '<S145>/Integral Gain'
@@ -480,8 +480,8 @@ class Controller final
 //  '<S35>'  : 'controller_3dof/Subsystem Reference1/PID Controller/preSat Signal'
 //  '<S36>'  : 'controller_3dof/Subsystem Reference1/PID Controller/Anti-windup/Passthrough'
 //  '<S37>'  : 'controller_3dof/Subsystem Reference1/PID Controller/D Gain/Internal Parameters'
-//  '<S38>'  : 'controller_3dof/Subsystem Reference1/PID Controller/External Derivative/Error'
-//  '<S39>'  : 'controller_3dof/Subsystem Reference1/PID Controller/Filter/Cont. Filter'
+//  '<S38>'  : 'controller_3dof/Subsystem Reference1/PID Controller/External Derivative/External Ydot'
+//  '<S39>'  : 'controller_3dof/Subsystem Reference1/PID Controller/Filter/Cont. Filter Only'
 //  '<S40>'  : 'controller_3dof/Subsystem Reference1/PID Controller/Filter ICs/Internal IC - Filter'
 //  '<S41>'  : 'controller_3dof/Subsystem Reference1/PID Controller/I Gain/Internal Parameters'
 //  '<S42>'  : 'controller_3dof/Subsystem Reference1/PID Controller/Ideal P Gain/Passthrough'
@@ -641,8 +641,8 @@ class Controller final
 //  '<S196>' : 'controller_3dof/Subsystem3/PID Controller/preSat Signal'
 //  '<S197>' : 'controller_3dof/Subsystem3/PID Controller/Anti-windup/Passthrough'
 //  '<S198>' : 'controller_3dof/Subsystem3/PID Controller/D Gain/Internal Parameters'
-//  '<S199>' : 'controller_3dof/Subsystem3/PID Controller/External Derivative/Error'
-//  '<S200>' : 'controller_3dof/Subsystem3/PID Controller/Filter/Cont. Filter'
+//  '<S199>' : 'controller_3dof/Subsystem3/PID Controller/External Derivative/External Ydot'
+//  '<S200>' : 'controller_3dof/Subsystem3/PID Controller/Filter/Cont. Filter Only'
 //  '<S201>' : 'controller_3dof/Subsystem3/PID Controller/Filter ICs/Internal IC - Filter'
 //  '<S202>' : 'controller_3dof/Subsystem3/PID Controller/I Gain/Internal Parameters'
 //  '<S203>' : 'controller_3dof/Subsystem3/PID Controller/Ideal P Gain/Passthrough'

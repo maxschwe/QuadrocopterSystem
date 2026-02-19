@@ -98,7 +98,7 @@ bool Drone::initMpu(gpio_num_t mpu_interrupt_pin) {
     
     if (!mpu.testConnection()) {
         ESP_LOGE(TAG, "MPU6050 connection test failed!");
-        return false; // Return failure
+        return false;
     }
     
 	mpu.dmpInitialize();
@@ -192,7 +192,18 @@ void IRAM_ATTR Drone::mpuInterruptProcessor() {
         mpu.dmpGetGravity(&gravity, &q);
         mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
 
-        OrientationData orientation{ypr[2], ypr[1], ypr[0], xTaskGetTickCount()}; // Roll, Pitch, Yaw
+        int16_t raw_gyro[3];
+        mpu.dmpGetGyro(raw_gyro, fifoBuffer);
+
+        OrientationData orientation; // Roll, Pitch, Yaw
+        orientation.roll = ypr[2];
+        orientation.pitch = ypr[1];
+        orientation.yaw = ypr[0];
+        orientation.roll_rate = raw_gyro[0] / 16.4 * TO_RAD;
+        orientation.pitch_rate = raw_gyro[1] / 16.4 * TO_RAD;
+        orientation.yaw_rate = raw_gyro[2] / 16.4 * TO_RAD;
+
+        orientation.lastUpdate = xTaskGetTickCount();
 
         xQueueOverwrite(mpuMailbox, &orientation);
     }
@@ -205,30 +216,19 @@ void Drone::initRotors() {
     ESP_LOGI(TAG, "Rotors initialized.");
 }
 
-OrientationData Drone::rpy() {
-    OrientationData rpy;
-    if (xQueuePeek(mpuMailbox, &rpy, 0)) {
-        return rpy;
+OrientationData Drone::orientation() {
+    OrientationData orientation;
+    if (xQueuePeek(mpuMailbox, &orientation, 0)) {
+        return orientation;
     }
 
     ESP_LOGW(TAG, "Failed to peek data from MPU mailbox.");
-    return OrientationData{0.0f, 0.0f, 0.0f, 0};
-}
-
-VectorFloat Drone::gyro() {
-    VectorFloat gyro;
-    int16_t rawGyroX, rawGyroY, rawGyroZ;
-    mpu.getRotation(&rawGyroX, &rawGyroY, &rawGyroZ);
-    const float GYRO_SCALE = 131.0f; // LSB/deg/s for +/- 250deg/s
-    gyro.x = (float)rawGyroX / GYRO_SCALE * TO_RAD;
-    gyro.y = (float)rawGyroY / GYRO_SCALE * TO_RAD;
-    gyro.z = (float)rawGyroZ / GYRO_SCALE * TO_RAD;
-    return gyro;
+    return OrientationData{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0};
 }
 
 void Drone::printRpy() {
-    OrientationData rpy = this->rpy();
-    printf("Roll: %f, Pitch: %f, Yaw: %f\n", rpy.roll, rpy.pitch, rpy.yaw);
+    OrientationData orientation = this->orientation();
+    printf("Roll: %f, Pitch: %f, Yaw: %f\n", orientation.roll, orientation.pitch, orientation.yaw);
 }
 
 void Drone::setThrottles(float throttle1, float throttle2, float throttle3, float throttle4) {

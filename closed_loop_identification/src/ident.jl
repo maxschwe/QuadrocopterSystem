@@ -21,7 +21,7 @@ const P = (
 mutable struct Controller
     kp::Float64; ki::Float64; kd::Float64
     integral::Float64; prev_error::Float64
-    throttles::Vector{Float64}
+    throttles::Vector{Float64}  
     target_func::Function
 end
 

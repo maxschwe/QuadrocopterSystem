@@ -41,8 +41,6 @@ const char* TAG = "Drone";
 const gpio_num_t PIN_SDA = (gpio_num_t)21;
 const gpio_num_t PIN_CLK = (gpio_num_t)22;
 
-const float TO_RAD = std::numbers::pi_v<float> / 180.0f;
-
 
 void initI2C() {
 	i2c_config_t conf;
@@ -113,6 +111,16 @@ bool Drone::initMpu(gpio_num_t mpu_interrupt_pin) {
     mpu.CalibrateGyro(6);
     
 	mpu.setDMPEnabled(true);
+
+    uint8_t gyro_fs = mpu.getFullScaleGyroRange();
+
+    ESP_LOGI(TAG, "Gyro Full Scale Range Mode");
+
+    // Decode the number:
+    if (gyro_fs == 0) ESP_LOGI(TAG, "+/- 250 deg/s (Divisor: 131.0)");
+    if (gyro_fs == 1) ESP_LOGI(TAG, "+/- 500 deg/s (Divisor: 65.5)");
+    if (gyro_fs == 2) ESP_LOGI(TAG, "+/- 1000 deg/s (Divisor: 32.8)");
+    if (gyro_fs == 3) ESP_LOGI(TAG, "+/- 2000 deg/s (Divisor: 16.4)");
     
     this->mpuMailbox = xQueueCreate(1, sizeof(OrientationData));
     xTaskCreate(this->wrapperMPUInterruptProcessor, "mpu_processor", 4096, this, 10, &(this->mpuProcessingTaskHandle));
@@ -167,7 +175,7 @@ void IRAM_ATTR Drone::mpuInterruptProcessor() {
 
         VectorFloat gravity;
         float ypr[3];
-        uint16_t packetSize = 42;   // expected DMP packet size (default is 42 bytes)
+        uint16_t packetSize = 28;   // expected DMP packet size (default is 42 bytes)
         uint8_t fifoBuffer[64];     // FIFO storage buffer
         uint8_t mpuIntStatus = mpu.getIntStatus();    // holds actual interrupt status byte from MPU
         uint16_t fifoCount = mpu.getFIFOCount();
@@ -199,9 +207,16 @@ void IRAM_ATTR Drone::mpuInterruptProcessor() {
         orientation.roll = ypr[2];
         orientation.pitch = ypr[1];
         orientation.yaw = ypr[0];
-        orientation.roll_rate = raw_gyro[0] / 16.4 * TO_RAD;
-        orientation.pitch_rate = raw_gyro[1] / 16.4 * TO_RAD;
-        orientation.yaw_rate = raw_gyro[2] / 16.4 * TO_RAD;
+
+        float gyro_x_body = raw_gyro[0] / 16.4 * DEGREES_TO_RADIANS;
+        float gyro_y_body = raw_gyro[1] / 16.4 * DEGREES_TO_RADIANS;
+        float gyro_z_body = raw_gyro[2] / 16.4 * DEGREES_TO_RADIANS;
+
+        orientation.roll_rate = gyro_x_body + sin(orientation.roll) * tan(orientation.pitch) * gyro_y_body +
+                                cos(orientation.roll) * tan(orientation.pitch) * gyro_z_body;
+        orientation.pitch_rate = cos(orientation.roll) * gyro_y_body - sin(orientation.roll) * gyro_z_body;
+        orientation.yaw_rate = sin(orientation.roll) / cos(orientation.pitch) * gyro_y_body + 
+                               cos(orientation.roll) / cos(orientation.pitch) * gyro_z_body;
 
         orientation.lastUpdate = xTaskGetTickCount();
 

@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 import threading
 import tkinter as tk
@@ -13,26 +14,69 @@ import numpy as np
 
 
 MAX_POINTS = 2000
-INITIAL_THROTTLE = 3.0
-INITIAL_PID = (1.2, 0.5, 2.0)
+INITIAL_THROTTLE = 2.0
+INITIAL_PID = (0.9, 0, 3.5)
 
 
-def plot(df, ax, canvas):
-    ax.clear()
-    if not df.empty:
-        ax.plot(df['times'], df['roll'], label='Roll')
-        ax.plot(df['times'], df['roll_rate'], label='Roll Rate')
-        ax.set_ylim(-30, 30)
-        ax.legend(loc='upper right')
-        ax.set_xlabel("Time (ms)")
-        ax.set_ylabel("Value")
+PLOT_CONFIGS = [
+    {
+        "title": "Roll Data",
+        "ylabel": "Angle (deg)",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], np.rad2deg(df['roll']), label='Roll'),
+            ax.plot(df['time_ms'], np.rad2deg(df['roll_rate']), label='Roll Rate'),
+            ax.plot(df['time_ms'], np.rad2deg(df['reference_roll']), label='Roll Target'),
+            ax.set_ylim(-30, 30),
+            ax.legend(loc='upper right')
+        )
+    },
+    {
+        "title": "Roll Rate Data",
+        "ylabel": "Anglerate (deg/s)",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], np.rad2deg(df['roll_rate']), label='Roll Rate'),
+            ax.legend(loc='upper right')
+        )
+    },
+    {
+        "title": "Throttles",
+        "ylabel": "Throttle",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], df['throttle_1'], label='Throttle 1'),
+            ax.plot(df['time_ms'], df['throttle_2'], label='Throttle 2'),
+            ax.plot(df['time_ms'], df['throttle_3'], label='Throttle 3'),
+            ax.plot(df['time_ms'], df['throttle_4'], label='Throttle 4'),
+            ax.legend(loc='upper right')
+        )
+    }
+]
+
+def setup_subplots(fig):
+    axes = []
+    num_plots = len(PLOT_CONFIGS)
+    for i in range(num_plots):
+        # Add subplot: e.g. 211, 212
+        ax = fig.add_subplot(num_plots, 1, i + 1)
+        axes.append(ax)
+    return axes
+
+def plot(df, axes, canvas):
+    for i, ax in enumerate(axes):
+        ax.clear()
+        config = PLOT_CONFIGS[i]
+        
+        if not df.empty:
+            config["plot_func"](df, ax)
+            
+        ax.set_title(config["title"])
+        ax.set_ylabel(config["ylabel"])
+        if i == len(axes) - 1:
+            ax.set_xlabel("Time (ms)")
         
     canvas.draw()
 
 
 class Gui(tk.Tk):
-    _lock = threading.Lock()
-
     def __init__(self, ser):
         super().__init__()
         self.ser = ser
@@ -85,15 +129,43 @@ class Gui(tk.Tk):
         self.recording_time_label.pack(side=tk.LEFT, padx=5)   
         
         # Start Recording Button
-        self.start_recording_btn = ttk.Button(control_frame, text="Start Recording", command=lambda: self.after(0, self.run_trajectory))
+        self.start_recording_btn = ttk.Button(control_frame, text="Start Recording", command=self.start_trajectory)
         self.start_recording_btn.pack(side=tk.LEFT, padx=5)
+
+        # --- PID Control Frame ---
+        pid_frame = ttk.Frame(self)
+        pid_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+
+        def update_pid():
+            try:
+                p = float(self.p_var.get())
+                i = float(self.i_var.get())
+                d = float(self.d_var.get())
+                self._com.set_pid(p, i, d)
+                print(f"PID updated to: P={p}, I={i}, D={d}")
+            except ValueError:
+                print("Invalid PID values")
+
+        ttk.Label(pid_frame, text="P:").pack(side=tk.LEFT, padx=5)
+        self.p_var = tk.StringVar(value=str(INITIAL_PID[0]))
+        ttk.Entry(pid_frame, textvariable=self.p_var, width=5).pack(side=tk.LEFT)
+
+        ttk.Label(pid_frame, text="I:").pack(side=tk.LEFT, padx=5)
+        self.i_var = tk.StringVar(value=str(INITIAL_PID[1]))
+        ttk.Entry(pid_frame, textvariable=self.i_var, width=5).pack(side=tk.LEFT)
+
+        ttk.Label(pid_frame, text="D:").pack(side=tk.LEFT, padx=5)
+        self.d_var = tk.StringVar(value=str(INITIAL_PID[2]))
+        ttk.Entry(pid_frame, textvariable=self.d_var, width=5).pack(side=tk.LEFT)
+
+        ttk.Button(pid_frame, text="Update PID", command=update_pid).pack(side=tk.LEFT, padx=10)
 
         # --- Plot Frame ---
         plot_frame = ttk.Frame(self)
         plot_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
-        self.fig = Figure(figsize=(8, 6), dpi=100)
-        self.ax = self.fig.add_subplot(111)
+        self.fig = Figure(figsize=(8, 8), dpi=100)
+        self.axes = setup_subplots(self.fig)
         
         self.canvas = FigureCanvasTkAgg(self.fig, master=plot_frame)
         self.canvas.draw()
@@ -104,7 +176,7 @@ class Gui(tk.Tk):
 
     def trajectories(self):
         def my_sin(t):
-            return 5 * np.sin(0.01 * t)
+            return 5 * np.sin(2 * t)
         
         def my_step(t):
             return 5
@@ -117,6 +189,9 @@ class Gui(tk.Tk):
             "Step": my_step,
             "Ramp": my_ramp
         }
+    
+    def start_trajectory(self):
+        threading.Thread(target=self.run_trajectory).start()
 
     def run_trajectory(self):
         traj_type = self.traj_var.get()
@@ -129,34 +204,35 @@ class Gui(tk.Tk):
 
         print(f"Starting {traj_type} trajectory...")
         start_time = time.time()
-        self._telemetry_handler.start_recording(traj_record_time, on_finish=self.show_recorded_data)
+        save_loc = Path("../recordings") / Path(f"trajectory_{traj_type}_{int(start_time)}.csv")
+        self._telemetry_handler.start_recording(traj_record_time, save_loc=save_loc, on_finish=self.show_recorded_data)
         
         while (time.time() - start_time) < traj_record_time:
-            elapsed_s = int((time.time() - start_time))
+            elapsed_s = time.time() - start_time
             target_value = traj_func(elapsed_s)
 
             target_value_rads = np.radians(target_value)
 
             self._com.set_reference_roll(target_value_rads)
+            print(f"Setting {traj_type} trajectory: {target_value:.2f} degrees")
             time.sleep(0.01)
+
+        self._com.set_reference_roll(0.0)
 
     def show_recorded_data(self, df):
         top = tk.Toplevel(self)
         top.title("Recorded Trajectory Data")
         
-        fig = Figure(figsize=(8, 6), dpi=100)
-        ax = fig.add_subplot(111)
+        fig = Figure(figsize=(8, 8), dpi=100)
+        axes = setup_subplots(fig)
 
         canvas = FigureCanvasTkAgg(fig, master=top)
-        plot(df, ax, canvas)
+        plot(df, axes, canvas)
 
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
     def update_plot(self):
         df = self._telemetry_handler.get_queue_data()
-
-        self.ax.clear()
-        self.ax.set_title("Live Drone Data")
-        plot(df, self.ax, self.canvas)
-
-        self.after(100, self.update_plot)
+        
+        plot(df, self.axes, self.canvas)
+        self.after(50, self.update_plot)

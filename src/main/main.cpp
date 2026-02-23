@@ -21,7 +21,7 @@ struct ControllerState {
 };
 
 struct SystemState {
-    Drone* drone;
+    Drone& drone;
     ControllerState controllerState;
 };
 
@@ -30,10 +30,9 @@ const bool REMOTE_CONTROL_ENABLED = false;
 
 void host_com(void* params) {
     SystemState *systemState = static_cast<SystemState*>(params);
-    Drone *drone = systemState->drone;
-    ControllerState controllerState = systemState->controllerState;
-
-    ReferenceInputs& referenceInputs = drone->getReferenceInputs();
+    Drone& drone = systemState->drone;
+    ControllerState& controllerState = systemState->controllerState;
+    ReferenceInputs& referenceInputs = drone.getReferenceInputs();
 
     char rx_buffer[128];
     int rx_idx = 0;
@@ -43,8 +42,9 @@ void host_com(void* params) {
     const TickType_t xFrequency = pdMS_TO_TICKS(20); // 20ms loop time = 50Hz
 
     while (1) {
-        OrientationData orientation = drone->orientation();
-
+        OrientationData orientation = drone.orientation();
+        
+        // send telemetry data to host pc
         printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
             portTICK_PERIOD_MS * xTaskGetTickCount(),
             orientation.roll, orientation.pitch, orientation.yaw,
@@ -53,7 +53,8 @@ void host_com(void* params) {
             controllerState.throttles[0], controllerState.throttles[1], controllerState.throttles[2], controllerState.throttles[3],
             controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2], controllerState.y_pred[3], controllerState.y_pred[4], controllerState.y_pred[5]
         );
-
+        
+        // read incoming data from host pc
         while (uart_read_bytes(UART_NUM_0, &byte, 1, 0) > 0) {
             if (byte == '\n' || byte == '\r') {
                 if (rx_idx > 0) {
@@ -127,7 +128,7 @@ void drone_control(void*) {
     Controller controller;
     controller.initialize();
 
-    SystemState systemState{&drone, ControllerState{}};
+    SystemState systemState{drone, ControllerState{}};
 
     // Start host communication task for external control and telemetry
     xTaskCreate(&host_com, "host com", 16384, &systemState, 2, NULL);

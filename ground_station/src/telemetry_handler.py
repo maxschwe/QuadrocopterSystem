@@ -13,19 +13,20 @@ class TelemetryHandler:
     def __init__(self, deque_size=1000):
         self._telemetry_data = deque(maxlen=deque_size)
 
-        self._lock = threading.Lock()
+        self._lock_recordings = threading.Lock()
+        self._lock_deque = threading.Lock()
 
         self._recordings = []
 
     def start_recording(self, length_s: float, save_loc: Path | None = None, on_finish=None):
         def record():
             recording_telemetry = []
-            with self._lock:
+            with self._lock_recordings:
                 self._recordings.append(recording_telemetry)
 
             time.sleep(length_s)
 
-            with self._lock:
+            with self._lock_recordings:
                 self._recordings.remove(recording_telemetry)
 
             df = pd.DataFrame(recording_telemetry)
@@ -38,13 +39,15 @@ class TelemetryHandler:
         thread.start()
 
     def add(self, telemetry: TelemetryData):
-        self._telemetry_data.append(telemetry)
+        with self._lock_deque:
+            self._telemetry_data.append(telemetry)
 
-        with self._lock:
+        with self._lock_recordings:
             for recording in self._recordings:
                 recording.append(telemetry)
 
-        print(f"Time: {format_ms(telemetry.time_ms)}\t Roll: {math.degrees(telemetry.roll):.8f}\t Roll Rate: {math.degrees(telemetry.roll_rate):.8f}")
+        print(f"Time: {format_ms(telemetry.time_ms)}\t Roll: {math.degrees(telemetry.roll):.8f}\t Roll Rate: {math.degrees(telemetry.roll_rate):.8f}\t Reference Roll: {math.degrees(telemetry.reference_roll):.8f}")
 
     def get_queue_data(self):
-        return pd.DataFrame(self._telemetry_data)
+        with self._lock_deque:
+            return pd.DataFrame(self._telemetry_data)

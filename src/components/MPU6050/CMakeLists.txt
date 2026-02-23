@@ -1,4 +1,4 @@
-idf_component_register(SRCS "mpu6050.cpp"
+idf_component_register(SRCS "MPU6050.cpp"
                        INCLUDE_DIRS "."
                        REQUIRES i2cdev
 )

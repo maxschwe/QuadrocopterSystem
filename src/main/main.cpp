@@ -18,6 +18,7 @@ struct ControllerState {
     ReferenceInputs referenceInputs;
     real_T throttles[4];
     real_T y_pred[6];
+    real_T values[6];
 };
 
 struct SystemState {
@@ -45,13 +46,13 @@ void host_com(void* params) {
         OrientationData orientation = drone.orientation();
         
         // send telemetry data to host pc
-        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
             portTICK_PERIOD_MS * xTaskGetTickCount(),
             orientation.roll, orientation.pitch, orientation.yaw,
-            orientation.roll_rate, orientation.pitch_rate, orientation.yaw_rate,
             controllerState.referenceInputs.roll, controllerState.referenceInputs.pitch, controllerState.referenceInputs.yaw, controllerState.referenceInputs.throttle,
             controllerState.throttles[0], controllerState.throttles[1], controllerState.throttles[2], controllerState.throttles[3],
-            controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2], controllerState.y_pred[3], controllerState.y_pred[4], controllerState.y_pred[5]
+            controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2], controllerState.y_pred[3], controllerState.y_pred[4], controllerState.y_pred[5],
+            controllerState.values[0], controllerState.values[1], controllerState.values[2], controllerState.values[3], controllerState.values[4], controllerState.values[5]
         );
         
         // read incoming data from host pc
@@ -195,6 +196,12 @@ void drone_control(void*) {
         systemState.controllerState.y_pred[3] = controller.rtY.y_pred[3];
         systemState.controllerState.y_pred[4] = controller.rtY.y_pred[4];
         systemState.controllerState.y_pred[5] = controller.rtY.y_pred[5];
+        systemState.controllerState.values[0] = controller.rtY.values[0];
+        systemState.controllerState.values[1] = controller.rtY.values[1];
+        systemState.controllerState.values[2] = controller.rtY.values[2];
+        systemState.controllerState.values[3] = controller.rtY.values[3];
+        systemState.controllerState.values[4] = controller.rtY.values[4];
+        systemState.controllerState.values[5] = controller.rtY.values[5];
 
         BaseType_t thisCallDelayedLoop = xTaskDelayUntil(&xLastWakeTime, xFrequency);
         if (thisCallDelayedLoop != pdTRUE) {

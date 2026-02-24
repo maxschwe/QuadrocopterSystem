@@ -175,7 +175,7 @@ void IRAM_ATTR Drone::mpuInterruptProcessor() {
 
         VectorFloat gravity;
         float ypr[3];
-        uint16_t packetSize = 28;   // expected DMP packet size (default is 42 bytes)
+        uint16_t packetSize = 42;   // expected DMP packet size (default is 42 bytes)
         uint8_t fifoBuffer[64];     // FIFO storage buffer
         uint8_t mpuIntStatus = mpu.getIntStatus();    // holds actual interrupt status byte from MPU
         uint16_t fifoCount = mpu.getFIFOCount();

@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.288
+// Model version                  : 1.331
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Thu Feb 19 11:20:31 2026
+// C/C++ source code generated on : Tue Feb 24 17:07:45 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -25,8 +25,8 @@ Controller::P Controller::rtP{
   // Variable: E
   //  Referenced by:
   //    '<S1>/Mixer'
-  //    '<S9>/MATLAB Function'
-  //    '<S170>/MATLAB Function'
+  //    '<S12>/MATLAB Function'
+  //    '<S175>/MATLAB Function'
 
   { 1.0, 0.0, 0.2, 0.0351, 1.0, -0.2, 0.0, -0.0351, 1.0, 0.0, -0.2, 0.0351, 1.0,
     0.2, 0.0, -0.0351 },
@@ -39,16 +39,16 @@ Controller::P Controller::rtP{
   // Variable: a
   //  Referenced by:
   //    '<S1>/MATLAB Function1'
-  //    '<S9>/MATLAB Function'
-  //    '<S170>/MATLAB Function'
+  //    '<S12>/MATLAB Function'
+  //    '<S175>/MATLAB Function'
 
   13.0,
 
   // Variable: b
   //  Referenced by:
   //    '<S1>/MATLAB Function1'
-  //    '<S9>/MATLAB Function'
-  //    '<S170>/MATLAB Function'
+  //    '<S12>/MATLAB Function'
+  //    '<S175>/MATLAB Function'
 
   0.085908,
 
@@ -73,182 +73,182 @@ Controller::P Controller::rtP{
   0.1,
 
   // Mask Parameter: PIDController1_D
-  //  Referenced by: '<S89>/Derivative Gain'
+  //  Referenced by: '<S92>/Derivative Gain'
 
   0.0,
 
   // Mask Parameter: PIDController2_D
-  //  Referenced by: '<S141>/Derivative Gain'
+  //  Referenced by: '<S144>/Derivative Gain'
 
   0.0,
 
   // Mask Parameter: PIDController_D
-  //  Referenced by: '<S37>/Derivative Gain'
+  //  Referenced by: '<S40>/Derivative Gain'
 
-  0.32,
+  1.3,
 
   // Mask Parameter: PIDController1_D_k
-  //  Referenced by: '<S250>/Derivative Gain'
+  //  Referenced by: '<S255>/Derivative Gain'
 
   0.0,
 
   // Mask Parameter: PIDController2_D_m
-  //  Referenced by: '<S302>/Derivative Gain'
+  //  Referenced by: '<S307>/Derivative Gain'
 
   0.0,
 
   // Mask Parameter: PIDController_D_c
-  //  Referenced by: '<S198>/Derivative Gain'
+  //  Referenced by: '<S203>/Derivative Gain'
 
-  0.32,
+  1.3,
 
   // Mask Parameter: PIDController2_I
-  //  Referenced by: '<S145>/Integral Gain'
+  //  Referenced by: '<S148>/Integral Gain'
 
   0.0,
 
   // Mask Parameter: PIDController1_I
-  //  Referenced by: '<S93>/Integral Gain'
+  //  Referenced by: '<S96>/Integral Gain'
 
   0.0,
 
   // Mask Parameter: PIDController_I
-  //  Referenced by: '<S41>/Integral Gain'
+  //  Referenced by: '<S44>/Integral Gain'
 
-  0.8,
+  1.2,
 
   // Mask Parameter: PIDController2_I_i
-  //  Referenced by: '<S306>/Integral Gain'
+  //  Referenced by: '<S311>/Integral Gain'
 
   0.0,
 
   // Mask Parameter: PIDController1_I_m
-  //  Referenced by: '<S254>/Integral Gain'
+  //  Referenced by: '<S259>/Integral Gain'
 
   0.0,
 
   // Mask Parameter: PIDController_I_a
-  //  Referenced by: '<S202>/Integral Gain'
+  //  Referenced by: '<S207>/Integral Gain'
 
-  0.8,
+  1.2,
 
   // Mask Parameter: PIDController_InitialConditionF
-  //  Referenced by: '<S39>/Filter'
+  //  Referenced by: '<S42>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialCondition
-  //  Referenced by: '<S91>/Filter'
+  //  Referenced by: '<S94>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialCondition
-  //  Referenced by: '<S143>/Filter'
+  //  Referenced by: '<S146>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController_InitialConditio_e
-  //  Referenced by: '<S200>/Filter'
+  //  Referenced by: '<S205>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialConditi_j
-  //  Referenced by: '<S252>/Filter'
+  //  Referenced by: '<S257>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialConditi_e
-  //  Referenced by: '<S304>/Filter'
+  //  Referenced by: '<S309>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController_InitialConditio_l
-  //  Referenced by: '<S44>/Integrator'
+  //  Referenced by: '<S47>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialConditi_d
-  //  Referenced by: '<S96>/Integrator'
+  //  Referenced by: '<S99>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialConditi_n
-  //  Referenced by: '<S148>/Integrator'
+  //  Referenced by: '<S151>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController_InitialConditio_d
-  //  Referenced by: '<S205>/Integrator'
+  //  Referenced by: '<S210>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialConditi_m
-  //  Referenced by: '<S257>/Integrator'
+  //  Referenced by: '<S262>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialConditi_o
-  //  Referenced by: '<S309>/Integrator'
+  //  Referenced by: '<S314>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController_N
-  //  Referenced by: '<S47>/Filter Coefficient'
+  //  Referenced by: '<S50>/Filter Coefficient'
 
   100.0,
 
   // Mask Parameter: PIDController1_N
-  //  Referenced by: '<S99>/Filter Coefficient'
+  //  Referenced by: '<S102>/Filter Coefficient'
 
   100.0,
 
   // Mask Parameter: PIDController2_N
-  //  Referenced by: '<S151>/Filter Coefficient'
+  //  Referenced by: '<S154>/Filter Coefficient'
 
   100.0,
 
   // Mask Parameter: PIDController_N_o
-  //  Referenced by: '<S208>/Filter Coefficient'
+  //  Referenced by: '<S213>/Filter Coefficient'
 
   100.0,
 
   // Mask Parameter: PIDController1_N_l
-  //  Referenced by: '<S260>/Filter Coefficient'
+  //  Referenced by: '<S265>/Filter Coefficient'
 
   100.0,
 
   // Mask Parameter: PIDController2_N_b
-  //  Referenced by: '<S312>/Filter Coefficient'
+  //  Referenced by: '<S317>/Filter Coefficient'
 
   100.0,
 
   // Mask Parameter: PIDController_P
-  //  Referenced by: '<S49>/Proportional Gain'
+  //  Referenced by: '<S52>/Proportional Gain'
 
-  0.8,
+  3.0,
 
   // Mask Parameter: PIDController1_P
-  //  Referenced by: '<S101>/Proportional Gain'
+  //  Referenced by: '<S104>/Proportional Gain'
 
   0.0,
 
   // Mask Parameter: PIDController2_P
-  //  Referenced by: '<S153>/Proportional Gain'
+  //  Referenced by: '<S156>/Proportional Gain'
 
   0.0,
 
   // Mask Parameter: PIDController_P_f
-  //  Referenced by: '<S210>/Proportional Gain'
+  //  Referenced by: '<S215>/Proportional Gain'
 
-  0.8,
+  3.0,
 
   // Mask Parameter: PIDController1_P_k
-  //  Referenced by: '<S262>/Proportional Gain'
+  //  Referenced by: '<S267>/Proportional Gain'
 
   0.0,
 
   // Mask Parameter: PIDController2_P_n
-  //  Referenced by: '<S314>/Proportional Gain'
+  //  Referenced by: '<S319>/Proportional Gain'
 
   0.0,
 
@@ -258,24 +258,164 @@ Controller::P Controller::rtP{
   0.0,
 
   // Expression: 0.90
-  //  Referenced by: '<S9>/Saturation'
+  //  Referenced by: '<S12>/Saturation'
 
   0.9,
 
   // Expression: 0.15
-  //  Referenced by: '<S9>/Saturation'
+  //  Referenced by: '<S12>/Saturation'
 
   0.15,
 
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S3>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
+  // Expression: [1; 0]
+  //  Referenced by: '<S3>/Constant1'
+
+  { 1.0, 0.0 },
+
+  // Expression: [1 0]
+  //  Referenced by: '<S3>/Constant2'
+
+  { 1.0, 0.0 },
+
+  // Expression: 10e-6
+  //  Referenced by: '<S3>/Cov Messrauschen'
+
+  1.0E-5,
+
+  // Expression: 0
+  //  Referenced by: '<S3>/Constant5'
+
+  0.0,
+
+  // Expression: [0; 0]
+  //  Referenced by: '<S3>/Unit Delay1'
+
+  { 0.0, 0.0 },
+
+  // Expression: [0.001 0; 0 1000]
+  //  Referenced by: '<S3>/Cov Prozessrauschen'
+
+  { 0.001, 0.0, 0.0, 10000 },
+
+  // Expression: 1 * eye(2, 2)
+  //  Referenced by: '<S3>/Unit Delay'
+
+  { 1.0, 0.0, 0.0, 1.0 },
+
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S4>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
+  // Expression: [1; 0]
+  //  Referenced by: '<S4>/Constant1'
+
+  { 1.0, 0.0 },
+
+  // Expression: [1 0]
+  //  Referenced by: '<S4>/Constant2'
+
+  { 1.0, 0.0 },
+
+  // Expression: 10e-6
+  //  Referenced by: '<S4>/Cov Messrauschen'
+
+  1.0E-5,
+
+  // Expression: 0
+  //  Referenced by: '<S4>/Constant5'
+
+  0.0,
+
+  // Expression: [0; 0]
+  //  Referenced by: '<S4>/Unit Delay1'
+
+  { 0.0, 0.0 },
+
+  // Expression: [1 0; 0 10e-3]
+  //  Referenced by: '<S4>/Cov Prozessrauschen'
+
+  { 1.0, 0.0, 0.0, 0.01 },
+
+  // Expression: 1 * eye(2, 2)
+  //  Referenced by: '<S4>/Unit Delay'
+
+  { 1.0, 0.0, 0.0, 1.0 },
+
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S6>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
+  // Expression: [1; 0]
+  //  Referenced by: '<S6>/Constant1'
+
+  { 1.0, 0.0 },
+
+  // Expression: [1 0]
+  //  Referenced by: '<S6>/Constant2'
+
+  { 1.0, 0.0 },
+
+  // Expression: 10e-6
+  //  Referenced by: '<S6>/Cov Messrauschen'
+
+  1.0E-5,
+
+  // Expression: 0
+  //  Referenced by: '<S6>/Constant5'
+
+  0.0,
+
+  // Expression: [0; 0]
+  //  Referenced by: '<S6>/Unit Delay1'
+
+  { 0.0, 0.0 },
+
+  // Expression: [1 0; 0 10e-3]
+  //  Referenced by: '<S6>/Cov Prozessrauschen'
+
+  { 1.0, 0.0, 0.0, 0.01 },
+
+  // Expression: 1 * eye(2, 2)
+  //  Referenced by: '<S6>/Unit Delay'
+
+  { 1.0, 0.0, 0.0, 1.0 },
+
   // Expression: 0.90
-  //  Referenced by: '<S170>/Saturation'
+  //  Referenced by: '<S175>/Saturation'
 
   0.9,
 
   // Expression: 0.15
-  //  Referenced by: '<S170>/Saturation'
+  //  Referenced by: '<S175>/Saturation'
 
-  0.15
+  0.15,
+
+  // Expression: 0
+  //  Referenced by: '<Root>/Integrator'
+
+  0.0,
+
+  // Expression: 0
+  //  Referenced by: '<S3>/Integrator1'
+
+  0.0,
+
+  // Expression: 0
+  //  Referenced by: '<S4>/Integrator1'
+
+  0.0,
+
+  // Expression: 0
+  //  Referenced by: '<S6>/Integrator1'
+
+  0.0
 };
 
 //

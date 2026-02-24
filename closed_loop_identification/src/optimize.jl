@@ -1,15 +1,15 @@
 using DifferentialEquations, LinearAlgebra, Plots, CSV, DataFrames, Optim
 using Optimization, OptimizationOptimJL, ForwardDiff, SciMLSensitivity
 
-data = CSV.read("data/log_20260204_101613_Sine.csv", DataFrame)
+data = CSV.read("../recordings/trajectory_30s Benchmark_1771925754.csv", DataFrame)
 
 recorded_t = [i * 0.005 for i in 0:nrow(data)-1]
-recorded_roll = deg2rad.(data.roll_actual) # Work in Radians internally
+recorded_roll = data.roll
 
 function reference_roll(t)
     idx = searchsortedfirst(recorded_t, t)
     idx = clamp(idx, 1, nrow(data))
-    target = deg2rad(data.roll_cmd[idx])
+    target = data.reference_roll[idx]
     return target
 end
 
@@ -26,11 +26,11 @@ function quadrotor_dynamics!(du, u, p, t)
     # 2. Filtered Derivative Logic
     # This acts like a low-pass filter on the D-term
     # D_out = N * (kd * error - deriv_state)
-    d_term = p.N_filter * (p.kd * error - deriv_state)
+    d_term = p.N_filter * p.kd * ω[1]
     
     # 3. Control Allocation
     roll_moment = p.kp * error + p.ki * int_err + d_term
-    tau_vec = [2.0, roll_moment, 0.0, 0.0]
+    tau_vec = [3.0, roll_moment, 0.0, 0.0]
     
     f_sq = p.E \ tau_vec
     rpm = sqrt.(max.(f_sq, 0.0) ./ p.a) .+ p.b
@@ -70,7 +70,7 @@ function construct_parameters(params)
         ],
         a=13.0, b=0.085908, 
         k_roll_drag=k_roll_drag,
-        kp=0.8, ki=0.8, kd=0.35, N_filter = 100.0,)
+        kp=0.8, ki=0.3, kd=1.5, N_filter = 100.0,)
 end
 
 function sim_system(params)
@@ -80,9 +80,9 @@ function sim_system(params)
     p_local = construct_parameters(params)
     prob = ODEProblem(quadrotor_dynamics!, u0, tspan, p_local)
     sol = solve(prob, Tsit5(), saveat=recorded_t, reltol=1e-6, abstol=1e-6)
-    print(params, " final error: ", sum(abs2, deg2rad.(data.roll_actual) .- [u[1] for u in sol.u]) / length(sol.u), "\n")
+    print(params, " final error: ", sum(abs2, data.roll .- [u[1] for u in sol.u]) / length(sol.u), "\n")
 
-    return [u[1] |> rad2deg for u in sol.u]
+    return [u[1] for u in sol.u]
 end
 
 p_init = [0.1]
@@ -116,7 +116,7 @@ self_fitted_sim_data = sim_system([0.18]) # Simulate a self-fitted model
 
 plot(
     recorded_t,
-    [data.roll_cmd data.roll_actual data_sim_old_model optimizer_fitted_sim_data self_fitted_sim_data],
+    [data.reference_roll data.roll data_sim_old_model optimizer_fitted_sim_data self_fitted_sim_data],
     xlabel="Time (s)", ylabel="Roll Angle (deg)", title="Roll Angle Comparison",
     legend=:bottomright,
     label=["Roll reference" "Roll measured" "Roll old model" "Roll optimizer fitted model" "Roll self fitted model"]

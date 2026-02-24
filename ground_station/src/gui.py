@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 import time
 import threading
@@ -14,9 +15,8 @@ import numpy as np
 
 
 MAX_POINTS = 2000
-INITIAL_THROTTLE = 2.0
-INITIAL_PID = (0.9, 0, 3.5)
-
+INITIAL_THROTTLE = 3.0
+INITIAL_PID = (1.1, 0.95, 0.35)
 
 PLOT_CONFIGS = [
     {
@@ -24,9 +24,9 @@ PLOT_CONFIGS = [
         "ylabel": "Angle (deg)",
         "plot_func": lambda df, ax: (
             ax.plot(df['time_ms'], np.rad2deg(df['roll']), label='Roll'),
-            ax.plot(df['time_ms'], np.rad2deg(df['roll_rate']), label='Roll Rate'),
             ax.plot(df['time_ms'], np.rad2deg(df['reference_roll']), label='Roll Target'),
-            ax.set_ylim(-30, 30),
+            ax.plot(df['time_ms'], np.rad2deg(df['value1']), label='Roll Rate integrated'),
+            # ax.set_ylim(-30, 30),
             ax.legend(loc='upper right')
         )
     },
@@ -34,7 +34,7 @@ PLOT_CONFIGS = [
         "title": "Roll Rate Data",
         "ylabel": "Anglerate (deg/s)",
         "plot_func": lambda df, ax: (
-            ax.plot(df['time_ms'], np.rad2deg(df['roll_rate']), label='Roll Rate'),
+            ax.plot(df['time_ms'], np.rad2deg(df['value4']), label='Roll Rate'),
             ax.legend(loc='upper right')
         )
     },
@@ -122,7 +122,7 @@ class Gui(tk.Tk):
 
         # Recording Time
         ttk.Label(control_frame, text="Recording Time:").pack(side=tk.LEFT)
-        self.recording_time_var = tk.DoubleVar(value=20.0)
+        self.recording_time_var = tk.DoubleVar(value=30.0)
         self.recording_time_scale = ttk.Scale(control_frame, from_=0, to=60, variable=self.recording_time_var)
         self.recording_time_scale.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         self.recording_time_label = ttk.Label(control_frame, textvariable=self.recording_time_var)
@@ -176,18 +176,33 @@ class Gui(tk.Tk):
 
     def trajectories(self):
         def my_sin(t):
-            return 5 * np.sin(2 * t)
+            return 5 * np.sin(1 * t)
         
         def my_step(t):
             return 5
         
         def my_ramp(t):
-            return 0.01 * t
+            return 0.25 * t
+        
+        def benchmark_30s(t):
+            if t < 5:
+                return 0.0
+            elif t < 10:
+                return 5.0
+            elif t < 15:
+                return 5.0 - 2.0 * (t - 10)
+            elif t < 25:
+                return 5.0 * math.sin(0.2 * (t - 15)**2)
+            elif t <= 30:
+                return 2.5 * math.cos(math.pi/5 * (t - 25)) + 2.5
+            else:
+                return 0.0
 
         return {
             "Sine": my_sin,
             "Step": my_step,
-            "Ramp": my_ramp
+            "Ramp": my_ramp,
+            "30s Benchmark": benchmark_30s
         }
     
     def start_trajectory(self):

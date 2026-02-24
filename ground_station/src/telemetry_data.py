@@ -7,9 +7,6 @@ class TelemetryData:
     roll: float
     pitch: float
     yaw: float
-    roll_rate: float
-    pitch_rate: float
-    yaw_rate: float
 
     reference_roll: float
     reference_pitch: float
@@ -27,3 +24,10 @@ class TelemetryData:
     roll_rate_predicted: float
     pitch_rate_predicted: float
     yaw_rate_predicted: float
+
+    value1: float
+    value2: float
+    value3: float
+    value4: float
+    value5: float
+    value6: float

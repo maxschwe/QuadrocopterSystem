@@ -16,7 +16,7 @@ import numpy as np
 
 MAX_POINTS = 2000
 INITIAL_THROTTLE = 3.0
-INITIAL_PID = (1.1, 0.95, 0.35)
+INITIAL_PID = (1.4, 1.18, 0.33)
 
 PLOT_CONFIGS = [
     {
@@ -26,6 +26,8 @@ PLOT_CONFIGS = [
             ax.plot(df['time_ms'], np.rad2deg(df['roll']), label='Roll'),
             ax.plot(df['time_ms'], np.rad2deg(df['reference_roll']), label='Roll Target'),
             ax.plot(df['time_ms'], np.rad2deg(df['value1']), label='Roll Rate integrated'),
+            ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['roll']) - np.rad2deg(df['reference_roll']))**2):.2f}", 
+                    transform=ax.transAxes, ha="center", va="top"),
             # ax.set_ylim(-30, 30),
             ax.legend(loc='upper right')
         )
@@ -176,10 +178,10 @@ class Gui(tk.Tk):
 
     def trajectories(self):
         def my_sin(t):
-            return 5 * np.sin(1 * t)
+            return 3 * np.sin(1 * t)
         
         def my_step(t):
-            return 5
+            return 3
         
         def my_ramp(t):
             return 0.25 * t
@@ -190,7 +192,7 @@ class Gui(tk.Tk):
             elif t < 10:
                 return 5.0
             elif t < 15:
-                return 5.0 - 2.0 * (t - 10)
+                return 5.0 - 2 * (t - 10)
             elif t < 25:
                 return 5.0 * math.sin(0.2 * (t - 15)**2)
             elif t <= 30:

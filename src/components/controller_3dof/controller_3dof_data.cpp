@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.331
+// Model version                  : 1.337
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Tue Feb 24 17:07:45 2026
+// C/C++ source code generated on : Thu Feb 26 11:30:56 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -85,7 +85,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_D
   //  Referenced by: '<S40>/Derivative Gain'
 
-  1.3,
+  0.4,
 
   // Mask Parameter: PIDController1_D_k
   //  Referenced by: '<S255>/Derivative Gain'
@@ -100,7 +100,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_D_c
   //  Referenced by: '<S203>/Derivative Gain'
 
-  1.3,
+  0.4,
 
   // Mask Parameter: PIDController2_I
   //  Referenced by: '<S148>/Integral Gain'
@@ -115,7 +115,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_I
   //  Referenced by: '<S44>/Integral Gain'
 
-  1.2,
+  0.7,
 
   // Mask Parameter: PIDController2_I_i
   //  Referenced by: '<S311>/Integral Gain'
@@ -130,7 +130,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_I_a
   //  Referenced by: '<S207>/Integral Gain'
 
-  1.2,
+  0.7,
 
   // Mask Parameter: PIDController_InitialConditionF
   //  Referenced by: '<S42>/Filter'
@@ -225,7 +225,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_P
   //  Referenced by: '<S52>/Proportional Gain'
 
-  3.0,
+  1.3,
 
   // Mask Parameter: PIDController1_P
   //  Referenced by: '<S104>/Proportional Gain'
@@ -240,7 +240,7 @@ Controller::P Controller::rtP{
   // Mask Parameter: PIDController_P_f
   //  Referenced by: '<S215>/Proportional Gain'
 
-  3.0,
+  1.3,
 
   // Mask Parameter: PIDController1_P_k
   //  Referenced by: '<S267>/Proportional Gain'
@@ -282,10 +282,10 @@ Controller::P Controller::rtP{
 
   { 1.0, 0.0 },
 
-  // Expression: 10e-6
+  // Expression: 10e-4
   //  Referenced by: '<S3>/Cov Messrauschen'
 
-  1.0E-5,
+  0.001,
 
   // Expression: 0
   //  Referenced by: '<S3>/Constant5'
@@ -297,10 +297,10 @@ Controller::P Controller::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [0.001 0; 0 1000]
+  // Expression: [0.001 0; 0 100]
   //  Referenced by: '<S3>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 10000 },
+  { 0.001, 0.0, 0.0, 800.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S3>/Unit Delay'

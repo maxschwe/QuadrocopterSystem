@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.331
+// Model version                  : 1.337
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Tue Feb 24 17:07:45 2026
+// C/C++ source code generated on : Thu Feb 26 11:30:56 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -625,9 +625,8 @@ void Controller::step()
 
   // Sum: '<S5>/Sum' incorporates:
   //   Inport: '<Root>/w'
-  //   Inport: '<Root>/y'
 
-  rtb_Filter = rtU.w[1] - rtU.y[0];
+  rtb_Filter = rtU.w[1] - rtDW.x_dach_n[0];
 
   // Gain: '<S213>/Filter Coefficient' incorporates:
   //   Integrator: '<S205>/Filter'

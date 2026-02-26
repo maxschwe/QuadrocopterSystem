@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.331
+// Model version                  : 1.337
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Tue Feb 24 17:07:45 2026
+// C/C++ source code generated on : Thu Feb 26 11:30:56 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -317,7 +317,7 @@ class Controller final
     real_T Constant2_Value[2];         // Expression: [1 0]
                                           //  Referenced by: '<S3>/Constant2'
 
-    real_T CovMessrauschen_Value;      // Expression: 10e-6
+    real_T CovMessrauschen_Value;      // Expression: 10e-4
                                           //  Referenced by: '<S3>/Cov Messrauschen'
 
     real_T Constant5_Value;            // Expression: 0
@@ -326,7 +326,7 @@ class Controller final
     real_T UnitDelay1_InitialCondition[2];// Expression: [0; 0]
                                              //  Referenced by: '<S3>/Unit Delay1'
 
-    real_T CovProzessrauschen_Value[4];// Expression: [0.001 0; 0 1000]
+    real_T CovProzessrauschen_Value[4];// Expression: [0.001 0; 0 100]
                                           //  Referenced by: '<S3>/Cov Prozessrauschen'
 
     real_T UnitDelay_InitialCondition[4];// Expression: 1 * eye(2, 2)

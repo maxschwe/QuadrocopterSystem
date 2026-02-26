@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.339
+// Model version                  : 1.352
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Thu Feb 26 14:51:23 2026
+// C/C++ source code generated on : Thu Feb 26 18:20:48 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -24,207 +24,136 @@
 Controller::P Controller::rtP{
   // Variable: E
   //  Referenced by:
-  //    '<S1>/Mixer'
-  //    '<S12>/MATLAB Function'
-  //    '<S175>/MATLAB Function'
+  //    '<S1>/MATLAB Function'
+  //    '<S2>/Mixer'
+  //    '<S7>/MATLAB Function'
 
   { 1.0, 0.0, 0.2, 0.0351, 1.0, -0.2, 0.0, -0.0351, 1.0, 0.0, -0.2, 0.0351, 1.0,
     0.2, 0.0, -0.0351 },
 
   // Variable: I
-  //  Referenced by: '<S1>/MATLAB Function2'
+  //  Referenced by: '<S2>/MATLAB Function2'
 
   { 0.0258, 0.0, 0.0, 0.0, 0.0268, 0.0, 0.0, 0.0, 0.068 },
 
+  // Variable: K
+  //  Referenced by:
+  //    '<S8>/Gain'
+  //    '<S9>/Gain'
+
+  { 4.8162325473254732, -4.5815932932854847E-17, -9.5385573792593762E-16,
+    -1.3406080991824339E-15, 4.8168918826532545, -3.0030181977003071E-15,
+    2.2159675382151523E-16, -4.6668145962235449E-16, 2.3152781706241252,
+    0.50587280591417183, 7.3877073429728637E-17, -4.5617498558133229E-17,
+    1.1565020081584054E-16, 0.51519313823967927, -2.1317333829409328E-16,
+    5.2133517671979619E-17, 6.026253801518084E-17, 0.56322111470092207,
+    0.31622776601683866, -2.271791668812762E-16, 7.6097447264009891E-17,
+    -6.270619816169662E-17, 0.31622776601683916, -1.0783645040121002E-15,
+    -1.5329456682202211E-16, -9.9087325655952365E-16, 0.31622776601683722 },
+
   // Variable: a
   //  Referenced by:
-  //    '<S1>/MATLAB Function1'
-  //    '<S12>/MATLAB Function'
-  //    '<S175>/MATLAB Function'
+  //    '<S1>/MATLAB Function'
+  //    '<S2>/MATLAB Function1'
+  //    '<S7>/MATLAB Function'
 
   13.0,
 
   // Variable: b
   //  Referenced by:
-  //    '<S1>/MATLAB Function1'
-  //    '<S12>/MATLAB Function'
-  //    '<S175>/MATLAB Function'
+  //    '<S1>/MATLAB Function'
+  //    '<S2>/MATLAB Function1'
+  //    '<S7>/MATLAB Function'
 
   0.085908,
 
   // Variable: d
-  //  Referenced by: '<S1>/MATLAB Function2'
+  //  Referenced by: '<S2>/MATLAB Function2'
 
   0.03,
 
   // Variable: g
-  //  Referenced by: '<S1>/MATLAB Function2'
+  //  Referenced by: '<S2>/MATLAB Function2'
 
   9.81,
 
   // Variable: kd_pitch
-  //  Referenced by:
-  //    '<S92>/Derivative Gain'
-  //    '<S255>/Derivative Gain'
+  //  Referenced by: '<S97>/Derivative Gain'
 
   0.35,
 
   // Variable: kd_roll
-  //  Referenced by:
-  //    '<S40>/Derivative Gain'
-  //    '<S203>/Derivative Gain'
+  //  Referenced by: '<S45>/Derivative Gain'
 
   0.33,
 
   // Variable: kd_yaw
-  //  Referenced by:
-  //    '<S144>/Derivative Gain'
-  //    '<S307>/Derivative Gain'
+  //  Referenced by: '<S149>/Derivative Gain'
 
   0.51,
 
   // Variable: ke
   //  Referenced by:
-  //    '<S50>/Filter Coefficient'
-  //    '<S102>/Filter Coefficient'
-  //    '<S154>/Filter Coefficient'
-  //    '<S213>/Filter Coefficient'
-  //    '<S265>/Filter Coefficient'
-  //    '<S317>/Filter Coefficient'
+  //    '<S55>/Filter Coefficient'
+  //    '<S107>/Filter Coefficient'
+  //    '<S159>/Filter Coefficient'
 
   100.0,
 
   // Variable: ki_pitch
-  //  Referenced by:
-  //    '<S96>/Integral Gain'
-  //    '<S259>/Integral Gain'
+  //  Referenced by: '<S101>/Integral Gain'
 
   1.21,
 
   // Variable: ki_roll
-  //  Referenced by:
-  //    '<S44>/Integral Gain'
-  //    '<S207>/Integral Gain'
+  //  Referenced by: '<S49>/Integral Gain'
 
   1.18,
 
   // Variable: ki_yaw
-  //  Referenced by:
-  //    '<S148>/Integral Gain'
-  //    '<S311>/Integral Gain'
+  //  Referenced by: '<S153>/Integral Gain'
 
   2.5,
 
-  // Variable: kp_pitch
-  //  Referenced by:
-  //    '<S104>/Proportional Gain'
-  //    '<S267>/Proportional Gain'
-
-  1.42,
-
-  // Variable: kp_roll
-  //  Referenced by:
-  //    '<S52>/Proportional Gain'
-  //    '<S215>/Proportional Gain'
-
-  1.4,
-
-  // Variable: kp_yaw
-  //  Referenced by:
-  //    '<S156>/Proportional Gain'
-  //    '<S319>/Proportional Gain'
-
-  2.8,
-
   // Variable: m
-  //  Referenced by: '<S1>/MATLAB Function2'
+  //  Referenced by: '<S2>/MATLAB Function2'
 
   1.014,
 
   // Variable: p
-  //  Referenced by: '<S1>/MATLAB Function2'
+  //  Referenced by: '<S2>/MATLAB Function2'
 
-  0.1,
+  3.0,
 
   // Mask Parameter: PIDController_InitialConditionF
-  //  Referenced by: '<S42>/Filter'
+  //  Referenced by: '<S47>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialCondition
-  //  Referenced by: '<S94>/Filter'
+  //  Referenced by: '<S99>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialCondition
-  //  Referenced by: '<S146>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController_InitialConditio_e
-  //  Referenced by: '<S205>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController1_InitialConditi_j
-  //  Referenced by: '<S257>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_InitialConditi_e
-  //  Referenced by: '<S309>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController_InitialConditio_l
-  //  Referenced by: '<S47>/Integrator'
-
-  0.0,
-
-  // Mask Parameter: PIDController1_InitialConditi_d
-  //  Referenced by: '<S99>/Integrator'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_InitialConditi_n
-  //  Referenced by: '<S151>/Integrator'
+  //  Referenced by: '<S151>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController_InitialConditio_d
-  //  Referenced by: '<S210>/Integrator'
+  //  Referenced by: '<S52>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialConditi_m
-  //  Referenced by: '<S262>/Integrator'
+  //  Referenced by: '<S104>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialConditi_o
-  //  Referenced by: '<S314>/Integrator'
+  //  Referenced by: '<S156>/Integrator'
 
   0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S1>/Integrator'
-
-  0.0,
-
-  // Expression: 0.90
-  //  Referenced by: '<S12>/Saturation'
-
-  0.9,
-
-  // Expression: 0.15
-  //  Referenced by: '<S12>/Saturation'
-
-  0.15,
-
-  // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S3>/Constant'
-
-  { 1.0, 0.0, 0.005, 1.0 },
 
   // Expression: [1; 0]
   //  Referenced by: '<S3>/Constant1'
@@ -251,6 +180,11 @@ Controller::P Controller::rtP{
 
   { 0.0, 0.0 },
 
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S3>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
   // Expression: [0.001 0; 0 800]
   //  Referenced by: '<S3>/Cov Prozessrauschen'
 
@@ -260,11 +194,6 @@ Controller::P Controller::rtP{
   //  Referenced by: '<S3>/Unit Delay'
 
   { 1.0, 0.0, 0.0, 1.0 },
-
-  // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S4>/Constant'
-
-  { 1.0, 0.0, 0.005, 1.0 },
 
   // Expression: [1; 0]
   //  Referenced by: '<S4>/Constant1'
@@ -291,6 +220,11 @@ Controller::P Controller::rtP{
 
   { 0.0, 0.0 },
 
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S4>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
   // Expression: [0.001 0; 0 800]
   //  Referenced by: '<S4>/Cov Prozessrauschen'
 
@@ -300,11 +234,6 @@ Controller::P Controller::rtP{
   //  Referenced by: '<S4>/Unit Delay'
 
   { 1.0, 0.0, 0.0, 1.0 },
-
-  // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S6>/Constant'
-
-  { 1.0, 0.0, 0.005, 1.0 },
 
   // Expression: [1; 0]
   //  Referenced by: '<S6>/Constant1'
@@ -331,6 +260,11 @@ Controller::P Controller::rtP{
 
   { 0.0, 0.0 },
 
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S6>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
   // Expression: [0.001 0; 0 800]
   //  Referenced by: '<S6>/Cov Prozessrauschen'
 
@@ -341,13 +275,18 @@ Controller::P Controller::rtP{
 
   { 1.0, 0.0, 0.0, 1.0 },
 
+  // Expression: 0
+  //  Referenced by: '<S8>/Integrator'
+
+  0.0,
+
   // Expression: 0.90
-  //  Referenced by: '<S175>/Saturation'
+  //  Referenced by: '<S1>/Saturation'
 
   0.9,
 
   // Expression: 0.15
-  //  Referenced by: '<S175>/Saturation'
+  //  Referenced by: '<S1>/Saturation'
 
   0.15,
 
@@ -355,6 +294,26 @@ Controller::P Controller::rtP{
   //  Referenced by: '<Root>/Integrator'
 
   0.0,
+
+  // Expression: 0
+  //  Referenced by: '<S2>/Integrator'
+
+  0.0,
+
+  // Expression: 0
+  //  Referenced by: '<S9>/Integrator'
+
+  0.0,
+
+  // Expression: 0.90
+  //  Referenced by: '<S7>/Saturation'
+
+  0.9,
+
+  // Expression: 0.15
+  //  Referenced by: '<S7>/Saturation'
+
+  0.15,
 
   // Expression: 0
   //  Referenced by: '<S3>/Integrator1'

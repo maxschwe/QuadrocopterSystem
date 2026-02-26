@@ -27,14 +27,16 @@ E = [
     c -c c -c;
 ];
 
+p = 0.1;
+
 % Systemmatrizen des linearisierten Modells
 A = [
     0 0 0 1 0 0;
     0 0 0 0 1 0;
     0 0 0 0 0 1;
-    (m * g * d) / I_xx 0 0 0 0 0;
-    0 (m * g * d) / I_yy 0 0 0 0;
-    0 0 0 0 0 0;
+    (m * g * d) / I_xx 0 0 -p 0 0;
+    0 (m * g * d) / I_yy 0 0 -p 0;
+    0 0 0 0 0 -p;
 ];
 
 B = [
@@ -58,7 +60,6 @@ D = [
     0 0 0;
 ];
 
-p = 0.1;
 guenther = 1.0;
 
 T_delay_actor = 0; %20e-3 * 0.25;
@@ -76,3 +77,31 @@ ki_yaw = 2.5;
 kd_yaw = 0.51;
 
 ke = 100;
+
+
+n = size(A, 1);
+p = size(C, 1);
+
+A_ext = [A,           zeros(n, p);
+         C,          zeros(p, p)];
+
+B_ext = [B; 
+         zeros(p, size(B, 2))];
+
+Q = diag([0.001, 0.001, 0.001, 0.1, 0.1, 0.1]);
+R = diag([1.0, 1.0, 1.0]);
+
+K = lqr(A, B, Q, R);
+Ki = [10 1 1];
+
+S = [
+    0 0 0;
+    0 0 0;
+    0 0 0;
+    0 0 0;
+    0 0 0;
+    0 0 0;
+    1 0 0;
+    0 1 0;
+    0 0 1;
+];

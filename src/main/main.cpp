@@ -64,9 +64,9 @@ void host_com(void* params) {
                     
                     float input1, input2, input3;
                     if (sscanf(rx_buffer, "#PID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        Controller::rtP.kp_roll = input1;
-                        Controller::rtP.ki_roll = input2;
-                        Controller::rtP.kd_roll = input3;
+                        // Controller::rtP.kp_roll = input1;
+                        // Controller::rtP.ki_roll = input2;
+                        // Controller::rtP.kd_roll = input3;
                         ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
                     } else if (sscanf(rx_buffer, "#RA;%f,%f,%f", &input1, &input2, &input3) == 3) {
                         // set reference angles

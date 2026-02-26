@@ -1,0 +1,76 @@
+import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import tkinter as tk
+
+PLOT_CONFIGS = [
+    {
+        "title": "Roll Data",
+        "ylabel": "Angle (deg)",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], np.rad2deg(df['roll']), label='Roll'),
+            ax.plot(df['time_ms'], np.rad2deg(df['reference_roll']), label='Roll Target'),
+            ax.plot(df['time_ms'], np.rad2deg(df['value1']), label='Roll Rate integrated'),
+            ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['roll']) - np.rad2deg(df['reference_roll']))**2):.2f}", 
+                    transform=ax.transAxes, ha="center", va="top"),
+            # ax.set_ylim(-30, 30),
+            ax.legend(loc='upper right')
+        )
+    },
+    {
+        "title": "Roll Rate Data",
+        "ylabel": "Anglerate (deg/s)",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], np.rad2deg(df['value4']), label='Roll Rate'),
+            ax.legend(loc='upper right')
+        )
+    },
+    {
+        "title": "Throttles",
+        "ylabel": "Throttle",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], df['throttle_1'], label='Throttle 1'),
+            ax.plot(df['time_ms'], df['throttle_2'], label='Throttle 2'),
+            ax.plot(df['time_ms'], df['throttle_3'], label='Throttle 3'),
+            ax.plot(df['time_ms'], df['throttle_4'], label='Throttle 4'),
+            ax.legend(loc='upper right')
+        )
+    }
+]
+
+def setup_subplots(fig):
+    axes = []
+    num_plots = len(PLOT_CONFIGS)
+    for i in range(num_plots):
+        # Add subplot: e.g. 211, 212
+        ax = fig.add_subplot(num_plots, 1, i + 1)
+        axes.append(ax)
+    return axes
+
+def plot(df, axes, canvas):
+    for i, ax in enumerate(axes):
+        ax.clear()
+        config = PLOT_CONFIGS[i]
+        
+        if not df.empty:
+            config["plot_func"](df, ax)
+            
+        ax.set_title(config["title"])
+        ax.set_ylabel(config["ylabel"])
+        if i == len(axes) - 1:
+            ax.set_xlabel("Time (ms)")
+        
+    canvas.draw()
+
+def show_new_recording_plot(root, df):
+    root.title("Recorded Trajectory Data")
+        
+    fig = Figure(figsize=(8, 8), dpi=100)
+    axes = setup_subplots(fig)
+
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    plot(df, axes, canvas)
+
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)

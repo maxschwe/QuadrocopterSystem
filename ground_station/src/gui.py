@@ -26,6 +26,7 @@ class Gui(tk.Tk):
 
         self._telemetry_handler = TelemetryHandler()
         self._trajectories = self.trajectories()
+        self._multi_trajectories = self.multi_trajectories()
 
         self._com = Com(ser, self._telemetry_handler)
 
@@ -54,7 +55,24 @@ class Gui(tk.Tk):
         self.throttle_scale = ttk.Scale(control_frame, from_=0, to=10, variable=self.throttle_var, command=update_throttle)
         self.throttle_scale.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         self.throttle_label = ttk.Label(control_frame, textvariable=self.throttle_var)
-        self.throttle_label.pack(side=tk.LEFT, padx=5)       
+        self.throttle_label.pack(side=tk.LEFT, padx=5)
+
+        # Axis Selection
+        def update_traj_options(_):
+            axis = self.axis_var.get()
+            if axis == "All Axis":
+                self.traj_combo['values'] = list(self._multi_trajectories.keys())
+                self.traj_combo.current(0)
+            else:
+                self.traj_combo['values'] = list(self._trajectories.keys())
+                self.traj_combo.current(0)
+
+        ttk.Label(control_frame, text="Axis:").pack(side=tk.LEFT, padx=10)
+        self.axis_var = tk.StringVar(value="Roll")
+        self.axis_combo = ttk.Combobox(control_frame, textvariable=self.axis_var, values=["Roll", "Pitch", "Yaw", "All Axis"])
+        self.axis_combo.current(0)
+        self.axis_combo.pack(side=tk.LEFT, padx=5)
+        self.axis_combo.bind("<<ComboboxSelected>>", update_traj_options)     
 
         # Trajectory Selection
         ttk.Label(control_frame, text="Trajectory:").pack(side=tk.LEFT, padx=10)
@@ -147,35 +165,63 @@ class Gui(tk.Tk):
             "Ramp": my_ramp,
             "30s Benchmark": benchmark_30s
         }
+
+    def multi_trajectories(self):
+        def sample_multi(t):
+            # Roll, Pitch, Yaw
+            return (5 * np.sin(t), 5 * np.cos(t), 10 * np.sin(t))
+
+        return {
+            "Sample Multi": sample_multi
+        }
     
     def start_trajectory(self):
         threading.Thread(target=self.run_trajectory).start()
 
     def run_trajectory(self):
         traj_type = self.traj_var.get()
+        traj_axis = self.axis_var.get()
         traj_record_time = self.recording_time_var.get()
 
-        traj_func = self._trajectories.get(traj_type)
+        if traj_axis == "All Axis":
+            traj_func = self._multi_trajectories.get(traj_type)
+        else:
+            traj_func = self._trajectories.get(traj_type)
+
         if traj_func is None:
             print(f"Unknown trajectory type: {traj_type}")
             return
 
-        print(f"Starting {traj_type} trajectory...")
+        print(f"Starting {traj_type} trajectory on {traj_axis}...")
         start_time = time.time()
-        save_loc = Path("../recordings") / Path(f"trajectory_{traj_type}_{int(start_time)}.csv")
+        save_loc = Path("../recordings") / Path(f"trajectory_{traj_type}_{traj_axis}_{int(start_time)}.csv")
         self._telemetry_handler.start_recording(traj_record_time, save_loc=save_loc, on_finish=self.show_recorded_data)
         
         while (time.time() - start_time) < traj_record_time:
             elapsed_s = time.time() - start_time
             target_value = traj_func(elapsed_s)
 
-            target_value_rads = np.radians(target_value)
+            if traj_axis == "All Axis":
+                # Ensure target_value is a tuple/list of 3
+                if isinstance(target_value, (list, tuple)) and len(target_value) == 3:
+                    target_rads = np.radians(target_value)
+                    self._com.set_reference_angles(target_rads[0], target_rads[1], target_rads[2])
+                else:
+                   print(f"Invalid multi-trajectory return: {target_value}")
+            else:
+                target_value_rads = np.radians(target_value)
 
-            self._com.set_reference_roll(target_value_rads)
-            print(f"Setting {traj_type} trajectory: {target_value:.2f} degrees")
+                if traj_axis == "Roll":
+                    self._com.set_reference_angles(target_value_rads, 0.0, 0.0)
+                elif traj_axis == "Pitch":
+                    self._com.set_reference_angles(0.0, target_value_rads, 0.0)
+                elif traj_axis == "Yaw":
+                    self._com.set_reference_angles(0.0, 0.0, target_value_rads * 2)
+
+            # print(f"Setting {traj_type} trajectory: {target_value:.2f} degrees")
             time.sleep(0.01)
 
-        self._com.set_reference_roll(0.0)
+        self._com.set_reference_angles(0.0, 0.0, 0.0)
 
     def show_recorded_data(self, df):
         top = tk.Toplevel(self)

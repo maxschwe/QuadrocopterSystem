@@ -64,13 +64,17 @@ void host_com(void* params) {
                     
                     float input1, input2, input3;
                     if (sscanf(rx_buffer, "#PID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        Controller::rtP.PIDController_P_f = input1;
-                        Controller::rtP.PIDController_I_a = input2;
-                        Controller::rtP.PIDController_D_c = input3;
+                        Controller::rtP.kp_roll = input1;
+                        Controller::rtP.ki_roll = input2;
+                        Controller::rtP.kd_roll = input3;
                         ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
-                    } else if (sscanf(rx_buffer, "#TR;%f", &input1) == 1) {
+                    } else if (sscanf(rx_buffer, "#RA;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        // set reference angles
                         referenceInputs.roll = input1;
-                    } else if (sscanf(rx_buffer, "#TT;%f", &input1) == 1) {
+                        referenceInputs.pitch = input2;
+                        referenceInputs.yaw = input3;
+                    } else if (sscanf(rx_buffer, "#RT;%f", &input1) == 1) {
+                        // set reference thrust
                         referenceInputs.throttle = input1;
                     } else {
                         ESP_LOGW("ExternalInputs", "Invalid command: %s", rx_buffer);

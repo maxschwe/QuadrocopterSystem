@@ -63,16 +63,6 @@ guenther = 1.0;
 
 T_delay_actor = 0; %20e-3 * 0.25;
 
-kp_roll = 1.4;
-ki_roll = 1.18;
-kd_roll = 0.33;
+kp = 1.4;
+ki = 1.18;
 
-kp_pitch = 1.42;
-ki_pitch = 1.21;
-kd_pitch = 0.35;
-
-kp_yaw = 2.8;
-ki_yaw = 2.5;
-kd_yaw = 0.51;
-
-ke = 100;

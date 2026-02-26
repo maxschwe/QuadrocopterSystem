@@ -18,13 +18,13 @@ class Com(threading.Thread):
         self.ser.write(full_cmd.encode())
 
     def set_throttle(self, value: float):
-        self.send_cmd("TT", value)
+        self.send_cmd("RT", value)
 
     def set_pid(self, p: float, i: float, d: float):
         self.send_cmd("PID", [p, i, d])
 
-    def set_reference_roll(self, value: float):
-        self.send_cmd("TR", value)
+    def set_reference_angles(self, roll: float, pitch: float, yaw: float):
+        self.send_cmd("RA", [roll, pitch, yaw])
 
     def run(self):
         while True:

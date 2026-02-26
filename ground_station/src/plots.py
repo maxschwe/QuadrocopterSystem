@@ -12,8 +12,31 @@ PLOT_CONFIGS = [
         "plot_func": lambda df, ax: (
             ax.plot(df['time_ms'], np.rad2deg(df['roll']), label='Roll'),
             ax.plot(df['time_ms'], np.rad2deg(df['reference_roll']), label='Roll Target'),
-            ax.plot(df['time_ms'], np.rad2deg(df['value1']), label='Roll Rate integrated'),
             ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['roll']) - np.rad2deg(df['reference_roll']))**2):.2f}", 
+                    transform=ax.transAxes, ha="center", va="top"),
+            # ax.set_ylim(-30, 30),
+            ax.legend(loc='upper right')
+        )
+    },
+    {
+        "title": "Pitch Data",
+        "ylabel": "Angle (deg)",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], np.rad2deg(df['pitch']), label='Pitch'),
+            ax.plot(df['time_ms'], np.rad2deg(df['reference_pitch']), label='Pitch Target'),
+            ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['pitch']) - np.rad2deg(df['reference_pitch']))**2):.2f}", 
+                    transform=ax.transAxes, ha="center", va="top"),
+            # ax.set_ylim(-30, 30),
+            ax.legend(loc='upper right')
+        )
+    },
+    {
+        "title": "Yaw Data",
+        "ylabel": "Angle (deg)",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], np.rad2deg(df['yaw']), label='Yaw'),
+            ax.plot(df['time_ms'], np.rad2deg(df['reference_yaw']), label='Yaw Target'),
+            ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['yaw']) - np.rad2deg(df['reference_yaw']))**2):.2f}", 
                     transform=ax.transAxes, ha="center", va="top"),
             # ax.set_ylim(-30, 30),
             ax.legend(loc='upper right')

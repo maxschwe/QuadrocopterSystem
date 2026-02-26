@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.337
+// Model version                  : 1.339
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Thu Feb 26 11:30:56 2026
+// C/C++ source code generated on : Thu Feb 26 14:51:23 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -42,29 +42,29 @@ class Controller final
   struct DW {
     real_T TmpSignalConversionAtIntegrator[3];
     real_T x_dach[2];                  // '<S6>/KF_Elevation'
-    real_T P_p[4];                     // '<S6>/KF_Elevation'
-    real_T x_dach_f[2];                // '<S4>/KF_Elevation'
-    real_T P_n[4];                     // '<S4>/KF_Elevation'
-    real_T x_dach_n[2];                // '<S3>/KF_Elevation'
-    real_T P_o[4];                     // '<S3>/KF_Elevation'
+    real_T P_g[4];                     // '<S6>/KF_Elevation'
+    real_T x_dach_l[2];                // '<S4>/KF_Elevation'
+    real_T P_l[4];                     // '<S4>/KF_Elevation'
+    real_T x_dach_h[2];                // '<S3>/KF_Elevation'
+    real_T P_i[4];                     // '<S3>/KF_Elevation'
     real_T dx[6];                      // '<S1>/MATLAB Function2'
     real_T UnitDelay1_DSTATE[2];       // '<S3>/Unit Delay1'
     real_T UnitDelay_DSTATE[4];        // '<S3>/Unit Delay'
-    real_T UnitDelay1_DSTATE_j[2];     // '<S4>/Unit Delay1'
-    real_T UnitDelay_DSTATE_k[4];      // '<S4>/Unit Delay'
-    real_T UnitDelay1_DSTATE_k[2];     // '<S6>/Unit Delay1'
-    real_T UnitDelay_DSTATE_m[4];      // '<S6>/Unit Delay'
-    real_T FilterCoefficient;          // '<S102>/Filter Coefficient'
-    real_T FilterCoefficient_o;        // '<S154>/Filter Coefficient'
+    real_T UnitDelay1_DSTATE_n[2];     // '<S4>/Unit Delay1'
+    real_T UnitDelay_DSTATE_o[4];      // '<S4>/Unit Delay'
+    real_T UnitDelay1_DSTATE_p[2];     // '<S6>/Unit Delay1'
+    real_T UnitDelay_DSTATE_d[4];      // '<S6>/Unit Delay'
+    real_T SumD;                       // '<S146>/SumD'
     real_T IntegralGain;               // '<S148>/Integral Gain'
+    real_T SumD_a;                     // '<S94>/SumD'
     real_T IntegralGain_e;             // '<S96>/Integral Gain'
-    real_T SumD;                       // '<S42>/SumD'
+    real_T SumD_p;                     // '<S42>/SumD'
     real_T IntegralGain_j;             // '<S44>/Integral Gain'
-    real_T FilterCoefficient_b;        // '<S265>/Filter Coefficient'
-    real_T FilterCoefficient_a;        // '<S317>/Filter Coefficient'
+    real_T SumD_j;                     // '<S309>/SumD'
     real_T IntegralGain_p;             // '<S311>/Integral Gain'
+    real_T SumD_o;                     // '<S257>/SumD'
     real_T IntegralGain_o;             // '<S259>/Integral Gain'
-    real_T SumD_p;                     // '<S205>/SumD'
+    real_T SumD_pb;                    // '<S205>/SumD'
     real_T IntegralGain_od;            // '<S207>/Integral Gain'
   };
 
@@ -74,19 +74,19 @@ class Controller final
     real_T Integrator_CSTATE_c;        // '<S47>/Integrator'
     real_T Filter_CSTATE;              // '<S42>/Filter'
     real_T Integrator_CSTATE_e;        // '<S99>/Integrator'
-    real_T Filter_CSTATE_g;            // '<S94>/Filter'
+    real_T Filter_CSTATE_o;            // '<S94>/Filter'
     real_T Integrator_CSTATE_i;        // '<S151>/Integrator'
-    real_T Filter_CSTATE_e;            // '<S146>/Filter'
+    real_T Filter_CSTATE_h;            // '<S146>/Filter'
     real_T Integrator_CSTATE_p;        // '<S210>/Integrator'
     real_T Filter_CSTATE_b;            // '<S205>/Filter'
     real_T Integrator_CSTATE_iz;       // '<S262>/Integrator'
-    real_T Filter_CSTATE_m;            // '<S257>/Filter'
+    real_T Filter_CSTATE_hc;           // '<S257>/Filter'
     real_T Integrator_CSTATE_j;        // '<S314>/Integrator'
-    real_T Filter_CSTATE_c;            // '<S309>/Filter'
+    real_T Filter_CSTATE_a;            // '<S309>/Filter'
     real_T Integrator_CSTATE_pz[3];    // '<Root>/Integrator'
     real_T Integrator1_CSTATE;         // '<S3>/Integrator1'
     real_T Integrator1_CSTATE_o;       // '<S4>/Integrator1'
-    real_T Integrator1_CSTATE_g;       // '<S6>/Integrator1'
+    real_T Integrator1_CSTATE_j;       // '<S6>/Integrator1'
   };
 
   // State derivatives (default storage)
@@ -95,19 +95,19 @@ class Controller final
     real_T Integrator_CSTATE_c;        // '<S47>/Integrator'
     real_T Filter_CSTATE;              // '<S42>/Filter'
     real_T Integrator_CSTATE_e;        // '<S99>/Integrator'
-    real_T Filter_CSTATE_g;            // '<S94>/Filter'
+    real_T Filter_CSTATE_o;            // '<S94>/Filter'
     real_T Integrator_CSTATE_i;        // '<S151>/Integrator'
-    real_T Filter_CSTATE_e;            // '<S146>/Filter'
+    real_T Filter_CSTATE_h;            // '<S146>/Filter'
     real_T Integrator_CSTATE_p;        // '<S210>/Integrator'
     real_T Filter_CSTATE_b;            // '<S205>/Filter'
     real_T Integrator_CSTATE_iz;       // '<S262>/Integrator'
-    real_T Filter_CSTATE_m;            // '<S257>/Filter'
+    real_T Filter_CSTATE_hc;           // '<S257>/Filter'
     real_T Integrator_CSTATE_j;        // '<S314>/Integrator'
-    real_T Filter_CSTATE_c;            // '<S309>/Filter'
+    real_T Filter_CSTATE_a;            // '<S309>/Filter'
     real_T Integrator_CSTATE_pz[3];    // '<Root>/Integrator'
     real_T Integrator1_CSTATE;         // '<S3>/Integrator1'
     real_T Integrator1_CSTATE_o;       // '<S4>/Integrator1'
-    real_T Integrator1_CSTATE_g;       // '<S6>/Integrator1'
+    real_T Integrator1_CSTATE_j;       // '<S6>/Integrator1'
   };
 
   // State disabled
@@ -116,19 +116,19 @@ class Controller final
     boolean_T Integrator_CSTATE_c;     // '<S47>/Integrator'
     boolean_T Filter_CSTATE;           // '<S42>/Filter'
     boolean_T Integrator_CSTATE_e;     // '<S99>/Integrator'
-    boolean_T Filter_CSTATE_g;         // '<S94>/Filter'
+    boolean_T Filter_CSTATE_o;         // '<S94>/Filter'
     boolean_T Integrator_CSTATE_i;     // '<S151>/Integrator'
-    boolean_T Filter_CSTATE_e;         // '<S146>/Filter'
+    boolean_T Filter_CSTATE_h;         // '<S146>/Filter'
     boolean_T Integrator_CSTATE_p;     // '<S210>/Integrator'
     boolean_T Filter_CSTATE_b;         // '<S205>/Filter'
     boolean_T Integrator_CSTATE_iz;    // '<S262>/Integrator'
-    boolean_T Filter_CSTATE_m;         // '<S257>/Filter'
+    boolean_T Filter_CSTATE_hc;        // '<S257>/Filter'
     boolean_T Integrator_CSTATE_j;     // '<S314>/Integrator'
-    boolean_T Filter_CSTATE_c;         // '<S309>/Filter'
+    boolean_T Filter_CSTATE_a;         // '<S309>/Filter'
     boolean_T Integrator_CSTATE_pz[3]; // '<Root>/Integrator'
     boolean_T Integrator1_CSTATE;      // '<S3>/Integrator1'
     boolean_T Integrator1_CSTATE_o;    // '<S4>/Integrator1'
-    boolean_T Integrator1_CSTATE_g;    // '<S6>/Integrator1'
+    boolean_T Integrator1_CSTATE_j;    // '<S6>/Integrator1'
   };
 
   // External inputs (root inport signals with default storage)
@@ -173,47 +173,65 @@ class Controller final
     real_T g;                          // Variable: g
                                           //  Referenced by: '<S1>/MATLAB Function2'
 
+    real_T kd_pitch;                   // Variable: kd_pitch
+                                          //  Referenced by:
+                                          //    '<S92>/Derivative Gain'
+                                          //    '<S255>/Derivative Gain'
+
+    real_T kd_roll;                    // Variable: kd_roll
+                                          //  Referenced by:
+                                          //    '<S40>/Derivative Gain'
+                                          //    '<S203>/Derivative Gain'
+
+    real_T kd_yaw;                     // Variable: kd_yaw
+                                          //  Referenced by:
+                                          //    '<S144>/Derivative Gain'
+                                          //    '<S307>/Derivative Gain'
+
+    real_T ke;                         // Variable: ke
+                                          //  Referenced by:
+                                          //    '<S50>/Filter Coefficient'
+                                          //    '<S102>/Filter Coefficient'
+                                          //    '<S154>/Filter Coefficient'
+                                          //    '<S213>/Filter Coefficient'
+                                          //    '<S265>/Filter Coefficient'
+                                          //    '<S317>/Filter Coefficient'
+
+    real_T ki_pitch;                   // Variable: ki_pitch
+                                          //  Referenced by:
+                                          //    '<S96>/Integral Gain'
+                                          //    '<S259>/Integral Gain'
+
+    real_T ki_roll;                    // Variable: ki_roll
+                                          //  Referenced by:
+                                          //    '<S44>/Integral Gain'
+                                          //    '<S207>/Integral Gain'
+
+    real_T ki_yaw;                     // Variable: ki_yaw
+                                          //  Referenced by:
+                                          //    '<S148>/Integral Gain'
+                                          //    '<S311>/Integral Gain'
+
+    real_T kp_pitch;                   // Variable: kp_pitch
+                                          //  Referenced by:
+                                          //    '<S104>/Proportional Gain'
+                                          //    '<S267>/Proportional Gain'
+
+    real_T kp_roll;                    // Variable: kp_roll
+                                          //  Referenced by:
+                                          //    '<S52>/Proportional Gain'
+                                          //    '<S215>/Proportional Gain'
+
+    real_T kp_yaw;                     // Variable: kp_yaw
+                                          //  Referenced by:
+                                          //    '<S156>/Proportional Gain'
+                                          //    '<S319>/Proportional Gain'
+
     real_T m;                          // Variable: m
                                           //  Referenced by: '<S1>/MATLAB Function2'
 
     real_T p;                          // Variable: p
                                           //  Referenced by: '<S1>/MATLAB Function2'
-
-    real_T PIDController1_D;           // Mask Parameter: PIDController1_D
-                                          //  Referenced by: '<S92>/Derivative Gain'
-
-    real_T PIDController2_D;           // Mask Parameter: PIDController2_D
-                                          //  Referenced by: '<S144>/Derivative Gain'
-
-    real_T PIDController_D;            // Mask Parameter: PIDController_D
-                                          //  Referenced by: '<S40>/Derivative Gain'
-
-    real_T PIDController1_D_k;         // Mask Parameter: PIDController1_D_k
-                                          //  Referenced by: '<S255>/Derivative Gain'
-
-    real_T PIDController2_D_m;         // Mask Parameter: PIDController2_D_m
-                                          //  Referenced by: '<S307>/Derivative Gain'
-
-    real_T PIDController_D_c;          // Mask Parameter: PIDController_D_c
-                                          //  Referenced by: '<S203>/Derivative Gain'
-
-    real_T PIDController2_I;           // Mask Parameter: PIDController2_I
-                                          //  Referenced by: '<S148>/Integral Gain'
-
-    real_T PIDController1_I;           // Mask Parameter: PIDController1_I
-                                          //  Referenced by: '<S96>/Integral Gain'
-
-    real_T PIDController_I;            // Mask Parameter: PIDController_I
-                                          //  Referenced by: '<S44>/Integral Gain'
-
-    real_T PIDController2_I_i;         // Mask Parameter: PIDController2_I_i
-                                          //  Referenced by: '<S311>/Integral Gain'
-
-    real_T PIDController1_I_m;         // Mask Parameter: PIDController1_I_m
-                                          //  Referenced by: '<S259>/Integral Gain'
-
-    real_T PIDController_I_a;          // Mask Parameter: PIDController_I_a
-                                          //  Referenced by: '<S207>/Integral Gain'
 
     real_T PIDController_InitialConditionF;
                               // Mask Parameter: PIDController_InitialConditionF
@@ -263,42 +281,6 @@ class Controller final
                               // Mask Parameter: PIDController2_InitialConditi_o
                                  //  Referenced by: '<S314>/Integrator'
 
-    real_T PIDController_N;            // Mask Parameter: PIDController_N
-                                          //  Referenced by: '<S50>/Filter Coefficient'
-
-    real_T PIDController1_N;           // Mask Parameter: PIDController1_N
-                                          //  Referenced by: '<S102>/Filter Coefficient'
-
-    real_T PIDController2_N;           // Mask Parameter: PIDController2_N
-                                          //  Referenced by: '<S154>/Filter Coefficient'
-
-    real_T PIDController_N_o;          // Mask Parameter: PIDController_N_o
-                                          //  Referenced by: '<S213>/Filter Coefficient'
-
-    real_T PIDController1_N_l;         // Mask Parameter: PIDController1_N_l
-                                          //  Referenced by: '<S265>/Filter Coefficient'
-
-    real_T PIDController2_N_b;         // Mask Parameter: PIDController2_N_b
-                                          //  Referenced by: '<S317>/Filter Coefficient'
-
-    real_T PIDController_P;            // Mask Parameter: PIDController_P
-                                          //  Referenced by: '<S52>/Proportional Gain'
-
-    real_T PIDController1_P;           // Mask Parameter: PIDController1_P
-                                          //  Referenced by: '<S104>/Proportional Gain'
-
-    real_T PIDController2_P;           // Mask Parameter: PIDController2_P
-                                          //  Referenced by: '<S156>/Proportional Gain'
-
-    real_T PIDController_P_f;          // Mask Parameter: PIDController_P_f
-                                          //  Referenced by: '<S215>/Proportional Gain'
-
-    real_T PIDController1_P_k;         // Mask Parameter: PIDController1_P_k
-                                          //  Referenced by: '<S267>/Proportional Gain'
-
-    real_T PIDController2_P_n;         // Mask Parameter: PIDController2_P_n
-                                          //  Referenced by: '<S319>/Proportional Gain'
-
     real_T Integrator_IC;              // Expression: 0
                                           //  Referenced by: '<S1>/Integrator'
 
@@ -326,59 +308,59 @@ class Controller final
     real_T UnitDelay1_InitialCondition[2];// Expression: [0; 0]
                                              //  Referenced by: '<S3>/Unit Delay1'
 
-    real_T CovProzessrauschen_Value[4];// Expression: [0.001 0; 0 100]
+    real_T CovProzessrauschen_Value[4];// Expression: [0.001 0; 0 800]
                                           //  Referenced by: '<S3>/Cov Prozessrauschen'
 
     real_T UnitDelay_InitialCondition[4];// Expression: 1 * eye(2, 2)
                                             //  Referenced by: '<S3>/Unit Delay'
 
-    real_T Constant_Value_b[4];        // Expression: [1 0.005; 0 1]
+    real_T Constant_Value_i[4];        // Expression: [1 0.005; 0 1]
                                           //  Referenced by: '<S4>/Constant'
 
-    real_T Constant1_Value_p[2];       // Expression: [1; 0]
+    real_T Constant1_Value_n[2];       // Expression: [1; 0]
                                           //  Referenced by: '<S4>/Constant1'
 
-    real_T Constant2_Value_d[2];       // Expression: [1 0]
+    real_T Constant2_Value_e[2];       // Expression: [1 0]
                                           //  Referenced by: '<S4>/Constant2'
 
-    real_T CovMessrauschen_Value_c;    // Expression: 10e-6
+    real_T CovMessrauschen_Value_n;    // Expression: 10e-4
                                           //  Referenced by: '<S4>/Cov Messrauschen'
 
-    real_T Constant5_Value_c;          // Expression: 0
+    real_T Constant5_Value_l;          // Expression: 0
                                           //  Referenced by: '<S4>/Constant5'
 
-    real_T UnitDelay1_InitialCondition_m[2];// Expression: [0; 0]
+    real_T UnitDelay1_InitialCondition_c[2];// Expression: [0; 0]
                                                //  Referenced by: '<S4>/Unit Delay1'
 
-    real_T CovProzessrauschen_Value_l[4];// Expression: [1 0; 0 10e-3]
+    real_T CovProzessrauschen_Value_n[4];// Expression: [0.001 0; 0 800]
                                             //  Referenced by: '<S4>/Cov Prozessrauschen'
 
-    real_T UnitDelay_InitialCondition_p[4];// Expression: 1 * eye(2, 2)
+    real_T UnitDelay_InitialCondition_c[4];// Expression: 1 * eye(2, 2)
                                               //  Referenced by: '<S4>/Unit Delay'
 
-    real_T Constant_Value_e[4];        // Expression: [1 0.005; 0 1]
+    real_T Constant_Value_d[4];        // Expression: [1 0.005; 0 1]
                                           //  Referenced by: '<S6>/Constant'
 
-    real_T Constant1_Value_n[2];       // Expression: [1; 0]
+    real_T Constant1_Value_m[2];       // Expression: [1; 0]
                                           //  Referenced by: '<S6>/Constant1'
 
-    real_T Constant2_Value_g[2];       // Expression: [1 0]
+    real_T Constant2_Value_m[2];       // Expression: [1 0]
                                           //  Referenced by: '<S6>/Constant2'
 
-    real_T CovMessrauschen_Value_n;    // Expression: 10e-6
+    real_T CovMessrauschen_Value_j;    // Expression: 10e-4
                                           //  Referenced by: '<S6>/Cov Messrauschen'
 
-    real_T Constant5_Value_d;          // Expression: 0
+    real_T Constant5_Value_n;          // Expression: 0
                                           //  Referenced by: '<S6>/Constant5'
 
-    real_T UnitDelay1_InitialCondition_i[2];// Expression: [0; 0]
+    real_T UnitDelay1_InitialCondition_b[2];// Expression: [0; 0]
                                                //  Referenced by: '<S6>/Unit Delay1'
 
-    real_T CovProzessrauschen_Value_p[4];// Expression: [1 0; 0 10e-3]
+    real_T CovProzessrauschen_Value_i[4];// Expression: [0.001 0; 0 800]
                                             //  Referenced by: '<S6>/Cov Prozessrauschen'
 
-    real_T UnitDelay_InitialCondition_m[4];// Expression: 1 * eye(2, 2)
-                                              //  Referenced by: '<S6>/Unit Delay'
+    real_T UnitDelay_InitialCondition_cm[4];// Expression: 1 * eye(2, 2)
+                                               //  Referenced by: '<S6>/Unit Delay'
 
     real_T Saturation_UpperSat_o;      // Expression: 0.90
                                           //  Referenced by: '<S175>/Saturation'
@@ -392,10 +374,10 @@ class Controller final
     real_T Integrator1_IC;             // Expression: 0
                                           //  Referenced by: '<S3>/Integrator1'
 
-    real_T Integrator1_IC_n;           // Expression: 0
+    real_T Integrator1_IC_g;           // Expression: 0
                                           //  Referenced by: '<S4>/Integrator1'
 
-    real_T Integrator1_IC_e;           // Expression: 0
+    real_T Integrator1_IC_l;           // Expression: 0
                                           //  Referenced by: '<S6>/Integrator1'
 
   };
@@ -645,8 +627,8 @@ class Controller final
 //  '<S90>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/preSat Signal'
 //  '<S91>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/Anti-windup/Passthrough'
 //  '<S92>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/D Gain/Internal Parameters'
-//  '<S93>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/External Derivative/Error'
-//  '<S94>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/Filter/Cont. Filter'
+//  '<S93>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/External Derivative/External Ydot'
+//  '<S94>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/Filter/Cont. Filter Only'
 //  '<S95>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/Filter ICs/Internal IC - Filter'
 //  '<S96>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/I Gain/Internal Parameters'
 //  '<S97>'  : 'controller_3dof/Subsystem Reference1/PID Controller1/Ideal P Gain/Passthrough'
@@ -697,8 +679,8 @@ class Controller final
 //  '<S142>' : 'controller_3dof/Subsystem Reference1/PID Controller2/preSat Signal'
 //  '<S143>' : 'controller_3dof/Subsystem Reference1/PID Controller2/Anti-windup/Passthrough'
 //  '<S144>' : 'controller_3dof/Subsystem Reference1/PID Controller2/D Gain/Internal Parameters'
-//  '<S145>' : 'controller_3dof/Subsystem Reference1/PID Controller2/External Derivative/Error'
-//  '<S146>' : 'controller_3dof/Subsystem Reference1/PID Controller2/Filter/Cont. Filter'
+//  '<S145>' : 'controller_3dof/Subsystem Reference1/PID Controller2/External Derivative/External Ydot'
+//  '<S146>' : 'controller_3dof/Subsystem Reference1/PID Controller2/Filter/Cont. Filter Only'
 //  '<S147>' : 'controller_3dof/Subsystem Reference1/PID Controller2/Filter ICs/Internal IC - Filter'
 //  '<S148>' : 'controller_3dof/Subsystem Reference1/PID Controller2/I Gain/Internal Parameters'
 //  '<S149>' : 'controller_3dof/Subsystem Reference1/PID Controller2/Ideal P Gain/Passthrough'
@@ -808,8 +790,8 @@ class Controller final
 //  '<S253>' : 'controller_3dof/Subsystem3/PID Controller1/preSat Signal'
 //  '<S254>' : 'controller_3dof/Subsystem3/PID Controller1/Anti-windup/Passthrough'
 //  '<S255>' : 'controller_3dof/Subsystem3/PID Controller1/D Gain/Internal Parameters'
-//  '<S256>' : 'controller_3dof/Subsystem3/PID Controller1/External Derivative/Error'
-//  '<S257>' : 'controller_3dof/Subsystem3/PID Controller1/Filter/Cont. Filter'
+//  '<S256>' : 'controller_3dof/Subsystem3/PID Controller1/External Derivative/External Ydot'
+//  '<S257>' : 'controller_3dof/Subsystem3/PID Controller1/Filter/Cont. Filter Only'
 //  '<S258>' : 'controller_3dof/Subsystem3/PID Controller1/Filter ICs/Internal IC - Filter'
 //  '<S259>' : 'controller_3dof/Subsystem3/PID Controller1/I Gain/Internal Parameters'
 //  '<S260>' : 'controller_3dof/Subsystem3/PID Controller1/Ideal P Gain/Passthrough'
@@ -860,8 +842,8 @@ class Controller final
 //  '<S305>' : 'controller_3dof/Subsystem3/PID Controller2/preSat Signal'
 //  '<S306>' : 'controller_3dof/Subsystem3/PID Controller2/Anti-windup/Passthrough'
 //  '<S307>' : 'controller_3dof/Subsystem3/PID Controller2/D Gain/Internal Parameters'
-//  '<S308>' : 'controller_3dof/Subsystem3/PID Controller2/External Derivative/Error'
-//  '<S309>' : 'controller_3dof/Subsystem3/PID Controller2/Filter/Cont. Filter'
+//  '<S308>' : 'controller_3dof/Subsystem3/PID Controller2/External Derivative/External Ydot'
+//  '<S309>' : 'controller_3dof/Subsystem3/PID Controller2/Filter/Cont. Filter Only'
 //  '<S310>' : 'controller_3dof/Subsystem3/PID Controller2/Filter ICs/Internal IC - Filter'
 //  '<S311>' : 'controller_3dof/Subsystem3/PID Controller2/I Gain/Internal Parameters'
 //  '<S312>' : 'controller_3dof/Subsystem3/PID Controller2/Ideal P Gain/Passthrough'

@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.337
+// Model version                  : 1.339
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Thu Feb 26 11:30:56 2026
+// C/C++ source code generated on : Thu Feb 26 14:51:23 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -62,6 +62,80 @@ Controller::P Controller::rtP{
 
   9.81,
 
+  // Variable: kd_pitch
+  //  Referenced by:
+  //    '<S92>/Derivative Gain'
+  //    '<S255>/Derivative Gain'
+
+  0.35,
+
+  // Variable: kd_roll
+  //  Referenced by:
+  //    '<S40>/Derivative Gain'
+  //    '<S203>/Derivative Gain'
+
+  0.33,
+
+  // Variable: kd_yaw
+  //  Referenced by:
+  //    '<S144>/Derivative Gain'
+  //    '<S307>/Derivative Gain'
+
+  0.51,
+
+  // Variable: ke
+  //  Referenced by:
+  //    '<S50>/Filter Coefficient'
+  //    '<S102>/Filter Coefficient'
+  //    '<S154>/Filter Coefficient'
+  //    '<S213>/Filter Coefficient'
+  //    '<S265>/Filter Coefficient'
+  //    '<S317>/Filter Coefficient'
+
+  100.0,
+
+  // Variable: ki_pitch
+  //  Referenced by:
+  //    '<S96>/Integral Gain'
+  //    '<S259>/Integral Gain'
+
+  1.21,
+
+  // Variable: ki_roll
+  //  Referenced by:
+  //    '<S44>/Integral Gain'
+  //    '<S207>/Integral Gain'
+
+  1.18,
+
+  // Variable: ki_yaw
+  //  Referenced by:
+  //    '<S148>/Integral Gain'
+  //    '<S311>/Integral Gain'
+
+  2.5,
+
+  // Variable: kp_pitch
+  //  Referenced by:
+  //    '<S104>/Proportional Gain'
+  //    '<S267>/Proportional Gain'
+
+  1.42,
+
+  // Variable: kp_roll
+  //  Referenced by:
+  //    '<S52>/Proportional Gain'
+  //    '<S215>/Proportional Gain'
+
+  1.4,
+
+  // Variable: kp_yaw
+  //  Referenced by:
+  //    '<S156>/Proportional Gain'
+  //    '<S319>/Proportional Gain'
+
+  2.8,
+
   // Variable: m
   //  Referenced by: '<S1>/MATLAB Function2'
 
@@ -71,66 +145,6 @@ Controller::P Controller::rtP{
   //  Referenced by: '<S1>/MATLAB Function2'
 
   0.1,
-
-  // Mask Parameter: PIDController1_D
-  //  Referenced by: '<S92>/Derivative Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_D
-  //  Referenced by: '<S144>/Derivative Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController_D
-  //  Referenced by: '<S40>/Derivative Gain'
-
-  0.4,
-
-  // Mask Parameter: PIDController1_D_k
-  //  Referenced by: '<S255>/Derivative Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_D_m
-  //  Referenced by: '<S307>/Derivative Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController_D_c
-  //  Referenced by: '<S203>/Derivative Gain'
-
-  0.4,
-
-  // Mask Parameter: PIDController2_I
-  //  Referenced by: '<S148>/Integral Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController1_I
-  //  Referenced by: '<S96>/Integral Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController_I
-  //  Referenced by: '<S44>/Integral Gain'
-
-  0.7,
-
-  // Mask Parameter: PIDController2_I_i
-  //  Referenced by: '<S311>/Integral Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController1_I_m
-  //  Referenced by: '<S259>/Integral Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController_I_a
-  //  Referenced by: '<S207>/Integral Gain'
-
-  0.7,
 
   // Mask Parameter: PIDController_InitialConditionF
   //  Referenced by: '<S42>/Filter'
@@ -192,66 +206,6 @@ Controller::P Controller::rtP{
 
   0.0,
 
-  // Mask Parameter: PIDController_N
-  //  Referenced by: '<S50>/Filter Coefficient'
-
-  100.0,
-
-  // Mask Parameter: PIDController1_N
-  //  Referenced by: '<S102>/Filter Coefficient'
-
-  100.0,
-
-  // Mask Parameter: PIDController2_N
-  //  Referenced by: '<S154>/Filter Coefficient'
-
-  100.0,
-
-  // Mask Parameter: PIDController_N_o
-  //  Referenced by: '<S213>/Filter Coefficient'
-
-  100.0,
-
-  // Mask Parameter: PIDController1_N_l
-  //  Referenced by: '<S265>/Filter Coefficient'
-
-  100.0,
-
-  // Mask Parameter: PIDController2_N_b
-  //  Referenced by: '<S317>/Filter Coefficient'
-
-  100.0,
-
-  // Mask Parameter: PIDController_P
-  //  Referenced by: '<S52>/Proportional Gain'
-
-  1.3,
-
-  // Mask Parameter: PIDController1_P
-  //  Referenced by: '<S104>/Proportional Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_P
-  //  Referenced by: '<S156>/Proportional Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController_P_f
-  //  Referenced by: '<S215>/Proportional Gain'
-
-  1.3,
-
-  // Mask Parameter: PIDController1_P_k
-  //  Referenced by: '<S267>/Proportional Gain'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_P_n
-  //  Referenced by: '<S319>/Proportional Gain'
-
-  0.0,
-
   // Expression: 0
   //  Referenced by: '<S1>/Integrator'
 
@@ -297,7 +251,7 @@ Controller::P Controller::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [0.001 0; 0 100]
+  // Expression: [0.001 0; 0 800]
   //  Referenced by: '<S3>/Cov Prozessrauschen'
 
   { 0.001, 0.0, 0.0, 800.0 },
@@ -322,10 +276,10 @@ Controller::P Controller::rtP{
 
   { 1.0, 0.0 },
 
-  // Expression: 10e-6
+  // Expression: 10e-4
   //  Referenced by: '<S4>/Cov Messrauschen'
 
-  1.0E-5,
+  0.001,
 
   // Expression: 0
   //  Referenced by: '<S4>/Constant5'
@@ -337,10 +291,10 @@ Controller::P Controller::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0; 0 10e-3]
+  // Expression: [0.001 0; 0 800]
   //  Referenced by: '<S4>/Cov Prozessrauschen'
 
-  { 1.0, 0.0, 0.0, 0.01 },
+  { 0.001, 0.0, 0.0, 800.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S4>/Unit Delay'
@@ -362,10 +316,10 @@ Controller::P Controller::rtP{
 
   { 1.0, 0.0 },
 
-  // Expression: 10e-6
+  // Expression: 10e-4
   //  Referenced by: '<S6>/Cov Messrauschen'
 
-  1.0E-5,
+  0.001,
 
   // Expression: 0
   //  Referenced by: '<S6>/Constant5'
@@ -377,10 +331,10 @@ Controller::P Controller::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0; 0 10e-3]
+  // Expression: [0.001 0; 0 800]
   //  Referenced by: '<S6>/Cov Prozessrauschen'
 
-  { 1.0, 0.0, 0.0, 0.01 },
+  { 0.001, 0.0, 0.0, 800.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S6>/Unit Delay'

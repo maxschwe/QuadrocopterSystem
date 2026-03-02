@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof'.
 //
-// Model version                  : 1.352
+// Model version                  : 1.432
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Thu Feb 26 18:20:48 2026
+// C/C++ source code generated on : Mon Mar  2 17:08:49 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -41,15 +41,28 @@ Controller::P Controller::rtP{
   //    '<S8>/Gain'
   //    '<S9>/Gain'
 
-  { 4.8162325473254732, -4.5815932932854847E-17, -9.5385573792593762E-16,
-    -1.3406080991824339E-15, 4.8168918826532545, -3.0030181977003071E-15,
-    2.2159675382151523E-16, -4.6668145962235449E-16, 2.3152781706241252,
-    0.50587280591417183, 7.3877073429728637E-17, -4.5617498558133229E-17,
-    1.1565020081584054E-16, 0.51519313823967927, -2.1317333829409328E-16,
-    5.2133517671979619E-17, 6.026253801518084E-17, 0.56322111470092207,
-    0.31622776601683866, -2.271791668812762E-16, 7.6097447264009891E-17,
-    -6.270619816169662E-17, 0.31622776601683916, -1.0783645040121002E-15,
-    -1.5329456682202211E-16, -9.9087325655952365E-16, 0.31622776601683722 },
+  { 1.3802216903208069, -1.1689319505302168E-15, 1.0647104335002291E-16,
+    1.1405702684131154E-16, 1.3802216903208084, -4.3274502277546515E-15,
+    -2.3768025384816916E-16, 1.1361613433531991E-15, 1.0000000000000009,
+    0.28293371809008039, -2.8682421990747374E-16, 4.3708845130654013E-17,
+    -3.3227702790609789E-16, 0.287656757999691, -6.5465690730310854E-16,
+    -6.4235040674506349E-17, 1.7983518807488254E-16, 0.3766981865241954 },
+
+  // Variable: Ki
+  //  Referenced by:
+  //    '<S8>/Gain2'
+  //    '<S9>/Gain2'
+
+  { 1.0, 1.0, 1.0 },
+
+  // Variable: V
+  //  Referenced by:
+  //    '<S8>/Gain1'
+  //    '<S9>/Gain1'
+
+  { 1.0523714903208068, -1.1689319505302172E-15, 1.0647104335002295E-16,
+    1.1405702684131151E-16, 1.0523714903208086, -4.3274502277546523E-15,
+    -2.3768025384816916E-16, 1.1361613433531993E-15, 1.0000000000000009 },
 
   // Variable: a
   //  Referenced by:
@@ -78,80 +91,80 @@ Controller::P Controller::rtP{
   9.81,
 
   // Variable: kd_pitch
-  //  Referenced by: '<S97>/Derivative Gain'
+  //  Referenced by: '<S98>/Derivative Gain'
 
   0.35,
 
   // Variable: kd_roll
-  //  Referenced by: '<S45>/Derivative Gain'
+  //  Referenced by: '<S46>/Derivative Gain'
 
   0.33,
 
   // Variable: kd_yaw
-  //  Referenced by: '<S149>/Derivative Gain'
+  //  Referenced by: '<S150>/Derivative Gain'
 
   0.51,
 
   // Variable: ke
   //  Referenced by:
-  //    '<S55>/Filter Coefficient'
-  //    '<S107>/Filter Coefficient'
-  //    '<S159>/Filter Coefficient'
+  //    '<S56>/Filter Coefficient'
+  //    '<S108>/Filter Coefficient'
+  //    '<S160>/Filter Coefficient'
 
   100.0,
 
   // Variable: ki_pitch
-  //  Referenced by: '<S101>/Integral Gain'
+  //  Referenced by: '<S102>/Integral Gain'
 
   1.21,
 
   // Variable: ki_roll
-  //  Referenced by: '<S49>/Integral Gain'
+  //  Referenced by: '<S50>/Integral Gain'
 
   1.18,
 
   // Variable: ki_yaw
-  //  Referenced by: '<S153>/Integral Gain'
+  //  Referenced by: '<S154>/Integral Gain'
 
   2.5,
 
   // Variable: m
   //  Referenced by: '<S2>/MATLAB Function2'
 
-  1.014,
+  1.114,
 
   // Variable: p
   //  Referenced by: '<S2>/MATLAB Function2'
 
-  3.0,
+  0.08,
 
   // Mask Parameter: PIDController_InitialConditionF
-  //  Referenced by: '<S47>/Filter'
+  //  Referenced by: '<S48>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialCondition
-  //  Referenced by: '<S99>/Filter'
+  //  Referenced by: '<S100>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialCondition
-  //  Referenced by: '<S151>/Filter'
+  //  Referenced by: '<S152>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController_InitialConditio_d
-  //  Referenced by: '<S52>/Integrator'
+  //  Referenced by: '<S53>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialConditi_m
-  //  Referenced by: '<S104>/Integrator'
+  //  Referenced by: '<S105>/Integrator'
 
   0.0,
 
   // Mask Parameter: PIDController2_InitialConditi_o
-  //  Referenced by: '<S156>/Integrator'
+  //  Referenced by: '<S157>/Integrator'
 
   0.0,
 
@@ -275,6 +288,36 @@ Controller::P Controller::rtP{
 
   { 1.0, 0.0, 0.0, 1.0 },
 
+  // Computed Parameter: TransferFcn_A
+  //  Referenced by: '<S3>/Transfer Fcn'
+
+  -100.0,
+
+  // Computed Parameter: TransferFcn_C
+  //  Referenced by: '<S3>/Transfer Fcn'
+
+  100.0,
+
+  // Computed Parameter: TransferFcn_A_c
+  //  Referenced by: '<S4>/Transfer Fcn'
+
+  -100.0,
+
+  // Computed Parameter: TransferFcn_C_a
+  //  Referenced by: '<S4>/Transfer Fcn'
+
+  100.0,
+
+  // Computed Parameter: TransferFcn_A_o
+  //  Referenced by: '<S6>/Transfer Fcn'
+
+  -100.0,
+
+  // Computed Parameter: TransferFcn_C_n
+  //  Referenced by: '<S6>/Transfer Fcn'
+
+  100.0,
+
   // Expression: 0
   //  Referenced by: '<S8>/Integrator'
 
@@ -295,10 +338,10 @@ Controller::P Controller::rtP{
 
   0.0,
 
-  // Expression: 0
+  // Expression: [0; 0; 0; 0; 0; 0]
   //  Referenced by: '<S2>/Integrator'
 
-  0.0,
+  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
 
   // Expression: 0
   //  Referenced by: '<S9>/Integrator'

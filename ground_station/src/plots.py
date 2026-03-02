@@ -12,6 +12,7 @@ PLOT_CONFIGS = [
         "plot_func": lambda df, ax: (
             ax.plot(df['time_ms'], np.rad2deg(df['roll']), label='Roll'),
             ax.plot(df['time_ms'], np.rad2deg(df['reference_roll']), label='Roll Target'),
+            ax.plot(df['time_ms'], np.rad2deg(df['roll_predicted']), label='Roll Predicted'),
             ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['roll']) - np.rad2deg(df['reference_roll']))**2):.2f}", 
                     transform=ax.transAxes, ha="center", va="top"),
             # ax.set_ylim(-30, 30),
@@ -24,6 +25,7 @@ PLOT_CONFIGS = [
         "plot_func": lambda df, ax: (
             ax.plot(df['time_ms'], np.rad2deg(df['pitch']), label='Pitch'),
             ax.plot(df['time_ms'], np.rad2deg(df['reference_pitch']), label='Pitch Target'),
+            ax.plot(df['time_ms'], np.rad2deg(df['pitch_predicted']), label='Pitch Predicted'),
             ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['pitch']) - np.rad2deg(df['reference_pitch']))**2):.2f}", 
                     transform=ax.transAxes, ha="center", va="top"),
             # ax.set_ylim(-30, 30),
@@ -36,6 +38,7 @@ PLOT_CONFIGS = [
         "plot_func": lambda df, ax: (
             ax.plot(df['time_ms'], np.rad2deg(df['yaw']), label='Yaw'),
             ax.plot(df['time_ms'], np.rad2deg(df['reference_yaw']), label='Yaw Target'),
+            ax.plot(df['time_ms'], np.rad2deg(df['yaw_predicted']), label='Yaw Predicted'),
             ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['yaw']) - np.rad2deg(df['reference_yaw']))**2):.2f}", 
                     transform=ax.transAxes, ha="center", va="top"),
             # ax.set_ylim(-30, 30),

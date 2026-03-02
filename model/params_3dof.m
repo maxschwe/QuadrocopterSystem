@@ -5,7 +5,7 @@ I_zz = 0.0680;
 
 I = diag([I_xx, I_yy, I_zz]);
 
-m = 1.014;
+m = 1.114;
 g = 9.81;
 
 % Antriebsparameter
@@ -27,7 +27,7 @@ E = [
     c -c c -c;
 ];
 
-p = 0.1;
+p = 0.08;
 
 % Systemmatrizen des linearisierten Modells
 A = [
@@ -80,28 +80,18 @@ ke = 100;
 
 
 n = size(A, 1);
-p = size(C, 1);
+n_C = size(C, 1);
 
-A_ext = [A,           zeros(n, p);
-         C,          zeros(p, p)];
+A_ext = [A,           zeros(n, n_C);
+         C,          zeros(n_C, n_C)];
 
 B_ext = [B; 
-         zeros(p, size(B, 2))];
+         zeros(n_C, size(B, 2))];
 
-Q = diag([0.001, 0.001, 0.001, 0.1, 0.1, 0.1]);
-R = diag([1.0, 1.0, 1.0]);
+Q = diag([0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]);
+R = diag([0.01, 0.01, 0.01]);
 
 K = lqr(A, B, Q, R);
-Ki = [10 1 1];
+Ki = [1 1 1];
 
-S = [
-    0 0 0;
-    0 0 0;
-    0 0 0;
-    0 0 0;
-    0 0 0;
-    0 0 0;
-    1 0 0;
-    0 1 0;
-    0 0 1;
-];
+V = -inv(C*inv((A-B*K))* B);

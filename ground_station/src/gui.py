@@ -15,14 +15,15 @@ from plots import show_new_recording_plot, setup_subplots, plot
 
 
 MAX_POINTS = 2000
-INITIAL_THROTTLE = 3.0
+INITIAL_THROTTLE = 0.0
 INITIAL_PID = (1.4, 1.18, 0.33)
 
 
 class Gui(tk.Tk):
-    def __init__(self, ser):
+    def __init__(self, ser, dev):
         super().__init__()
         self.ser = ser
+        self.dev = dev
 
         self._telemetry_handler = TelemetryHandler()
         self._trajectories = self.trajectories()
@@ -33,8 +34,9 @@ class Gui(tk.Tk):
         # starts receiver thread
         self._com.start()
 
-        self._com.set_throttle(INITIAL_THROTTLE)
         self._com.set_pid(*INITIAL_PID)
+        self.dev.start_temporal_dynamic_measurement(20, self._com.update_position)
+        self._com.set_throttle(INITIAL_THROTTLE)
 
         self.setup_ui()
 
@@ -219,7 +221,7 @@ class Gui(tk.Tk):
                     self._com.set_reference_angles(0.0, 0.0, target_value_rads * 2)
 
             # print(f"Setting {traj_type} trajectory: {target_value:.2f} degrees")
-            time.sleep(0.01)
+            time.sleep(0.0001)
 
         self._com.set_reference_angles(0.0, 0.0, 0.0)
 

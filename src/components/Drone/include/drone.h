@@ -34,6 +34,14 @@ struct OrientationData {
     TickType_t lastUpdate;
 };
 
+struct PositionData {
+    float x;
+    float y;
+    float z;
+
+    TickType_t lastUpdate;
+};
+
 class Drone {
     public:
         Drone(ledc_timer_t timer_num, 
@@ -49,6 +57,9 @@ class Drone {
 
         ReferenceInputs& getReferenceInputs();
 
+        void updatePosition(float x, float y, float z);
+        PositionData& getPosition();
+
     private:
         EscTimer esc_timer;
         Rotor rotor1;
@@ -56,6 +67,9 @@ class Drone {
         Rotor rotor3;
         Rotor rotor4;
         MPU6050 mpu;
+
+        PositionData position;
+        PositionData startPosition;
 
         TaskHandle_t mpuProcessingTaskHandle;
         QueueHandle_t mpuMailbox;

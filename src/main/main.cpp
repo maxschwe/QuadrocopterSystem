@@ -9,31 +9,47 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// externe Fernsteuerung aktiv
+const bool REMOTE_CONTROL_ENABLED = false;
+
+// 3DOF Controller Mode (no position control, only attitude control)
+#define CONTROLLER_3DOF false
+
 #include "tests.h"
 #include "drone.h"
-#include "controller_3dof.h"
+
+
 #include "mpu6050.h"
 
+#if CONTROLLER_3DOF
+#include "controller_3dof_container.h"
 struct ControllerState {
     ReferenceInputs referenceInputs;
     real_T throttles[4];
-    real_T y_pred[6];
+    real_T x_pred[6];
     real_T values[6];
 };
+#else
+#include "controller_6dof_container.h"
+struct ControllerState {
+    ReferenceInputs referenceInputs;
+    real_T throttles[4];
+    real_T x_pred[12];
+    real_T values[6];
+};
+#endif
 
 struct SystemState {
     Drone& drone;
     ControllerState controllerState;
 };
 
-// externe Fernsteuerung aktiv
-const bool REMOTE_CONTROL_ENABLED = false;
-
 void host_com(void* params) {
     SystemState *systemState = static_cast<SystemState*>(params);
     Drone& drone = systemState->drone;
     ControllerState& controllerState = systemState->controllerState;
     ReferenceInputs& referenceInputs = drone.getReferenceInputs();
+    PositionData& position = drone.getPosition();
 
     char rx_buffer[128];
     int rx_idx = 0;
@@ -46,12 +62,13 @@ void host_com(void* params) {
         OrientationData orientation = drone.orientation();
         
         // send telemetry data to host pc
-        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
+        printf("#%ld\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",
             portTICK_PERIOD_MS * xTaskGetTickCount(),
             orientation.roll, orientation.pitch, orientation.yaw,
+            position.x, position.y, position.z,
             controllerState.referenceInputs.roll, controllerState.referenceInputs.pitch, controllerState.referenceInputs.yaw, controllerState.referenceInputs.throttle,
             controllerState.throttles[0], controllerState.throttles[1], controllerState.throttles[2], controllerState.throttles[3],
-            controllerState.y_pred[0], controllerState.y_pred[1], controllerState.y_pred[2], controllerState.y_pred[3], controllerState.y_pred[4], controllerState.y_pred[5],
+            controllerState.x_pred[0], controllerState.x_pred[1], controllerState.x_pred[2], controllerState.x_pred[3], controllerState.x_pred[4], controllerState.x_pred[5],
             controllerState.values[0], controllerState.values[1], controllerState.values[2], controllerState.values[3], controllerState.values[4], controllerState.values[5]
         );
         
@@ -76,6 +93,8 @@ void host_com(void* params) {
                     } else if (sscanf(rx_buffer, "#RT;%f", &input1) == 1) {
                         // set reference thrust
                         referenceInputs.throttle = input1;
+                    } else if (sscanf(rx_buffer, "#P;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        drone.updatePosition(input1, input2, input3);
                     } else {
                         ESP_LOGW("ExternalInputs", "Invalid command: %s", rx_buffer);
                     }
@@ -116,6 +135,8 @@ void drone_control(void*) {
     );
 
     ReferenceInputs& referenceInputs = drone.getReferenceInputs();
+    PositionData& position = drone.getPosition();
+
     uint16_t lastToggleState = referenceInputs.toggle;
 
     bool motorsActive = !REMOTE_CONTROL_ENABLED;
@@ -165,6 +186,7 @@ void drone_control(void*) {
         }
 
         if (motorsActive) {
+            #if CONTROLLER_3DOF
             controller.rtU.w[0] = referenceInputs.throttle;
             controller.rtU.w[1] = referenceInputs.roll;
             controller.rtU.w[2] = referenceInputs.pitch;
@@ -172,9 +194,18 @@ void drone_control(void*) {
             controller.rtU.y[0] = orientation.roll;
             controller.rtU.y[1] = orientation.pitch;
             controller.rtU.y[2] = orientation.yaw;
-            controller.rtU.y[3] = orientation.roll_rate;
-            controller.rtU.y[4] = orientation.pitch_rate;
-            controller.rtU.y[5] = orientation.yaw_rate;
+            #else 
+            controller.rtU.w[0] = 0;
+            controller.rtU.w[1] = 0;
+            controller.rtU.w[2] = - referenceInputs.throttle / 100.0f;
+            controller.rtU.w[3] = 0;
+            controller.rtU.y[0] = position.x;
+            controller.rtU.y[1] = position.y;
+            controller.rtU.y[2] = position.z;
+            controller.rtU.y[3] = orientation.roll;
+            controller.rtU.y[4] = orientation.pitch;
+            controller.rtU.y[5] = orientation.yaw;
+            #endif
 
             controller.step();
             
@@ -183,7 +214,7 @@ void drone_control(void*) {
             t3 = controller.rtY.u[2];
             t4 = controller.rtY.u[3];
         } else {
-            t1 = t2 = t3 = t4 = 0.0f;
+            t1 = t2 = t3 = t4 = 0.0f; 
         }
         drone.setThrottles(t1, t2, t3, t4);
         systemState.controllerState.referenceInputs.roll = referenceInputs.roll;
@@ -194,12 +225,18 @@ void drone_control(void*) {
         systemState.controllerState.throttles[1] = t2;
         systemState.controllerState.throttles[2] = t3;
         systemState.controllerState.throttles[3] = t4;
-        systemState.controllerState.y_pred[0] = controller.rtY.y_pred[0];
-        systemState.controllerState.y_pred[1] = controller.rtY.y_pred[1];
-        systemState.controllerState.y_pred[2] = controller.rtY.y_pred[2];
-        systemState.controllerState.y_pred[3] = controller.rtY.y_pred[3];
-        systemState.controllerState.y_pred[4] = controller.rtY.y_pred[4];
-        systemState.controllerState.y_pred[5] = controller.rtY.y_pred[5];
+        systemState.controllerState.x_pred[0] = controller.rtY.x_pred[0];
+        systemState.controllerState.x_pred[1] = controller.rtY.x_pred[1];
+        systemState.controllerState.x_pred[2] = controller.rtY.x_pred[2];
+        systemState.controllerState.x_pred[3] = controller.rtY.x_pred[3];
+        systemState.controllerState.x_pred[4] = controller.rtY.x_pred[4];
+        systemState.controllerState.x_pred[5] = controller.rtY.x_pred[5];
+        systemState.controllerState.x_pred[6] = controller.rtY.x_pred[6];
+        systemState.controllerState.x_pred[7] = controller.rtY.x_pred[7];
+        systemState.controllerState.x_pred[8] = controller.rtY.x_pred[8];
+        systemState.controllerState.x_pred[9] = controller.rtY.x_pred[9];
+        systemState.controllerState.x_pred[10] = controller.rtY.x_pred[10];
+        systemState.controllerState.x_pred[11] = controller.rtY.x_pred[11];
         systemState.controllerState.values[0] = controller.rtY.values[0];
         systemState.controllerState.values[1] = controller.rtY.values[1];
         systemState.controllerState.values[2] = controller.rtY.values[2];

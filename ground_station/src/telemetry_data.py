@@ -8,6 +8,10 @@ class TelemetryData:
     pitch: float
     yaw: float
 
+    x: float
+    y: float
+    z: float
+
     reference_roll: float
     reference_pitch: float
     reference_yaw: float

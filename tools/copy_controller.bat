@@ -9,17 +9,17 @@ set "SCRIPT_DIR=%~dp0"
 
 REM --- Configuration (Relative Paths) ---
 REM NOTE: Paths are relative to the folder where this batch file is located.
-set "SOURCE_REL=..\model\controller_3dof_ert_rtw"
-set "DEST_REL=..\src\components\controller_3dof"
+set "SOURCE_REL=..\model\controller_3dof_container_ert_rtw"
+set "DEST_REL=..\src\components\controller_3dof_container"
 
 REM Calculate the absolute paths
 set "SOURCE_DIR=%SCRIPT_DIR%%SOURCE_REL%"
 set "DEST_DIR=%SCRIPT_DIR%%DEST_REL%"
 
 REM List of the 4 specific files to copy
-set "FILE1=controller_3dof.cpp"
-set "FILE2=controller_3dof.h"
-set "FILE3=controller_3dof_data.cpp"
+set "FILE1=controller_3dof_container.cpp"
+set "FILE2=controller_3dof_container.h"
+set "FILE3=controller_3dof_container_data.cpp"
 set "FILE4=rtwtypes.h"
 REM ---------------------------------------
 

@@ -63,6 +63,16 @@ PLOT_CONFIGS = [
             ax.plot(df['time_ms'], df['throttle_4'], label='Throttle 4'),
             ax.legend(loc='upper right')
         )
+    },
+    {
+        "title": "Position",
+        "ylabel": "Position (mm)",
+        "plot_func": lambda df, ax: (
+            ax.plot(df['time_ms'], df['x'], label='X'),
+            ax.plot(df['time_ms'], df['y'], label='Y'),
+            ax.plot(df['time_ms'], df['z'], label='Z'),
+            ax.legend(loc='upper right')
+        )
     }
 ]
 

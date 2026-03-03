@@ -46,7 +46,7 @@ class TelemetryHandler:
             for recording in self._recordings:
                 recording.append(telemetry)
 
-        print(f"Time: {format_ms(telemetry.time_ms)}\t Roll: {math.degrees(telemetry.roll):.8f}\t Roll Rate: {math.degrees(telemetry.value4):.8f}\t Reference Roll: {math.degrees(telemetry.reference_roll):.8f}")
+        # print(f"Time: {format_ms(telemetry.time_ms)}\t X: {telemetry.x:.2f} m\t Y: {telemetry.y:.2f} m\t Z: {telemetry.z:.2f} m \t T1: {telemetry.throttle_1:.2f}\t T2: {telemetry.throttle_2:.2f}\t T3: {telemetry.throttle_3:.2f}\t T4: {telemetry.throttle_4:.2f}")
 
     def get_queue_data(self):
         with self._lock_deque:

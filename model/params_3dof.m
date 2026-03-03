@@ -27,7 +27,7 @@ E = [
     c -c c -c;
 ];
 
-p = 0.08;
+p = 0.05;
 
 % Systemmatrizen des linearisierten Modells
 A = [
@@ -95,3 +95,7 @@ K = lqr(A, B, Q, R);
 Ki = [1 1 1];
 
 V = -inv(C*inv((A-B*K))* B);
+
+A_6dof = [
+    
+];

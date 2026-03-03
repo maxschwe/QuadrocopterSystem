@@ -25,5 +25,4 @@ dev.start_temporal_dynamic_measurement(20, my_meas_callback)
 time.sleep(30)
 dev.stop_measurement()
 
-
 dev.disconnect()

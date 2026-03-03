@@ -83,6 +83,9 @@ Drone::Drone(
     initRotors();
     
     ESP_LOGI(TAG, "Setup Complete");
+
+    startPosition = PositionData{0.0f, 0.0f, 0.0f, 0};
+    position = PositionData{0.0f, 0.0f, 0.0f, 0};
 }
 
 
@@ -369,4 +372,21 @@ void Drone::remoteControlReceiver() {
             parseUartBuffer(uart_buffer, uart_buffer_len);
         }
     }
+}
+void Drone::updatePosition(float x, float y, float z) {
+    if (startPosition.lastUpdate == 0) {
+        startPosition.x = x;
+        startPosition.y = y;
+        startPosition.z = z;
+        startPosition.lastUpdate = xTaskGetTickCount();
+    } else {
+        position.x = x - startPosition.x;
+        position.y = y - startPosition.y;
+        position.z = z - startPosition.z;
+        position.lastUpdate = xTaskGetTickCount();
+    }
+}
+
+PositionData& Drone::getPosition() {
+    return position;
 }

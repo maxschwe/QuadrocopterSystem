@@ -12,7 +12,8 @@ PLOT_CONFIGS = [
         "plot_func": lambda df, ax: (
             ax.plot(df['time_ms'], np.rad2deg(df['roll']), label='Roll'),
             ax.plot(df['time_ms'], np.rad2deg(df['reference_roll']), label='Roll Target'),
-            ax.plot(df['time_ms'], np.rad2deg(df['roll_predicted']), label='Roll Predicted'),
+            # ax.plot(df['time_ms'], np.rad2deg(df['roll_predicted']), label='Roll Predicted'),
+            ax.plot(df['time_ms'], np.rad2deg(df['value1']), label='Roll Rate Integrated'),
             ax.text(0.5, 0.95, f"MSE: {np.mean((np.rad2deg(df['roll']) - np.rad2deg(df['reference_roll']))**2):.2f}", 
                     transform=ax.transAxes, ha="center", va="top"),
             # ax.set_ylim(-30, 30),

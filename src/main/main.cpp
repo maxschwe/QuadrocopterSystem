@@ -5,19 +5,14 @@
 #include <string.h>
 #include <math.h>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 // externe Fernsteuerung aktiv
 const bool REMOTE_CONTROL_ENABLED = false;
 
 // 3DOF Controller Mode (no position control, only attitude control)
-#define CONTROLLER_3DOF false
+#define CONTROLLER_3DOF true
 
 #include "tests.h"
 #include "drone.h"
-
 
 #include "mpu6050.h"
 
@@ -48,6 +43,7 @@ void host_com(void* params) {
     SystemState *systemState = static_cast<SystemState*>(params);
     Drone& drone = systemState->drone;
     ControllerState& controllerState = systemState->controllerState;
+
     ReferenceInputs& referenceInputs = drone.getReferenceInputs();
     PositionData& position = drone.getPosition();
 
@@ -80,12 +76,22 @@ void host_com(void* params) {
                     // Parse: Expecting #p,i,d or #TRAJ,type,dur,amp,freq
                     
                     float input1, input2, input3;
-                    if (sscanf(rx_buffer, "#PID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        // Controller::rtP.kp_roll = input1;
-                        // Controller::rtP.ki_roll = input2;
-                        // Controller::rtP.kd_roll = input3;
+                    if (sscanf(rx_buffer, "#RPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller3dof::rtP.kp_roll = input1;
+                        Controller3dof::rtP.ki_roll = input2;
+                        Controller3dof::rtP.kd_roll = input3;
                         ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
-                    } else if (sscanf(rx_buffer, "#RA;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                    } else if (sscanf(rx_buffer, "#PPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller3dof::rtP.kp_pitch = input1;
+                        Controller3dof::rtP.ki_pitch = input2;
+                        Controller3dof::rtP.kd_pitch = input3;
+                        ESP_LOGI("PID", "Updated Pitch PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#YPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller3dof::rtP.kp_yaw = input1;
+                        Controller3dof::rtP.ki_yaw = input2;
+                        Controller3dof::rtP.kd_yaw = input3;
+                        ESP_LOGI("PID", "Updated Yaw PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#YA;%f,%f,%f", &input1, &input2, &input3) == 3) {
                         // set reference angles
                         referenceInputs.roll = input1;
                         referenceInputs.pitch = input2;
@@ -151,7 +157,11 @@ void drone_control(void*) {
         }
     }
 
-    Controller controller;
+    #if (CONTROLLER_3DOF)
+    Controller3dof controller;
+    #else
+    Controller6dof controller;
+    #endif
     controller.initialize();
 
     SystemState systemState{drone, ControllerState{}};
@@ -165,7 +175,7 @@ void drone_control(void*) {
     float t1 = 0, t2 = 0, t3 = 0, t4 = 0;
     while (true) {
         OrientationData orientation = drone.orientation();
-        if (motorsActive && (xTaskGetTickCount() - orientation.lastUpdate > pdMS_TO_TICKS(1000))) {
+        if (motorsActive && (xTaskGetTickCount() - orientation.lastUpdate > pdMS_TO_TICKS(100))) {
             motorsActive = false;
             ESP_LOGE("TASK", "MPU Connection lost - Deactivating");
         }
@@ -179,7 +189,7 @@ void drone_control(void*) {
             }
 
             // 2. Failsafe: Connection Timeout
-            if (motorsActive && (xTaskGetTickCount() - referenceInputs.lastUpdate > pdMS_TO_TICKS(1000))) {
+            if (motorsActive && (xTaskGetTickCount() - referenceInputs.lastUpdate > pdMS_TO_TICKS(100))) {
                 motorsActive = false;
                 ESP_LOGE("TASK", "Remote Controller Connection lost - Deactivating");
             }
@@ -217,6 +227,8 @@ void drone_control(void*) {
             t1 = t2 = t3 = t4 = 0.0f; 
         }
         drone.setThrottles(t1, t2, t3, t4);
+
+        // update controller state for comm task to send telemetry to host pc
         systemState.controllerState.referenceInputs.roll = referenceInputs.roll;
         systemState.controllerState.referenceInputs.pitch = referenceInputs.pitch;
         systemState.controllerState.referenceInputs.yaw = referenceInputs.yaw;
@@ -231,12 +243,15 @@ void drone_control(void*) {
         systemState.controllerState.x_pred[3] = controller.rtY.x_pred[3];
         systemState.controllerState.x_pred[4] = controller.rtY.x_pred[4];
         systemState.controllerState.x_pred[5] = controller.rtY.x_pred[5];
+
+        #if !CONTROLLER_3DOF
         systemState.controllerState.x_pred[6] = controller.rtY.x_pred[6];
         systemState.controllerState.x_pred[7] = controller.rtY.x_pred[7];
         systemState.controllerState.x_pred[8] = controller.rtY.x_pred[8];
         systemState.controllerState.x_pred[9] = controller.rtY.x_pred[9];
         systemState.controllerState.x_pred[10] = controller.rtY.x_pred[10];
         systemState.controllerState.x_pred[11] = controller.rtY.x_pred[11];
+        #endif
         systemState.controllerState.values[0] = controller.rtY.values[0];
         systemState.controllerState.values[1] = controller.rtY.values[1];
         systemState.controllerState.values[2] = controller.rtY.values[2];

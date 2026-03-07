@@ -1,11 +1,12 @@
 import time
+from typing import Literal
 
 from api_lasertracker import ltpy
 import serial
 import threading
 
+from helpers import Axis
 from telemetry_data import TelemetryData
-from helpers import format_ms
 
 class Com(threading.Thread):
     def __init__(self, ser: serial.Serial, telemetry_handler):
@@ -30,8 +31,10 @@ class Com(threading.Thread):
     def set_throttle(self, value: float):
         self.send_cmd("RT", value)
 
-    def set_pid(self, p: float, i: float, d: float):
-        self.send_cmd("PID", [p, i, d])
+    def set_pid(self, axis: Axis, p: float, i: float, d: float):
+        axis_code = {Axis.ROLL: "R", Axis.PITCH: "P", Axis.YAW: "Y"}[axis]
+
+        self.send_cmd(f"{axis_code}PID", [p, i, d])
 
     def set_reference_angles(self, roll: float, pitch: float, yaw: float):
         self.send_cmd("RA", [roll, pitch, yaw])

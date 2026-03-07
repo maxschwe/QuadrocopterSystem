@@ -8,9 +8,6 @@
 // externe Fernsteuerung aktiv
 const bool REMOTE_CONTROL_ENABLED = false;
 
-// 3DOF Controller Mode (no position control, only attitude control)
-#define CONTROLLER_3DOF true
-
 #include "tests.h"
 #include "drone.h"
 
@@ -77,25 +74,44 @@ void host_com(void* params) {
                     
                     float input1, input2, input3;
                     if (sscanf(rx_buffer, "#RPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        Controller3dof::rtP.kp_roll = input1;
-                        Controller3dof::rtP.ki_roll = input2;
-                        Controller3dof::rtP.kd_roll = input3;
+                        // Controller3dof::rtP.kp_roll = input1;
+                        // Controller3dof::rtP.ki_roll = input2;
+                        // Controller3dof::rtP.kd_roll = input3;
                         ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
                     } else if (sscanf(rx_buffer, "#PPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        Controller3dof::rtP.kp_pitch = input1;
-                        Controller3dof::rtP.ki_pitch = input2;
-                        Controller3dof::rtP.kd_pitch = input3;
+                        // Controller3dof::rtP.kp_pitch = input1;
+                        // Controller3dof::rtP.ki_pitch = input2;
+                        // Controller3dof::rtP.kd_pitch = input3;
                         ESP_LOGI("PID", "Updated Pitch PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
                     } else if (sscanf(rx_buffer, "#YPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        Controller3dof::rtP.kp_yaw = input1;
-                        Controller3dof::rtP.ki_yaw = input2;
-                        Controller3dof::rtP.kd_yaw = input3;
+                        // Controller3dof::rtP.kp_yaw = input1;
+                        // Controller3dof::rtP.ki_yaw = input2;
+                        // Controller3dof::rtP.kd_yaw = input3;
                         ESP_LOGI("PID", "Updated Yaw PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
-                    } else if (sscanf(rx_buffer, "#YA;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                    } else if (sscanf(rx_buffer, "#xPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller6dof::rtP.kp_x = input1;
+                        Controller6dof::rtP.ki_x = input2;
+                        Controller6dof::rtP.kd_x = input3;
+                        ESP_LOGI("PID", "Updated X PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#yPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller6dof::rtP.kp_y = input1;
+                        Controller6dof::rtP.ki_y = input2;
+                        Controller6dof::rtP.kd_y = input3;
+                        ESP_LOGI("PID", "Updated Y PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#zPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller6dof::rtP.kp_z = input1;
+                        Controller6dof::rtP.ki_z = input2;
+                        Controller6dof::rtP.kd_z = input3;
+                        ESP_LOGI("PID", "Updated Z PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#RA;%f,%f,%f", &input1, &input2, &input3) == 3) {
                         // set reference angles
                         referenceInputs.roll = input1;
                         referenceInputs.pitch = input2;
                         referenceInputs.yaw = input3;
+                    } else if (sscanf(rx_buffer, "#RP;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        referenceInputs.x = input1;
+                        referenceInputs.y = input2;
+                        referenceInputs.z = input3;
                     } else if (sscanf(rx_buffer, "#RT;%f", &input1) == 1) {
                         // set reference thrust
                         referenceInputs.throttle = input1;
@@ -205,10 +221,10 @@ void drone_control(void*) {
             controller.rtU.y[1] = orientation.pitch;
             controller.rtU.y[2] = orientation.yaw;
             #else 
-            controller.rtU.w[0] = 0;
-            controller.rtU.w[1] = 0;
-            controller.rtU.w[2] = - referenceInputs.throttle / 100.0f;
-            controller.rtU.w[3] = 0;
+            controller.rtU.w[0] = referenceInputs.x;
+            controller.rtU.w[1] = referenceInputs.y;
+            controller.rtU.w[2] = referenceInputs.z;
+            controller.rtU.w[3] = 0.0f; // yaw is currently fixed to 0
             controller.rtU.y[0] = position.x;
             controller.rtU.y[1] = position.y;
             controller.rtU.y[2] = position.z;

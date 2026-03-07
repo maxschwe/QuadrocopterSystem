@@ -1,103 +1,120 @@
 using DifferentialEquations, LinearAlgebra, Plots, CSV, DataFrames, Optim
 using Optimization, OptimizationOptimJL, ForwardDiff, SciMLSensitivity
 
-data = CSV.read("../recordings/trajectory_30s Benchmark_1771925754.csv", DataFrame)
+data = CSV.read("./data/trajectory_30s Benchmark_Roll_1772900591.csv", DataFrame)
 
-recorded_t = [i * 0.005 for i in 0:nrow(data)-1]
+recorded_t = [i * 0.02 for i in 0:nrow(data)-1]
 recorded_roll = data.roll
+recorded_pitch = data.pitch
+recorded_yaw = data.yaw
 
-function reference_roll(t)
+function references(t)
     idx = searchsortedfirst(recorded_t, t)
     idx = clamp(idx, 1, nrow(data))
-    target = data.reference_roll[idx]
-    return target
+    targets = [data.reference_roll[idx], data.reference_pitch[idx], data.reference_yaw[idx]]
+    return targets
 end
 
 function quadrotor_dynamics!(du, u, p, t)
-    ϕ, θ = u[1], u[2]
+    η = u[1:3]
     ω = u[4:6]
-    int_err = u[7]
-    deriv_state = u[8] # The "memory" for the filtered derivative
+    int_states = u[7:9]
+    deriv_states = u[10:12]
 
-    # 1. Calculate Error
-    target = reference_roll(t)
-    error = target - ϕ
+    # PID Controllers
+    targets = references(t)
+    error = targets - η
     
-    # 2. Filtered Derivative Logic
-    # This acts like a low-pass filter on the D-term
-    # D_out = N * (kd * error - deriv_state)
-    d_term = p.N_filter * p.kd * ω[1]
+    control_moments = p.kp .* error + p.ki .* int_states + deriv_states
     
-    # 3. Control Allocation
-    roll_moment = p.kp * error + p.ki * int_err + d_term
-    tau_vec = [3.0, roll_moment, 0.0, 0.0]
-    
-    f_sq = p.E \ tau_vec
+    # Control allocation: Moments -> Throttles
+    tau = [3.0; control_moments]
+    f_sq = p.B_eff \ tau
     rpm = sqrt.(max.(f_sq, 0.0) ./ p.a) .+ p.b
     throttles = clamp.(rpm, 0.15, 0.90)
+
+    # Thrusters model
     thrusts = @. p.a * (throttles - p.b)^2
+    torques = (p.B_eff * thrusts)[2:4]
 
-    # Kinematics
-    sφ, cφ = sin(ϕ), cos(ϕ)
-    sθ, tθ, cθ = sin(θ), tan(θ), cos(θ)
-    W = [1 sφ*tθ cφ*tθ;
-        0 cφ -sφ;
-        0 sφ/cθ cφ/cθ]
+    # Angular velocity to Euler rate mapping
+    sφ, cφ = sin(η[1]), cos(η[1])
+    sθ, tθ, cθ = sin(η[2]), tan(η[2]), cos(η[2])
+    T = [1.0  sφ*tθ  cφ*tθ;
+         0.0  cφ     -sφ;
+         0.0  sφ/cθ  cφ/cθ]
 
-    # Forces/Torques
-    torques = (p.E*thrusts)[2:4]
-    torques[1] += p.m * p.g * p.d * sφ * cθ
+    
+    # Rotation dynamics
+    torques[1] += p.m * p.g * p.h * sφ * cθ
+    torques[2] += p.m * p.g * p.h * sθ 
 
-    damping_torques = [p.k_roll_drag * ω[1], 0.0, 0.0]
-
-    # Derivatives
-    du[1:3] = W * ω
-    du[4:6] = p.J \ (torques - damping_torques - cross(ω, p.J * ω))
-    du[7] = error # Derivative of integral is the error
-    du[8] = d_term # Update the filtered derivative state
+    # Add damping torques
+    torques += -p.d .* ω
+    
+    du[1:3] = T * ω
+    du[4:6] = p.J \ (torques - cross(ω, p.J * ω))
+    du[7:9] = error
+    du[10:12] = p.N_filter .* (p.kd .* ω .- deriv_states)
 end
 
 function construct_parameters(params)
-    k_roll_drag = params[1]
+    d_x = params[1]
+    d_y = params[2]
+    d_z = params[3]
     return (
-        m=1.014, g=9.81, d=0.03, 
-        J=Diagonal([0.0258, 0.0268, 0.0680]), 
-        E=[
+        m=1.014, g=9.81, h=0.05, 
+        J=Diagonal([0.0308, 0.0268, 0.0680]), 
+        B_eff=[
             1.0 1.0 1.0 1.0;
-            0.0 -0.2 0.0 0.2;
             0.2 0.0 -0.2 0.0;
+            0.0 0.2 0.0 -0.2;
             0.0351 -0.0351 0.0351 -0.0351
         ],
-        a=13.0, b=0.085908, 
-        k_roll_drag=k_roll_drag,
-        kp=0.8, ki=0.3, kd=1.5, N_filter = 100.0,)
+        a=13.06, b=0.0859, 
+        d = [d_x, d_y, d_z],
+        kp=[1.2, 1.2, 1.2], ki=[0.3, 0.3, 0.3], kd=[0.1, 0.1, 0.1], N_filter = [100.0, 100.0, 100.0])
+end
+
+function loss_function(params, recorded_roll, recorded_pitch, recorded_yaw)
+    sim_roll, sim_pitch, sim_yaw = sim_system(params)
+    return (sum(abs2, sim_roll .- recorded_roll) + sum(abs2, sim_pitch .- recorded_pitch) + sum(abs2, sim_yaw .- recorded_yaw)) / length(recorded_roll)
 end
 
 function sim_system(params)
-    u0 = [recorded_roll[1], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] # Include filtered derivative state
+    u0 = zeros(12)
+    u0[1] = recorded_roll[1]
+    u0[2] = recorded_pitch[1]
+    u0[3] = recorded_yaw[1]
     tspan = (recorded_t[1], recorded_t[end])
 
     p_local = construct_parameters(params)
     prob = ODEProblem(quadrotor_dynamics!, u0, tspan, p_local)
     sol = solve(prob, Tsit5(), saveat=recorded_t, reltol=1e-6, abstol=1e-6)
-    print(params, " final error: ", sum(abs2, data.roll .- [u[1] for u in sol.u]) / length(sol.u), "\n")
 
-    return [u[1] for u in sol.u]
+    return [u[1] for u in sol.u], [u[2] for u in sol.u], [u[3] for u in sol.u]
 end
 
-p_init = [0.1]
-data_sim_old_model = sim_system(p_init)
+d_x_init = 0.05
+d_y_init = 0.14
+d_z_init = 0.14
 
-function loss_function(params, recorded_roll)
-    sim_roll = sim_system(params)
-    return sum(abs2, sim_roll .- recorded_roll) / length(recorded_roll)
-end
+params_init = [d_x_init, d_y_init, d_z_init]
+simulated_roll, simulated_pitch, simulated_yaw = sim_system(params_init)
 
-lb = 0.8 * p_init
-ub = 1.2 * p_init
+plot(
+    recorded_t,
+    [data.roll data.roll_predicted simulated_roll],
+    xlabel="Time (s)", ylabel="Roll Angle (deg)", title="Roll Angle Comparison",
+    legend=:bottomright,
+    label=["Roll measured" "Roll predicted" "Roll simulated"]
+)
+
+lb = 0.8 * params_init
+ub = 1.2 * params_init
 
 opt_f = OptimizationFunction(loss_function, Optimization.AutoForwardDiff())
-opt_prob = OptimizationProblem(opt_f, p_init, recorded_roll, lb=lb, ub=ub)
+opt_prob = OptimizationProblem(opt_f, params_init, recorded_roll, recorded_pitch, recorded_yaw, lb=lb, ub=ub)
 
 println("Starting Optimization...")
 res = solve(opt_prob, BFGS(), maxiters=5, maxtime=30.0)

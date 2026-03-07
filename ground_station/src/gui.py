@@ -17,12 +17,15 @@ from plots import show_new_recording_plot, setup_subplots, plot
 
 
 MAX_POINTS = 2000
-INITIAL_THROTTLE = 0.0
+INITIAL_THROTTLE = 3.0
 INITIAL_PIDS = {
     Axis.ROLL: (1.4, 1.18, 0.33),
     Axis.PITCH: (1.42, 1.21, 0.35),
-    Axis.YAW: (2.8, 2.5, 0.51)
-}  # Roll, Pitch, Yaw PID tuples
+    Axis.YAW: (1.2, 0.7, 0.5),
+    Axis.X: (0.4, 0.1, 0.5),
+    Axis.Y: (0.4, 0.1, 0.5),
+    Axis.Z: (2.5, 3.0, 3.5)
+}  # Roll, Pitch, Yaw, X, Y, Z PID tuples
 
 
 class Gui(tk.Tk):
@@ -116,7 +119,6 @@ class Gui(tk.Tk):
                 i = float(i_vars[axis].get())
                 d = float(d_vars[axis].get())
                 self._com.set_pid(axis, p, i, d)
-                print(f"PID updated to: P={p}, I={i}, D={d}")
             except ValueError:
                 print("Invalid PID values")
         
@@ -162,6 +164,32 @@ class Gui(tk.Tk):
         ttk.Entry(ref_frame, textvariable=self.ref_yaw_var, width=8).pack(side=tk.LEFT)
 
         ttk.Button(ref_frame, text="Set Reference", command=set_reference).pack(side=tk.LEFT, padx=10)
+
+        ref_pos_frame = ttk.Frame(self)
+        ref_pos_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+
+        def set_reference_position():
+            try:
+                x = float(self.ref_x_var.get())
+                y = float(self.ref_y_var.get())
+                z = float(self.ref_z_var.get())
+                self._com.set_reference_position(x, y, z)
+            except ValueError:
+                print("Invalid reference position values")
+
+        ttk.Label(ref_pos_frame, text="Ref X:").pack(side=tk.LEFT, padx=5)
+        self.ref_x_var = tk.DoubleVar(value=0.0)
+        ttk.Entry(ref_pos_frame, textvariable=self.ref_x_var, width=8).pack(side=tk.LEFT)
+
+        ttk.Label(ref_pos_frame, text="Ref Y:").pack(side=tk.LEFT, padx=5)
+        self.ref_y_var = tk.DoubleVar(value=0.0)
+        ttk.Entry(ref_pos_frame, textvariable=self.ref_y_var, width=8).pack(side=tk.LEFT)
+
+        ttk.Label(ref_pos_frame, text="Ref Z:").pack(side=tk.LEFT, padx=5)
+        self.ref_z_var = tk.DoubleVar(value=0.0)
+        ttk.Entry(ref_pos_frame, textvariable=self.ref_z_var, width=8).pack(side=tk.LEFT)
+
+        ttk.Button(ref_pos_frame, text="Set Reference Position", command=set_reference_position).pack(side=tk.LEFT, padx=10)
 
         # --- Plot Frame ---
         plot_frame = ttk.Frame(self)
@@ -239,23 +267,16 @@ class Gui(tk.Tk):
         save_loc = Path("../recordings") / Path(f"trajectory_{traj_type}_{traj_axis}_{int(start_time)}.csv")
         self._telemetry_handler.start_recording(traj_record_time, save_loc=save_loc, on_finish=self.show_recorded_data)
         
-        last_ui_update = 0
         while (time.time() - start_time) < traj_record_time:
             now = time.time()
             elapsed_s = now - start_time
             target_value = traj_func(elapsed_s)
-
-            # Variables to store degrees for UI updates
-            ui_roll = 0.0
-            ui_pitch = 0.0
-            ui_yaw = 0.0
 
             if traj_axis == "All Axis":
                 # Ensure target_value is a tuple/list of 3
                 if isinstance(target_value, (list, tuple)) and len(target_value) == 3:
                     target_rads = np.radians(target_value)
                     self._com.set_reference_angles(target_rads[0], target_rads[1], target_rads[2])
-                    ui_roll, ui_pitch, ui_yaw = target_value
                 else:
                    print(f"Invalid multi-trajectory return: {target_value}")
             else:
@@ -263,22 +284,10 @@ class Gui(tk.Tk):
 
                 if traj_axis == "Roll":
                     self._com.set_reference_angles(target_value_rads, 0.0, 0.0)
-                    ui_roll = target_value
                 elif traj_axis == "Pitch":
                     self._com.set_reference_angles(0.0, target_value_rads, 0.0)
-                    ui_pitch = target_value
                 elif traj_axis == "Yaw":
                     self._com.set_reference_angles(0.0, 0.0, target_value_rads * 2)
-                    ui_yaw = target_value * 2
-
-            if now - last_ui_update > 0.1:
-                try:
-                    self.ref_roll_var.set(float(ui_roll))
-                    self.ref_pitch_var.set(float(ui_pitch))
-                    self.ref_yaw_var.set(float(ui_yaw))
-                except: 
-                    pass
-                last_ui_update = now
 
             # print(f"Setting {traj_type} trajectory: {target_value:.2f} degrees")
             time.sleep(0.001)

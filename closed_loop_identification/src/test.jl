@@ -1,7 +1,7 @@
 using DifferentialEquations, LinearAlgebra, Plots, CSV, DataFrames, Optim
 using Optimization, OptimizationOptimJL, ForwardDiff, SciMLSensitivity
 
-data = CSV.read("../recordings/trajectory_30s Benchmark_1771925754.csv", DataFrame)
+data = CSV.read("../recordings/trajectory_30s Benchmark_Roll_1772900591.csv", DataFrame)
 
 recorded_t = [i * 0.02 for i in 0:nrow(data)-1]
 recorded_roll = data.roll
@@ -22,7 +22,7 @@ function quadrotor_dynamics!(du, u, p, t)
     omega_x = u[4]
     
     # 1. Error Signal
-    target = 0.0 # Replace with reference_roll(t) if needed
+    target = reference_roll(t)
     error = target - phi
     
     # 2. PID Terms matching Simulink 'step()' logic
@@ -35,7 +35,7 @@ function quadrotor_dynamics!(du, u, p, t)
     
     # 3. Mixer and Actuator Dynamics
     tau_vec = [3.0, roll_moment, 0.0, 0.0]
-    f_sq = p.E \ tau_vec
+    f_sq = p.B_eff \ tau_vec
     
     # Motor RPM and Saturation
     rpm_raw = sqrt.(max.(f_sq, 0.0) ./ p.a) .+ p.b
@@ -47,7 +47,7 @@ function quadrotor_dynamics!(du, u, p, t)
     sθ, tθ, cθ = sin(u[2]), tan(u[2]), cos(u[2])
     W = [1 sφ*tθ cφ*tθ; 0 cφ -sφ; 0 sφ/cθ cφ/cθ]
 
-    torques = (p.E * thrusts)[2:4]
+    torques = (p.B_eff * thrusts)[2:4]
     torques[1] += p.m * p.g * p.d * sφ * cθ 
     damping = [p.k_roll_drag * u[4], 0.0, 0.0]
 
@@ -66,15 +66,15 @@ end
 function construct_parameters(params)
     k_roll_drag = params[1]
     return (
-        m=1.014, g=9.81, d=0.03, 
+        m=1.014, g=9.81, d=0.05, 
         J=Diagonal([0.0258, 0.0268, 0.0680]), 
-        E=[
+        B_eff=[
             1.0 1.0 1.0 1.0;
-            0.0 -0.2 0.0 0.2;
             0.2 0.0 -0.2 0.0;
+            0.0 0.2 0.0 -0.2;
             0.0351 -0.0351 0.0351 -0.0351
         ],
-        a=13.0, b=0.085908,
+        a=13.06, b=0.0859,
         k_roll_drag=k_roll_drag,
         kp=2.1, ki=0.9, kd=10.5, N = 100.0,
             LowerSat=0.15, UpperSat=0.90,   

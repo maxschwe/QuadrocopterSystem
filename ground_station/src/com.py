@@ -32,12 +32,15 @@ class Com(threading.Thread):
         self.send_cmd("RT", value)
 
     def set_pid(self, axis: Axis, p: float, i: float, d: float):
-        axis_code = {Axis.ROLL: "R", Axis.PITCH: "P", Axis.YAW: "Y"}[axis]
+        axis_code = {Axis.ROLL: "R", Axis.PITCH: "P", Axis.YAW: "Y", Axis.X: "x", Axis.Y: "y", Axis.Z: "z"}[axis]
 
         self.send_cmd(f"{axis_code}PID", [p, i, d])
 
     def set_reference_angles(self, roll: float, pitch: float, yaw: float):
         self.send_cmd("RA", [roll, pitch, yaw])
+
+    def set_reference_position(self, x: float, y: float, z: float):
+        self.send_cmd("RP", [x, y, z])
 
     def update_position(self, meas_result: ltpy.MeasurementResult):
         try:
@@ -51,7 +54,7 @@ class Com(threading.Thread):
 
             # print(f"{format_ms((time.time() - self._start_time) * 1000)}: Updating position: x={x}, y={y}, z={z}")
 
-            self.send_cmd("P", [x / 1000, -y / 1000, -z / 1000])  # Convert mm to m
+            self.send_cmd("P", [x / 1000, y / 1000, z / 1000])  # Convert mm to m
         except Exception as e:
             print(f"Error in update_position: {e}")
 

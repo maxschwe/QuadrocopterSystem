@@ -208,8 +208,10 @@ void IRAM_ATTR Drone::mpuInterruptProcessor() {
 
         OrientationData orientation; // Roll, Pitch, Yaw
         orientation.roll = ypr[2];
-        orientation.pitch = ypr[1];
-        orientation.yaw = ypr[0];
+
+        // negating these because the data you get from the DMP is in the NED (North-East-Down) convention, but we want to use (North-West-Down) convention for our controller
+        orientation.pitch = -ypr[1];
+        orientation.yaw = -ypr[0];
 
         float gyro_x_body = raw_gyro[0] / 16.4 * DEGREES_TO_RADIANS;
         float gyro_y_body = raw_gyro[1] / 16.4 * DEGREES_TO_RADIANS;
@@ -374,15 +376,34 @@ void Drone::remoteControlReceiver() {
     }
 }
 void Drone::updatePosition(float x, float y, float z) {
+    OrientationData orientation = this->orientation();
+
+    const float offset_z_body = 0.11f; 
+
+    float cp = std::cos(orientation.roll);
+    float sp = std::sin(orientation.roll);
+    float ct = std::cos(orientation.pitch);
+    float st = std::sin(orientation.pitch);
+    float cs = std::cos(orientation.yaw);
+    float ss = std::sin(orientation.yaw);
+
+    float off_x = offset_z_body * (cp * st * cs + sp * ss);
+    float off_y = offset_z_body * (cp * st * ss - sp * cs);
+    float off_z = offset_z_body * (cp * ct);
+
+    float x_cog = x - off_x;
+    float y_cog = y - off_y;
+    float z_cog = z - off_z;
+
     if (startPosition.lastUpdate == 0) {
-        startPosition.x = x;
-        startPosition.y = y;
-        startPosition.z = z;
+        startPosition.x = x_cog;
+        startPosition.y = y_cog;
+        startPosition.z = z_cog;
         startPosition.lastUpdate = xTaskGetTickCount();
     } else {
-        position.x = x - startPosition.x;
-        position.y = y - startPosition.y;
-        position.z = z - startPosition.z;
+        position.x = x_cog - startPosition.x;
+        position.y = y_cog - startPosition.y;
+        position.z = z_cog - startPosition.z;
         position.lastUpdate = xTaskGetTickCount();
     }
 }

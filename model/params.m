@@ -17,7 +17,7 @@ c = 0.0351;
 l = 0.20;
 
 % Abstand COG zu Fixed Point
-h = 0.03;
+h = 0.05;
 
 % Control Effektivitätsmodell
 B_eff = [
@@ -27,9 +27,9 @@ B_eff = [
     c -c c -c;
 ];
 
-p_x = 0.05;
-p_y = 0.05;
-p_z = 0.01;
+p_x = 0.0;
+p_y = 0.0;
+p_z = 0.0;
 
 p = [p_x, p_y, p_z];
 
@@ -74,11 +74,26 @@ kp_pitch = 1.42;
 ki_pitch = 1.21;
 kd_pitch = 0.35;
 
-kp_yaw = 2.8;
-ki_yaw = 2.5;
-kd_yaw = 0.51;
+kp_yaw = 1.2;
+ki_yaw = 0.7;
+kd_yaw = 0.5;
 
 N = 100;
+
+kp_x = 0.1;
+ki_x = 0.1;
+kd_x = 0.6;
+
+kp_y = 0.1;
+ki_y = 0.1;
+kd_y = 0.6;
+
+kp_z = 3.5;
+ki_z = 2.5;
+kd_z = 2.0;
+
+N_pos = 100;
+
 
 Q = diag([0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]);
 R = diag([0.01, 0.01, 0.01]);

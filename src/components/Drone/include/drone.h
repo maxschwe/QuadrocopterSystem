@@ -10,7 +10,10 @@
 #include "rotor.h"
 #include "esc_timer.h"
 
+// 3DOF Controller Mode (no position control, only attitude control)
+#define CONTROLLER_3DOF false
 
+#if CONTROLLER_3DOF
 struct ReferenceInputs {
 	float roll;
 	float pitch;
@@ -21,6 +24,22 @@ struct ReferenceInputs {
 
 	TickType_t lastUpdate;
 };
+#else
+struct ReferenceInputs {
+    float x;
+    float y;
+    float z;
+
+    float roll;
+	float pitch;
+	float yaw;
+	float throttle;
+
+    uint16_t toggle;
+
+    TickType_t lastUpdate;
+};
+#endif
 
 struct OrientationData {
     float roll;

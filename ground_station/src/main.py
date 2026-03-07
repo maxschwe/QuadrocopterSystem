@@ -4,7 +4,7 @@ from api_lasertracker import ltpy
 from gui import Gui
 import serial
 
-LASERTRACKER_ACTIVE = False
+LASERTRACKER_ACTIVE = True
 
 def activate_lasertracker():
     dev = ltpy.LaserTrackerInterface()

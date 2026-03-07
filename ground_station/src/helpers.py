@@ -9,3 +9,6 @@ class Axis(enum.Enum):
     ROLL = "Roll"
     PITCH = "Pitch"
     YAW = "Yaw"
+    X = "X"
+    Y = "Y"
+    Z = "Z"

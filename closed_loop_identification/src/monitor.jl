@@ -19,7 +19,7 @@ df = DataFrame([h => (h == :time_ms ? Int64[] : Float64[]) for h in headers])
 LibSerialPort.open(portname, baudrate) do sp
     flush(sp)
     
-    start_time = -1  # Placeholder
+    start_time = -1
     line_count = 0
 
     while isopen(sp)
@@ -30,19 +30,14 @@ LibSerialPort.open(portname, baudrate) do sp
             if length(parts) == 15
                 raw_t = parse(Int64, parts[1])
                 
-                # Capture the very first timestamp we see
                 if start_time == -1
                     start_time = raw_t
                     continue
                 end
                 
-                # Calculate relative time
                 relative_t = raw_t - start_time
-                
-                # Parse the rest
                 floats = parse.(Float64, parts[2:end])
-                
-                # Push to DataFrame
+
                 push!(df, [relative_t; floats])
                 
                 line_count += 1

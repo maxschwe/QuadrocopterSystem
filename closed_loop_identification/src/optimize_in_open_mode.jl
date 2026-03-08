@@ -1,40 +1,33 @@
 using DifferentialEquations, LinearAlgebra, Plots, CSV, DataFrames, Optim
 using Optimization, OptimizationOptimJL, ForwardDiff, SciMLSensitivity
 
-data = CSV.read("./data/trajectory_30s Benchmark_Roll_1772900591.csv", DataFrame)
+data = CSV.read("./data/kp-1.2-ki-0.3-kd-0.1/trajectory_30s Benchmark_Roll_1772900591.csv", DataFrame)
 
 recorded_t = [i * 0.02 for i in 0:nrow(data)-1]
 recorded_roll = data.roll
 recorded_pitch = data.pitch
 recorded_yaw = data.yaw
 
-function references(t)
-    idx = searchsortedfirst(recorded_t, t)
-    idx = clamp(idx, 1, nrow(data))
-    targets = [data.reference_roll[idx], data.reference_pitch[idx], data.reference_yaw[idx]]
-    return targets
+function throttles(t; dt=0.02)
+    # Calculate index directly instead of searching a vector (O(1) vs O(log n))
+    idx = clamp(round(Int, t / dt) + 1, 1, nrow(data))
+    
+    # Return a slice of the row as a Vector
+    return Vector(data[idx, [:throttle_1, :throttle_2, :throttle_3, :throttle_4]])
 end
+
+plot(recorded_t, [data.throttle_1, data.throttle_2, data.throttle_3, data.throttle_4])
 
 function quadrotor_dynamics!(du, u, p, t)
     η = u[1:3]
     ω = u[4:6]
-    int_states = u[7:9]
-    deriv_states = u[10:12]
 
-    # PID Controllers
-    targets = references(t)
-    error = targets - η
+    throttle_states = u[7:10]
     
-    control_moments = p.kp .* error + p.ki .* int_states - p.kd .* deriv_states
-    
-    # Control allocation: Moments -> Throttles
-    tau = [3.0; control_moments]
-    f_sq = p.B_eff \ tau
-    rpm = sqrt.(max.(f_sq, 0.0) ./ p.a) .+ p.b
-    throttles = clamp.(rpm, 0.15, 0.90)
+    current_throttles = throttles(t)
 
     # Thrusters model
-    thrusts = @. p.a * (throttles - p.b)^2
+    thrusts = @. p.a * (throttle_states - p.b)^2
     torques = (p.B_eff * thrusts)[2:4]
 
     # Angular velocity to Euler rate mapping
@@ -53,8 +46,7 @@ function quadrotor_dynamics!(du, u, p, t)
     
     du[1:3] = T * ω
     du[4:6] = p.J \ (torques - cross(ω, p.J * ω))
-    du[7:9] = error
-    du[10:12] = p.N_filter .* (ω - deriv_states)
+    du[7:10] = (current_throttles - throttle_states) ./ 0.001
 end
 
 function construct_parameters(params)
@@ -88,6 +80,7 @@ function sim_system(params)
     u0[4] = data.value4[1]
     u0[5] = data.value5[1]
     u0[6] = data.value6[1]
+    u0[7:10] = [data.throttle_1[1], data.throttle_2[1], data.throttle_3[1], data.throttle_4[1]]
     tspan = (recorded_t[1], recorded_t[end])
 
     p_local = construct_parameters(params)
@@ -97,7 +90,7 @@ function sim_system(params)
     return [u[1] for u in sol.u], [u[2] for u in sol.u], [u[3] for u in sol.u]
 end
 
-d_x_init = 0.08
+d_x_init = 0.2
 d_y_init = 0.0
 d_z_init = 0.0
 

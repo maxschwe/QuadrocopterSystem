@@ -5,7 +5,6 @@
 #include <string.h>
 #include <math.h>
 
-// externe Fernsteuerung aktiv
 const bool REMOTE_CONTROL_ENABLED = false;
 
 #include "tests.h"
@@ -59,7 +58,11 @@ void host_com(void* params) {
             portTICK_PERIOD_MS * xTaskGetTickCount(),
             orientation.roll, orientation.pitch, orientation.yaw,
             position.x, position.y, position.z,
-            controllerState.referenceInputs.roll, controllerState.referenceInputs.pitch, controllerState.referenceInputs.yaw, controllerState.referenceInputs.throttle,
+            #if CONTROLLER_3DOF
+                controllerState.referenceInputs.roll, controllerState.referenceInputs.pitch, controllerState.referenceInputs.yaw, controllerState.referenceInputs.throttle,
+            #else
+                controllerState.referenceInputs.x, controllerState.referenceInputs.y, controllerState.referenceInputs.z, controllerState.referenceInputs.yaw,
+            #endif
             controllerState.throttles[0], controllerState.throttles[1], controllerState.throttles[2], controllerState.throttles[3],
             controllerState.x_pred[0], controllerState.x_pred[1], controllerState.x_pred[2], controllerState.x_pred[3], controllerState.x_pred[4], controllerState.x_pred[5],
             controllerState.values[0], controllerState.values[1], controllerState.values[2], controllerState.values[3], controllerState.values[4], controllerState.values[5]
@@ -73,21 +76,26 @@ void host_com(void* params) {
                     // Parse: Expecting #p,i,d or #TRAJ,type,dur,amp,freq
                     
                     float input1, input2, input3;
-                    if (sscanf(rx_buffer, "#RPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        // Controller3dof::rtP.kp_roll = input1;
-                        // Controller3dof::rtP.ki_roll = input2;
-                        // Controller3dof::rtP.kd_roll = input3;
+                    if (sscanf(rx_buffer, "#P;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        drone.updatePosition(input1, input2, input3);
+                    #if PID_3DOF
+                    } else if (sscanf(rx_buffer, "#RPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller3dof::rtP.kp_roll = input1;
+                        Controller3dof::rtP.ki_roll = input2;
+                        Controller3dof::rtP.kd_roll = input3;
                         ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
                     } else if (sscanf(rx_buffer, "#PPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        // Controller3dof::rtP.kp_pitch = input1;
-                        // Controller3dof::rtP.ki_pitch = input2;
-                        // Controller3dof::rtP.kd_pitch = input3;
+                        Controller3dof::rtP.kp_pitch = input1;
+                        Controller3dof::rtP.ki_pitch = input2;
+                        Controller3dof::rtP.kd_pitch = input3;
                         ESP_LOGI("PID", "Updated Pitch PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
                     } else if (sscanf(rx_buffer, "#YPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        // Controller3dof::rtP.kp_yaw = input1;
-                        // Controller3dof::rtP.ki_yaw = input2;
-                        // Controller3dof::rtP.kd_yaw = input3;
+                        Controller3dof::rtP.kp_yaw = input1;
+                        Controller3dof::rtP.ki_yaw = input2;
+                        Controller3dof::rtP.kd_yaw = input3;
                         ESP_LOGI("PID", "Updated Yaw PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    #endif
+                    #if PID_6DOF
                     } else if (sscanf(rx_buffer, "#xPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
                         Controller6dof::rtP.kp_x = input1;
                         Controller6dof::rtP.ki_x = input2;
@@ -103,20 +111,22 @@ void host_com(void* params) {
                         Controller6dof::rtP.ki_z = input2;
                         Controller6dof::rtP.kd_z = input3;
                         ESP_LOGI("PID", "Updated Z PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
-                    } else if (sscanf(rx_buffer, "#RA;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        // set reference angles
-                        referenceInputs.roll = input1;
-                        referenceInputs.pitch = input2;
-                        referenceInputs.yaw = input3;
-                    } else if (sscanf(rx_buffer, "#RP;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        referenceInputs.x = input1;
-                        referenceInputs.y = input2;
-                        referenceInputs.z = input3;
+                    #endif
+                    } else if (sscanf(rx_buffer, "#R;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        #if CONTROLLER_3DOF
+                            referenceInputs.roll = input1;
+                            referenceInputs.pitch = input2;
+                            referenceInputs.yaw = input3;
+                        #else
+                            referenceInputs.x = input1;
+                            referenceInputs.y = input2;
+                            referenceInputs.z = input3;
+                        #endif
+                    #if CONTROLLER_3DOF   
                     } else if (sscanf(rx_buffer, "#RT;%f", &input1) == 1) {
                         // set reference thrust
                         referenceInputs.throttle = input1;
-                    } else if (sscanf(rx_buffer, "#P;%f,%f,%f", &input1, &input2, &input3) == 3) {
-                        drone.updatePosition(input1, input2, input3);
+                    #endif
                     } else {
                         ESP_LOGW("ExternalInputs", "Invalid command: %s", rx_buffer);
                     }
@@ -224,7 +234,7 @@ void drone_control(void*) {
             controller.rtU.w[0] = referenceInputs.x;
             controller.rtU.w[1] = referenceInputs.y;
             controller.rtU.w[2] = referenceInputs.z;
-            controller.rtU.w[3] = 0.0f; // yaw is currently fixed to 0
+            controller.rtU.w[3] = referenceInputs.yaw;
             controller.rtU.y[0] = position.x;
             controller.rtU.y[1] = position.y;
             controller.rtU.y[2] = position.z;
@@ -245,10 +255,17 @@ void drone_control(void*) {
         drone.setThrottles(t1, t2, t3, t4);
 
         // update controller state for comm task to send telemetry to host pc
+        #if CONTROLLER_3DOF
         systemState.controllerState.referenceInputs.roll = referenceInputs.roll;
         systemState.controllerState.referenceInputs.pitch = referenceInputs.pitch;
         systemState.controllerState.referenceInputs.yaw = referenceInputs.yaw;
         systemState.controllerState.referenceInputs.throttle = referenceInputs.throttle;
+        #else
+        systemState.controllerState.referenceInputs.x = referenceInputs.x;
+        systemState.controllerState.referenceInputs.y = referenceInputs.y;
+        systemState.controllerState.referenceInputs.z = referenceInputs.z;
+        systemState.controllerState.referenceInputs.yaw = referenceInputs.yaw;
+        #endif
         systemState.controllerState.throttles[0] = t1;
         systemState.controllerState.throttles[1] = t2;
         systemState.controllerState.throttles[2] = t3;

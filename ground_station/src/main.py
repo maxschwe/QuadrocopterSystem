@@ -4,7 +4,9 @@ from api_lasertracker import ltpy
 from gui import Gui
 import serial
 
-LASERTRACKER_ACTIVE = True
+IN_6DOF_MODE = True
+PID_ROT_ACTIVE = False
+PID_POS_ACTIVE = True
 
 def activate_lasertracker():
     dev = ltpy.LaserTrackerInterface()
@@ -31,14 +33,14 @@ def activate_lasertracker():
 
 if __name__ == "__main__":
     try:
-        if LASERTRACKER_ACTIVE:
+        if IN_6DOF_MODE:
             dev = activate_lasertracker()
         else:
             dev = None
 
         with serial.Serial('COM4', 921600, timeout=1) as ser:
             time.sleep(2)  # Wait for serial connection to initialize        
-            app = Gui(ser, dev, lasertracker_active=LASERTRACKER_ACTIVE)
+            app = Gui(ser, dev, IN_6DOF_MODE, PID_ROT_ACTIVE, PID_POS_ACTIVE)
             app.mainloop()
     finally:
         if dev:

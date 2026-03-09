@@ -310,9 +310,11 @@ void Drone::processFrame(uint8_t* frame) {
         float roll = lin_map(roll_val, ROLL_MIN_MAP, ROLL_MAX_MAP);
         float pitch = lin_map(pitch_val, PITCH_MIN_MAP, PITCH_MAX_MAP);
 
+        #if CONTROLLER_3DOF
         this->w.roll = roll;
         this->w.pitch = pitch;
         this->w.throttle = throttle;
+        #endif
         
         this->w.lastUpdate = xTaskGetTickCount();
     } else if (frame_type == 0x5C) {

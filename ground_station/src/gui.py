@@ -18,38 +18,43 @@ from plots import show_new_recording_plot, setup_subplots, plot
 
 MAX_POINTS = 2000
 INITIAL_THROTTLE = 3.0
+
 INITIAL_PIDS = {
     Axis.ROLL: (1.4, 1.18, 0.33),
     Axis.PITCH: (1.42, 1.21, 0.35),
     Axis.YAW: (1.2, 0.7, 0.5),
-    Axis.X: (0.4, 0.1, 0.5),
-    Axis.Y: (0.4, 0.1, 0.5),
+    Axis.X: (0.2, 0.1, 0.7),
+    Axis.Y: (0.2, 0.1, 0.7),
     Axis.Z: (2.5, 3.0, 3.5)
 }  # Roll, Pitch, Yaw, X, Y, Z PID tuples
 
 
 class Gui(tk.Tk):
-    def __init__(self, ser, dev, lasertracker_active=False):
+    def __init__(self, ser, dev, in_6dof_mode, pid_rot_active, pid_pos_active):
         super().__init__()
         self.ser = ser
         self.dev = dev
-        self.lasertracker_active = lasertracker_active
+        self._in_6dof_mode = in_6dof_mode
+        self._pid_rot_active = pid_rot_active
+        self._pid_pos_active = pid_pos_active
+
+        self._active_pids = {axis: pid for axis, pid in INITIAL_PIDS.items() if (axis in [Axis.ROLL, Axis.PITCH, Axis.YAW] and pid_rot_active) or (axis in [Axis.X, Axis.Y, Axis.Z] and pid_pos_active)}
 
         self._telemetry_handler = TelemetryHandler()
         self._trajectories = self.trajectories()
         self._multi_trajectories = self.multi_trajectories()
 
-        self._com = Com(ser, self._telemetry_handler)
+        self._com = Com(ser, self._telemetry_handler, in_6dof_mode)
 
         # starts receiver thread
         self._com.start()
 
-        for axis, pid in INITIAL_PIDS.items():
+        for axis, pid in self._active_pids.items():
             self._com.set_pid(axis, *pid)
 
-        if self.lasertracker_active:
+        if self._in_6dof_mode:
             self.dev.start_temporal_dynamic_measurement(20, self._com.update_position)
-        self._com.set_throttle(INITIAL_THROTTLE)
+        self._com.set_reference(0.0, 0.0, 0.0)
 
         self.setup_ui()
 
@@ -60,31 +65,38 @@ class Gui(tk.Tk):
         control_frame = ttk.Frame(self)
         control_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
         
-        # Throttle
-        def update_throttle(_):
-            value = self.throttle_var.get()
-            self._com.set_throttle(value)
+        if not self._in_6dof_mode:
+            # Throttle
+            def update_thrust(_):
+                value = self.throttle_var.get()
+                self._com.set_thrust(value)
 
-        ttk.Label(control_frame, text="Throttle:").pack(side=tk.LEFT)
-        self.throttle_var = tk.DoubleVar(value=INITIAL_THROTTLE)
-        self.throttle_scale = ttk.Scale(control_frame, from_=0, to=10, variable=self.throttle_var, command=update_throttle)
-        self.throttle_scale.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
-        self.throttle_label = ttk.Label(control_frame, textvariable=self.throttle_var)
-        self.throttle_label.pack(side=tk.LEFT, padx=5)
+            ttk.Label(control_frame, text="Throttle:").pack(side=tk.LEFT)
+            self.throttle_var = tk.DoubleVar(value=INITIAL_THROTTLE)
+            self.throttle_scale = ttk.Scale(control_frame, from_=0, to=10, variable=self.throttle_var, command=update_thrust)
+            self.throttle_scale.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+            self.throttle_label = ttk.Label(control_frame, textvariable=self.throttle_var)
+            self.throttle_label.pack(side=tk.LEFT, padx=5)
+            update_thrust(None)
 
         # Axis Selection
+        mode = "6dof" if self._in_6dof_mode else "3dof"
         def update_traj_options(_):
             axis = self.axis_var.get()
             if axis == "All Axis":
-                self.traj_combo['values'] = list(self._multi_trajectories.keys())
+                self.traj_combo['values'] = list(self._multi_trajectories[mode].keys())
                 self.traj_combo.current(0)
             else:
-                self.traj_combo['values'] = list(self._trajectories.keys())
+                self.traj_combo['values'] = list(self._trajectories[mode].keys())
                 self.traj_combo.current(0)
 
         ttk.Label(control_frame, text="Axis:").pack(side=tk.LEFT, padx=10)
-        self.axis_var = tk.StringVar(value="Roll")
-        self.axis_combo = ttk.Combobox(control_frame, textvariable=self.axis_var, values=["Roll", "Pitch", "Yaw", "All Axis"])
+        if self._in_6dof_mode:
+            self.axis_var = tk.StringVar(value="x")
+            self.axis_combo = ttk.Combobox(control_frame, textvariable=self.axis_var, values=["x", "y", "z", "All Axis"])
+        else:
+            self.axis_var = tk.StringVar(value="Roll")
+            self.axis_combo = ttk.Combobox(control_frame, textvariable=self.axis_var, values=["Roll", "Pitch", "Yaw", "All Axis"])
         self.axis_combo.current(0)
         self.axis_combo.pack(side=tk.LEFT, padx=5)
         self.axis_combo.bind("<<ComboboxSelected>>", update_traj_options)     
@@ -92,7 +104,7 @@ class Gui(tk.Tk):
         # Trajectory Selection
         ttk.Label(control_frame, text="Trajectory:").pack(side=tk.LEFT, padx=10)
         self.traj_var = tk.StringVar()
-        self.traj_combo = ttk.Combobox(control_frame, textvariable=self.traj_var, values=list(self._trajectories.keys()))
+        self.traj_combo = ttk.Combobox(control_frame, textvariable=self.traj_var, values=list(self._trajectories[mode].keys()))
         self.traj_combo.current(0)
         self.traj_combo.pack(side=tk.LEFT, padx=5)
 
@@ -124,7 +136,7 @@ class Gui(tk.Tk):
         
         pid_frame = ttk.LabelFrame(self, text="PID Tuning")
         pid_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
-        for axis, pid_values in INITIAL_PIDS.items():
+        for axis, pid_values in self._active_pids.items():
             ttk.Label(pid_frame, text=f"{axis.value} PID:").pack(side=tk.LEFT, padx=20)
             p_var = tk.StringVar(value=str(pid_values[0]))
             i_var = tk.StringVar(value=str(pid_values[1]))
@@ -139,57 +151,58 @@ class Gui(tk.Tk):
             ttk.Button(pid_frame, text="Update", command=partial(update_pid, axis)).pack(side=tk.LEFT, padx=10)
 
         # --- Reference Frame ---
-        ref_frame = ttk.Frame(self)
-        ref_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+        if self._in_6dof_mode:
+            ref_pos_frame = ttk.Frame(self)
+            ref_pos_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        def set_reference():
-            try:
-                r = float(self.ref_roll_var.get())
-                p = float(self.ref_pitch_var.get())
-                y = float(self.ref_yaw_var.get())
-                self._com.set_reference_angles(math.radians(r), math.radians(p), math.radians(y))
-            except ValueError:
-                print("Invalid reference values")
+            def set_reference_position():
+                try:
+                    x = float(self.ref_x_var.get())
+                    y = float(self.ref_y_var.get())
+                    z = float(self.ref_z_var.get())
+                    self._com.set_reference(x, y, z)
+                except ValueError:
+                    print("Invalid reference position values")
 
-        ttk.Label(ref_frame, text="Ref Roll:").pack(side=tk.LEFT, padx=5)
-        self.ref_roll_var = tk.DoubleVar(value=0.0)
-        ttk.Entry(ref_frame, textvariable=self.ref_roll_var, width=8).pack(side=tk.LEFT)
+            ttk.Label(ref_pos_frame, text="Ref X:").pack(side=tk.LEFT, padx=5)
+            self.ref_x_var = tk.DoubleVar(value=0.0)
+            ttk.Entry(ref_pos_frame, textvariable=self.ref_x_var, width=8).pack(side=tk.LEFT)
 
-        ttk.Label(ref_frame, text="Ref Pitch:").pack(side=tk.LEFT, padx=5)
-        self.ref_pitch_var = tk.DoubleVar(value=0.0)
-        ttk.Entry(ref_frame, textvariable=self.ref_pitch_var, width=8).pack(side=tk.LEFT)
+            ttk.Label(ref_pos_frame, text="Ref Y:").pack(side=tk.LEFT, padx=5)
+            self.ref_y_var = tk.DoubleVar(value=0.0)
+            ttk.Entry(ref_pos_frame, textvariable=self.ref_y_var, width=8).pack(side=tk.LEFT)
 
-        ttk.Label(ref_frame, text="Ref Yaw:").pack(side=tk.LEFT, padx=5)
-        self.ref_yaw_var = tk.DoubleVar(value=0.0)
-        ttk.Entry(ref_frame, textvariable=self.ref_yaw_var, width=8).pack(side=tk.LEFT)
+            ttk.Label(ref_pos_frame, text="Ref Z:").pack(side=tk.LEFT, padx=5)
+            self.ref_z_var = tk.DoubleVar(value=0.0)
+            ttk.Entry(ref_pos_frame, textvariable=self.ref_z_var, width=8).pack(side=tk.LEFT)
 
-        ttk.Button(ref_frame, text="Set Reference", command=set_reference).pack(side=tk.LEFT, padx=10)
+            ttk.Button(ref_pos_frame, text="Set Reference Position", command=set_reference_position).pack(side=tk.LEFT, padx=10)
+        else:
+            ref_frame = ttk.Frame(self)
+            ref_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        ref_pos_frame = ttk.Frame(self)
-        ref_pos_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+            def set_reference():
+                try:
+                    r = float(self.ref_roll_var.get())
+                    p = float(self.ref_pitch_var.get())
+                    y = float(self.ref_yaw_var.get())
+                    self._com.set_reference(math.radians(r), math.radians(p), math.radians(y))
+                except ValueError:
+                    print("Invalid reference values")
 
-        def set_reference_position():
-            try:
-                x = float(self.ref_x_var.get())
-                y = float(self.ref_y_var.get())
-                z = float(self.ref_z_var.get())
-                self._com.set_reference_position(x, y, z)
-            except ValueError:
-                print("Invalid reference position values")
+            ttk.Label(ref_frame, text="Ref Roll:").pack(side=tk.LEFT, padx=5)
+            self.ref_roll_var = tk.DoubleVar(value=0.0)
+            ttk.Entry(ref_frame, textvariable=self.ref_roll_var, width=8).pack(side=tk.LEFT)
 
-        ttk.Label(ref_pos_frame, text="Ref X:").pack(side=tk.LEFT, padx=5)
-        self.ref_x_var = tk.DoubleVar(value=0.0)
-        ttk.Entry(ref_pos_frame, textvariable=self.ref_x_var, width=8).pack(side=tk.LEFT)
+            ttk.Label(ref_frame, text="Ref Pitch:").pack(side=tk.LEFT, padx=5)
+            self.ref_pitch_var = tk.DoubleVar(value=0.0)
+            ttk.Entry(ref_frame, textvariable=self.ref_pitch_var, width=8).pack(side=tk.LEFT)
 
-        ttk.Label(ref_pos_frame, text="Ref Y:").pack(side=tk.LEFT, padx=5)
-        self.ref_y_var = tk.DoubleVar(value=0.0)
-        ttk.Entry(ref_pos_frame, textvariable=self.ref_y_var, width=8).pack(side=tk.LEFT)
+            ttk.Label(ref_frame, text="Ref Yaw:").pack(side=tk.LEFT, padx=5)
+            self.ref_yaw_var = tk.DoubleVar(value=0.0)
+            ttk.Entry(ref_frame, textvariable=self.ref_yaw_var, width=8).pack(side=tk.LEFT)
 
-        ttk.Label(ref_pos_frame, text="Ref Z:").pack(side=tk.LEFT, padx=5)
-        self.ref_z_var = tk.DoubleVar(value=0.0)
-        ttk.Entry(ref_pos_frame, textvariable=self.ref_z_var, width=8).pack(side=tk.LEFT)
-
-        ttk.Button(ref_pos_frame, text="Set Reference Position", command=set_reference_position).pack(side=tk.LEFT, padx=10)
+            ttk.Button(ref_frame, text="Set Reference", command=set_reference).pack(side=tk.LEFT, padx=10)
 
         # --- Plot Frame ---
         plot_frame = ttk.Frame(self)
@@ -206,43 +219,56 @@ class Gui(tk.Tk):
         self.after(50, self.update_plot)
 
     def trajectories(self):
-        def my_sin(t):
-            return 3 * np.sin(1 * t)
+        def my_sin(t, A):
+            return A * np.sin(t)
         
-        def my_step(t):
-            return 3
+        def my_step(t, A):
+            return A
         
-        def my_ramp(t):
-            return 0.25 * t
+        def my_ramp(t, A):
+            return A * 0.1 * t
         
-        def benchmark_30s(t):
+        def benchmark_30s(t, A):
             if t < 5:
                 return 0.0
             elif t < 10:
-                return 5.0
+                return A
             elif t < 15:
-                return 5.0 - 2 * (t - 10)
+                return A - 2 * (t - 10)
             elif t < 25:
-                return 5.0 * math.sin(0.2 * (t - 15)**2)
+                return A * math.sin(0.2 * (t - 15)**2)
             elif t <= 30:
-                return 2.5 * math.cos(math.pi/5 * (t - 25)) + 2.5
+                return A * math.cos(math.pi/5 * (t - 25)) + A
             else:
                 return 0.0
 
         return {
-            "Sine": my_sin,
-            "Step": my_step,
-            "Ramp": my_ramp,
-            "30s Benchmark": benchmark_30s
+            "3dof": {
+                "Sine": lambda t: my_sin(t, 3),
+                "Step": lambda t: my_step(t, 3),
+                "Ramp": lambda t: my_ramp(t, 3),
+                "30s Benchmark": lambda t: benchmark_30s(t, 5)
+            },
+            "6dof": {
+                "Sine": lambda t: my_sin(t, 0.2),
+                "Step": lambda t: my_step(t, 0.2),
+                "Ramp": lambda t: my_ramp(t, 0.2),
+                "30s Benchmark": lambda t: benchmark_30s(t, 0.2)
+            }
         }
 
     def multi_trajectories(self):
-        def sample_multi(t):
+        def sample_multi(t, A):
             # Roll, Pitch, Yaw
-            return (5 * np.sin(t), 5 * np.cos(t), 10 * np.sin(t))
+            return (A * np.sin(t), A * np.cos(t), A * np.sin(t))
 
         return {
-            "Sample Multi": sample_multi
+            "3dof": {
+                "Sample Multi": lambda t: sample_multi(t, 5)
+            },
+            "6dof": {
+                "Sample Multi": lambda t: sample_multi(t, 0.2)
+            }
         }
     
     def start_trajectory(self):
@@ -253,10 +279,12 @@ class Gui(tk.Tk):
         traj_axis = self.axis_var.get()
         traj_record_time = self.recording_time_var.get()
 
+        mode = "6dof" if self._in_6dof_mode else "3dof"
+
         if traj_axis == "All Axis":
-            traj_func = self._multi_trajectories.get(traj_type)
+            traj_func = self._multi_trajectories[mode].get(traj_type)
         else:
-            traj_func = self._trajectories.get(traj_type)
+            traj_func = self._trajectories[mode].get(traj_type)
 
         if traj_func is None:
             print(f"Unknown trajectory type: {traj_type}")
@@ -272,35 +300,38 @@ class Gui(tk.Tk):
             elapsed_s = now - start_time
             target_value = traj_func(elapsed_s)
 
+            if not self._in_6dof_mode:
+                target_value = np.radians(target_value)
+
             if traj_axis == "All Axis":
                 # Ensure target_value is a tuple/list of 3
-                if isinstance(target_value, (list, tuple)) and len(target_value) == 3:
-                    target_rads = np.radians(target_value)
-                    self._com.set_reference_angles(target_rads[0], target_rads[1], target_rads[2])
-                else:
-                   print(f"Invalid multi-trajectory return: {target_value}")
-            else:
-                target_value_rads = np.radians(target_value)
 
-                if traj_axis == "Roll":
-                    self._com.set_reference_angles(target_value_rads, 0.0, 0.0)
-                elif traj_axis == "Pitch":
-                    self._com.set_reference_angles(0.0, target_value_rads, 0.0)
-                elif traj_axis == "Yaw":
-                    self._com.set_reference_angles(0.0, 0.0, target_value_rads * 2)
+                if self._in_6dof_mode:
+                    offset = 0.5  # Add offset to z-axis in 6DOF mode so its not on the ground
+                else:
+                    offset = 0.0
+
+                self._com.set_reference(target_value[0], target_value[1], target_value[2] + offset)
+            else:
+                z_offset = 0.5 if self._in_6dof_mode else 0.0
+                if traj_axis in ["Roll", "x"]:
+                    self._com.set_reference(target_value, 0.0, z_offset)
+                elif traj_axis in ["Pitch", "y"]:
+                    self._com.set_reference(0.0, target_value, z_offset)
+                elif traj_axis in ["Yaw", "z"]:
+                    self._com.set_reference(0.0, 0.0, target_value + z_offset)
 
             # print(f"Setting {traj_type} trajectory: {target_value:.2f} degrees")
             time.sleep(0.001)
 
-        self._com.set_reference_angles(0.0, 0.0, 0.0)
-        self.ref_roll_var.set(0.0)
-        self.ref_pitch_var.set(0.0)
-        self.ref_yaw_var.set(0.0)
+        if self._in_6dof_mode:
+            self._com.set_reference(0.0, 0.0, 0.5)
+        else:
+            self._com.set_reference(0.0, 0.0, 0.0)
 
     def show_recorded_data(self, df):
         top = tk.Toplevel(self)
         show_new_recording_plot(top, df)
-        
 
     def update_plot(self):
         df = self._telemetry_handler.get_queue_data()

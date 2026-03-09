@@ -1,18 +1,18 @@
 import time
-from typing import Literal
 
 from api_lasertracker import ltpy
 import serial
 import threading
 
 from helpers import Axis
-from telemetry_data import TelemetryData
+from telemetry_data import TelemetryData3dof, TelemetryData6dof
 
 class Com(threading.Thread):
-    def __init__(self, ser: serial.Serial, telemetry_handler):
+    def __init__(self, ser: serial.Serial, telemetry_handler, in_6dof_mode: bool):
         super().__init__()
         self.ser = ser
         self.telemetry_handler = telemetry_handler
+        self._in_6dof_mode = in_6dof_mode
 
         self._start_time = time.time()
 
@@ -28,19 +28,16 @@ class Com(threading.Thread):
         with self._lock:
             self.ser.write(full_cmd.encode())
 
-    def set_throttle(self, value: float):
+    def set_thrust(self, value: float):
         self.send_cmd("RT", value)
+
+    def set_reference(self, value1: float, value2: float, value3: float):
+        self.send_cmd("R", [value1, value2, value3])
 
     def set_pid(self, axis: Axis, p: float, i: float, d: float):
         axis_code = {Axis.ROLL: "R", Axis.PITCH: "P", Axis.YAW: "Y", Axis.X: "x", Axis.Y: "y", Axis.Z: "z"}[axis]
 
         self.send_cmd(f"{axis_code}PID", [p, i, d])
-
-    def set_reference_angles(self, roll: float, pitch: float, yaw: float):
-        self.send_cmd("RA", [roll, pitch, yaw])
-
-    def set_reference_position(self, x: float, y: float, z: float):
-        self.send_cmd("RP", [x, y, z])
 
     def update_position(self, meas_result: ltpy.MeasurementResult):
         try:
@@ -80,8 +77,14 @@ class Com(threading.Thread):
             time_ms = int(data[0])
 
             data = map(float, data[1:])
-            telemetry_data = TelemetryData(
-                time_ms,
-                *data
-            )
+            if self._in_6dof_mode:
+                telemetry_data = TelemetryData6dof(
+                    time_ms,
+                    *data
+                )
+            else:
+                telemetry_data = TelemetryData3dof(
+                    time_ms,
+                    *data
+                )
             self.telemetry_handler.add(telemetry_data)

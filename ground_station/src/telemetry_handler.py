@@ -1,11 +1,10 @@
 from collections import deque
-import math
 from pathlib import Path
 import threading
 import time
 import pandas as pd
 
-from telemetry_data import TelemetryData
+from telemetry_data import TelemetryData3dof, TelemetryData6dof
 from helpers import format_ms
 
 
@@ -38,7 +37,7 @@ class TelemetryHandler:
         thread = threading.Thread(target=record)
         thread.start()
 
-    def add(self, telemetry: TelemetryData):
+    def add(self, telemetry: TelemetryData3dof | TelemetryData6dof):
         with self._lock_deque:
             self._telemetry_data.append(telemetry)
 

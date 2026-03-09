@@ -13,6 +13,9 @@
 // 3DOF Controller Mode (no position control, only attitude control)
 #define CONTROLLER_3DOF false
 
+#define PID_3DOF false
+#define PID_6DOF true
+
 #if CONTROLLER_3DOF
 struct ReferenceInputs {
 	float roll;
@@ -29,11 +32,7 @@ struct ReferenceInputs {
     float x;
     float y;
     float z;
-
-    float roll;
-	float pitch;
-	float yaw;
-	float throttle;
+    float yaw;
 
     uint16_t toggle;
 

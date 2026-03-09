@@ -6,7 +6,7 @@ import serial
 
 IN_6DOF_MODE = True
 PID_ROT_ACTIVE = False
-PID_POS_ACTIVE = True
+PID_POS_ACTIVE = False
 
 def activate_lasertracker():
     dev = ltpy.LaserTrackerInterface()

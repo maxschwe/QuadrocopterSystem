@@ -5,7 +5,7 @@ J_zz = 0.0680;
 
 J = diag([J_xx, J_yy, J_zz]);
 
-m = 1.014;
+m = 1.210;
 g = 9.81;
 
 % Antriebsparameter
@@ -80,20 +80,19 @@ kd_yaw = 0.5;
 
 N = 100;
 
-kp_x = 0.1;
-ki_x = 0.1;
-kd_x = 0.6;
+kp_x = 0.2;
+ki_x = 0.2;
+kd_x = 0.5;
 
-kp_y = 0.1;
-ki_y = 0.1;
-kd_y = 0.6;
+kp_y = 0.2;
+ki_y = 0.2;
+kd_y = 0.5;
 
 kp_z = 3.5;
 ki_z = 2.5;
 kd_z = 2.0;
 
 N_pos = 100;
-
 
 Q = diag([0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]);
 R = diag([0.01, 0.01, 0.01]);
@@ -102,3 +101,51 @@ K = lqr(A, B, Q, R);
 Ki = [1 1 1];
 
 V = -inv(C*inv((A-B*K))* B);
+
+% translation
+A_trans = [
+    0 0 0 1 0 0;
+    0 0 0 0 1 0;
+    0 0 0 0 0 1;
+    0 0 0 0 0 0;
+    0 0 0 0 0 0;
+    0 0 0 0 0 0;
+];
+
+% inputs: thrust, 
+B_trans = [
+    0 0 0;
+    0 0 0;
+    0 0 0;
+    0 0 g;
+    0 -g 0;
+    1/m 0 0;
+];
+
+C_trans = [
+    1 0 0 0 0 0;
+    0 1 0 0 0 0;
+    0 0 1 0 0 0;
+];
+
+A_erw = [
+    A_trans zeros(6, 3);
+    -C_trans zeros(3, 3);
+];
+
+% inputs: thrust, 
+B_erw = [
+    B_trans;
+    zeros(3, 3);
+];
+
+C_erw = [
+    C_trans, zeros(3, 3)
+];
+
+Q_erw = diag([0.01 0.01 0.1 10 10 1 1 1 10]);
+R_trans = diag([2 50 50]);
+
+[K_erw, ~, P_erw] = lqr(A_erw, B_erw, Q_erw, R_trans);
+K_trans = K_erw(1:3, 1:6);
+Ki_trans = K_erw(1:3, 7:9);

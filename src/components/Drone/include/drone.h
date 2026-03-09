@@ -14,7 +14,7 @@
 #define CONTROLLER_3DOF false
 
 #define PID_3DOF false
-#define PID_6DOF true
+#define PID_6DOF false
 
 #if CONTROLLER_3DOF
 struct ReferenceInputs {

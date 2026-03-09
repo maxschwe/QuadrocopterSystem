@@ -23,8 +23,8 @@ INITIAL_PIDS = {
     Axis.ROLL: (1.4, 1.18, 0.33),
     Axis.PITCH: (1.42, 1.21, 0.35),
     Axis.YAW: (1.2, 0.7, 0.5),
-    Axis.X: (0.2, 0.1, 0.7),
-    Axis.Y: (0.2, 0.1, 0.7),
+    Axis.X: (0.2, 0.2, 0.5),
+    Axis.Y: (0.2, 0.2, 0.5),
     Axis.Z: (2.5, 3.0, 3.5)
 }  # Roll, Pitch, Yaw, X, Y, Z PID tuples
 

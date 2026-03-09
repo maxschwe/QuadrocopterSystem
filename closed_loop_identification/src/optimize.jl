@@ -1,7 +1,7 @@
 using DifferentialEquations, LinearAlgebra, Plots, CSV, DataFrames, Optim
 using Optimization, OptimizationOptimJL, ForwardDiff, SciMLSensitivity
 
-data = CSV.read("./data/trajectory_30s Benchmark_Roll_1772900591.csv", DataFrame)
+data = CSV.read("./data/kp-1.2-ki-0.3-kd-0.1/trajectory_30s Benchmark_Roll_1772900591.csv", DataFrame)
 
 recorded_t = [i * 0.02 for i in 0:nrow(data)-1]
 recorded_roll = data.roll
@@ -97,7 +97,7 @@ function sim_system(params)
     return [u[1] for u in sol.u], [u[2] for u in sol.u], [u[3] for u in sol.u]
 end
 
-d_x_init = 0.08
+d_x_init = 0.0
 d_y_init = 0.0
 d_z_init = 0.0
 

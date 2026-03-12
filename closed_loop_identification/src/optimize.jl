@@ -1,157 +1,143 @@
-using DifferentialEquations, LinearAlgebra, Plots, CSV, DataFrames, Optim
-using Optimization, OptimizationOptimJL, ForwardDiff, SciMLSensitivity
+using DifferentialEquations, LinearAlgebra, DataInterpolations
+using CSV, DataFrames
 
-data = CSV.read("./data/kp-1.2-ki-0.3-kd-0.1/trajectory_30s Benchmark_Roll_1772900591.csv", DataFrame)
+using Optimization, OptimizationOptimJL, ForwardDiff
 
+using Plots
+
+data = CSV.read("data/kp-0.8-ki-0.6-kd-0.3/trajectory_30s Benchmark_Roll_1772900959.csv", DataFrame)
 recorded_t = [i * 0.02 for i in 0:nrow(data)-1]
 recorded_roll = data.roll
 recorded_pitch = data.pitch
 recorded_yaw = data.yaw
 
-function references(t)
-    idx = searchsortedfirst(recorded_t, t)
-    idx = clamp(idx, 1, nrow(data))
-    targets = [data.reference_roll[idx], data.reference_pitch[idx], data.reference_yaw[idx]]
-    return targets
-end
+ref_roll_itp = LinearInterpolation(data.reference_roll, recorded_t)
+ref_pitch_itp = LinearInterpolation(data.reference_pitch, recorded_t)
+ref_yaw_itp = LinearInterpolation(data.reference_yaw, recorded_t)
+
+plot(recorded_t, ref_roll_itp.(recorded_t), label="Reference Roll", title="Reference Trajectory")
 
 function quadrotor_dynamics!(du, u, p, t)
+    # Use the eltype of u to ensure compatibility with Dual numbers
+    T = eltype(u)
+    
     η = u[1:3]
     ω = u[4:6]
     int_states = u[7:9]
     deriv_states = u[10:12]
 
-    # PID Controllers
-    targets = references(t)
-    error = targets - η
+    targets = [ref_roll_itp(t), ref_pitch_itp(t), ref_yaw_itp(t)]
+    error = targets .- η
     
-    control_moments = p.kp .* error + p.ki .* int_states - p.kd .* deriv_states
+    control_moments = p.kp .* error .+ p.ki .* int_states .- p.kd .* deriv_states
     
-    # Control allocation: Moments -> Throttles
-    tau = [3.0; control_moments]
-    f_sq = p.B_eff \ tau
-    rpm = sqrt.(max.(f_sq, 0.0) ./ p.a) .+ p.b
-    throttles = clamp.(rpm, 0.15, 0.90)
+    tau_ideal = [T(3.0); control_moments]
+    
+    f_sq = p.B_eff_inv * tau_ideal
+    rpm = sqrt.(max.(f_sq, T(0.0)) ./ p.a) .+ p.b
+    throttles = clamp.(rpm, T(0.15), T(0.90))
 
-    # Thrusters model
     thrusts = @. p.a * (throttles - p.b)^2
-    torques = (p.B_eff * thrusts)[2:4]
+    applied_torques = (p.B_eff * thrusts)[2:4]
 
-    # Angular velocity to Euler rate mapping
     sφ, cφ = sin(η[1]), cos(η[1])
-    sθ, tθ, cθ = sin(η[2]), tan(η[2]), cos(η[2])
-    T = [1.0  sφ*tθ  cφ*tθ;
-         0.0  cφ     -sφ;
-         0.0  sφ/cθ  cφ/cθ]
+    sθ, cθ = sin(η[2]), cos(η[2])
+    tθ = tan(η[2])
+    T_mat = [1.0  sφ*tθ  cφ*tθ;
+             0.0  cφ     -sφ;
+             0.0  sφ/cθ  cφ/cθ]
 
-    # Rotation dynamics
-    torques[1] += p.m * p.g * p.h * sφ * cθ
-    torques[2] += p.m * p.g * p.h * sθ 
+    # applied_torques[1] += p.m * p.g * p.h * sφ * cθ
+    # applied_torques[2] += p.m * p.g * p.h * sθ 
 
-    # Add damping torques
-    torques += -p.d .* ω
-    
-    du[1:3] = T * ω
-    du[4:6] = p.J \ (torques - cross(ω, p.J * ω))
-    du[7:9] = error
-    du[10:12] = p.N_filter .* (ω - deriv_states)
+    du[1:3] .= T_mat * ω
+    du[4:6] .= p.J \ (applied_torques .- cross(ω, p.J * ω))
+    du[7:9] .= error
+    du[10:12] .= p.N_filter .* (ω .- deriv_states)
 end
 
 function construct_parameters(params)
-    d_x = params[1]
-    d_y = params[2]
-    d_z = params[3]
+    J_val = params[1]
+    h_val = params[2]
+
+    println("Testing with J_val = ", J_val, " and h_val = ", h_val)
+
+    B_eff = [1.0 1.0 1.0 1.0; 
+         0.2 0.0 -0.2 0.0; 
+         0.0 0.2 0.0 -0.2; 
+         0.0351 -0.0351 0.0351 -0.0351]
+    B_eff_inv = inv(B_eff)
+
     return (
-        m=1.014, g=9.81, h=0.05, 
-        J=Diagonal([0.0308, 0.0268, 0.0680]), 
-        B_eff=[
-            1.0 1.0 1.0 1.0;
-            0.2 0.0 -0.2 0.0;
-            0.0 0.2 0.0 -0.2;
-            0.0351 -0.0351 0.0351 -0.0351
-        ],
+        m=1.014, g=9.81, h=h_val, 
+        J=Diagonal([J_val, 0.0268, 0.0680]), 
+        B_eff=B_eff,
+        B_eff_inv=B_eff_inv,
         a=13.06, b=0.0859, 
-        d = [d_x, d_y, d_z],
-        kp=[1.2, 1.2, 1.2], ki=[0.3, 0.3, 0.3], kd=[0.1, 0.1, 0.1], N_filter = [100.0, 100.0, 100.0])
+        kp=[0.8, 0.8, 0.8], ki=[0.6, 0.6, 0.6], kd=[0.3, 0.3, 0.3], 
+        N_filter = [100.0, 100.0, 100.0]
+    )
 end
 
-function loss_function(params)
-    sim_roll, sim_pitch, sim_yaw = sim_system(params)
-    return (sum(abs2, sim_roll .- recorded_roll) + sum(abs2, sim_pitch .- recorded_pitch) + sum(abs2, sim_yaw .- recorded_yaw)) / length(recorded_roll)
-end
-
-function sim_system(params)
-    u0 = zeros(12)
-    u0[1] = recorded_roll[1]
-    u0[2] = recorded_pitch[1]
-    u0[3] = recorded_yaw[1]
-    u0[4] = data.value4[1]
-    u0[5] = data.value5[1]
-    u0[6] = data.value6[1]
-    tspan = (recorded_t[1], recorded_t[end])
-
+# 2. Update the loss function to be more robust
+function loss_function(params, _)
+    T = eltype(params) 
     p_local = construct_parameters(params)
-    prob = ODEProblem(quadrotor_dynamics!, u0, tspan, p_local)
+    
+    # Ensure u0 starts as the correct type
+    u0 = zeros(T, 12) 
+    u0[1] = T(recorded_roll[1])
+    u0[2] = T(recorded_pitch[1])
+    u0[3] = T(recorded_yaw[1])
+
+    prob = ODEProblem(quadrotor_dynamics!, u0, (T(recorded_t[1]), T(recorded_t[end])), p_local)
+    
+    # Use Sensealg for ForwardDiff to be explicit
     sol = solve(prob, Tsit5(), saveat=recorded_t, reltol=1e-6, abstol=1e-6)
 
-    return [u[1] for u in sol.u], [u[2] for u in sol.u], [u[3] for u in sol.u]
+    if sol.retcode != ReturnCode.Success
+        return T(1e9) 
+    end
+
+    res_roll = [u[1] for u in sol.u]
+    # res_pitch = [u[2] for u in sol.u]
+    # res_yaw = [u[3] for u in sol.u]
+    
+    mse = sum((res_roll .- recorded_roll).^2 ./ length(recorded_t))
+    
+    return mse
 end
 
-d_x_init = 0.0
-d_y_init = 0.0
-d_z_init = 0.0
+# --- Running the Identification ---
+d_init = [0.0258, 0.05]
 
-params_init = [d_x_init, d_y_init, d_z_init]
-simulated_roll, simulated_pitch, simulated_yaw = sim_system(params_init)
+initial_loss = loss_function(d_init, nothing)
+println("Initial Loss: ", initial_loss)
+sol_initial = solve(ODEProblem(quadrotor_dynamics!, zeros(12), (recorded_t[1], recorded_t[end]), construct_parameters(d_init)), Tsit5(), saveat=recorded_t)
 
-plot(
-    recorded_t,
-    [data.roll data.roll_predicted simulated_roll],
-    xlabel="Time (s)", ylabel="Roll Angle (deg)", title="Roll Angle Comparison",
-    legend=:bottomright,
-    label=["Roll measured" "Roll predicted" "Roll simulated"],
-    size=(1200, 800)
-)
+plot(recorded_t, [recorded_roll, data.roll_predicted, [u[1] for u in sol_initial.u]], label=["Measured Roll" "Internal Predicted" "Initial Model Roll"], title="Initial Model Performance")
 
-lb = 0.0 * params_init
-ub = 2.0 * params_init
+lb = 0.8 * d_init
+ub = 1.2 * d_init
 
 opt_f = OptimizationFunction(loss_function, Optimization.AutoForwardDiff())
-opt_prob = OptimizationProblem(opt_f, params_init, lb=lb, ub=ub)
+opt_prob = OptimizationProblem(opt_f, d_init, lb=lb, ub=ub)
 
 println("Starting Optimization...")
-res = solve(opt_prob, BFGS(), maxiters=5, maxtime=30.0)
+res = solve(opt_prob, BFGS(), maxiters=100, maxtime=60.0)
 
-println("--- Results ---")
-println("Identified k_roll_drag: ", res.minimizer[1])
+println("Identified Coefficients: ", res.minimizer)
 
-# Loss custom fitted system
-loss_function((0.2))
+loss = loss_function(res.minimizer, nothing)
+println("Final Loss: ", loss)
 
-# Loss for optimizer fitted system
-loss_function(res.minimizer)
+# --- Plotting Results ---
+p_final = construct_parameters(res.minimizer)
+prob_final = ODEProblem(quadrotor_dynamics!, zeros(12), (recorded_t[1], recorded_t[end]), p_final)
+sol_final = solve(prob_final, Tsit5(), saveat=recorded_t)
 
-optimizer_fitted_sim_data = sim_system([0.18])
-self_fitted_sim_data = sim_system([0.18]) # Simulate a self-fitted model
+plot(recorded_t, [ref_roll_itp.(recorded_t) * 180 / π, recorded_roll * 180 / π, [u[1] * 180 / π for u in sol_initial.u], [u[1] * 180 / π for u in sol_final.u]], 
+     label=["Reference" "Measured Roll" "Initial Model Roll" "Identified Model Roll"], title="Identification Results")
 
-plot(
-    recorded_t,
-    [data.reference_roll data.roll data_sim_old_model optimizer_fitted_sim_data self_fitted_sim_data],
-    xlabel="Time (s)", ylabel="Roll Angle (deg)", title="Roll Angle Comparison",
-    legend=:bottomright,
-    label=["Roll reference" "Roll measured" "Roll old model" "Roll optimizer fitted model" "Roll self fitted model"]
-)
-
-# Generate Loss Landscape Plot
-drag_range = 0.0:0.02:0.5      # Slightly coarser step to save time
-inertia_range = 0.02:0.001:0.04
-
-p1 = plot(drag_range, inertia_range, (d, j) -> loss_function((d, j)), 
-    st = :surface, 
-    xlabel = "k_roll_drag", 
-    ylabel = "J_xx", 
-    zlabel = "MSE Loss",
-    title = "Quadrotor Loss Landscape",
-    color = :viridis)
-
-display(p1)
+# identified: h = 0.03369, J = 0.0235
+# identified: h = 0.036, J = 0.02738

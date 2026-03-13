@@ -6,7 +6,7 @@ from plots import show_new_recording_plot
 
 
 if __name__ == "__main__":
-    PATH = Path("../evaluation_recordings/pid_roll_1.4-1.18-0.33_throttle3_mse3.01.csv")
+    PATH = Path(r"../recordings/Test1/trajectory_30s Benchmark_Roll_1773395325.csv")
     
     df = pd.read_csv(PATH)
 

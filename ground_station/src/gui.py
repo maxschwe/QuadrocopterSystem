@@ -303,17 +303,12 @@ class Gui(tk.Tk):
             if not self._in_6dof_mode:
                 target_value = np.radians(target_value)
 
+            z_offset = 0.5 if self._in_6dof_mode else 0.0
+
             if traj_axis == "All Axis":
-                # Ensure target_value is a tuple/list of 3
-
-                if self._in_6dof_mode:
-                    offset = 0.5  # Add offset to z-axis in 6DOF mode so its not on the ground
-                else:
-                    offset = 0.0
-
-                self._com.set_reference(target_value[0], target_value[1], target_value[2] + offset)
+                self._com.set_reference(target_value[0], target_value[1], target_value[2] + z_offset)
             else:
-                z_offset = 0.5 if self._in_6dof_mode else 0.0
+                
                 if traj_axis in ["Roll", "x"]:
                     self._com.set_reference(target_value, 0.0, z_offset)
                 elif traj_axis in ["Pitch", "y"]:

@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_3dof_container'.
 //
-// Model version                  : 1.480
+// Model version                  : 1.490
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Sat Mar  7 19:10:15 2026
+// C/C++ source code generated on : Fri Mar 13 18:06:58 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor

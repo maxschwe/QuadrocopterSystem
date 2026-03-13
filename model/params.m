@@ -1,7 +1,7 @@
 % Masse und Inertialmomente
-J_xx = 0.0258;
-J_yy = 0.0268;
-J_zz = 0.0680;
+J_xx = 0.0304;
+J_yy = 0.0315;
+J_zz = 0.0476;
 
 J = diag([J_xx, J_yy, J_zz]);
 
@@ -17,7 +17,7 @@ c = 0.0351;
 l = 0.20;
 
 % Abstand COG zu Fixed Point
-h = 0.05;
+h = 0.044;
 
 % Control Effektivitätsmodell
 B_eff = [
@@ -27,45 +27,7 @@ B_eff = [
     c -c c -c;
 ];
 
-p_x = 0.0;
-p_y = 0.0;
-p_z = 0.0;
-
-p = [p_x, p_y, p_z];
-
-% Systemmatrizen des linearisierten Modells
-A = [
-    0 0 0 1 0 0;
-    0 0 0 0 1 0;
-    0 0 0 0 0 1;
-    (m * g * h) / J_xx 0 0 -p_x 0 0;
-    0 (m * g * h) / J_yy 0 0 -p_y 0;
-    0 0 0 0 0 -p_z;
-];
-
-B = [
-    0 0 0;
-    0 0 0;
-    0 0 0;
-    1/J_xx 0 0;
-    0 1/J_yy 0;
-    0 0 1/J_zz;
-];
-
-C = [
-    1 0 0 0 0 0;
-    0 1 0 0 0 0;
-    0 0 1 0 0 0;
-];
-
-D = [
-    0 0 0;
-    0 0 0;
-    0 0 0;
-];
-
-T_delay_actor = 0; %20e-3 * 0.25;
-
+% PID Parameters for attitude control
 kp_roll = 1.4;
 ki_roll = 1.18;
 kd_roll = 0.33;
@@ -80,6 +42,80 @@ kd_yaw = 0.5;
 
 N = 100;
 
+% Systemmatrizen des linearisierten Rotationsmodell
+% A auf Teststand
+A_test_rot = [
+    0 0 0 1 0 0;
+    0 0 0 0 1 0;
+    0 0 0 0 0 1;
+    (m * g * h) / J_xx 0 0 0 0 0;
+    0 (m * g * h) / J_yy 0 0 0 0;
+    0 0 0 0 0 0;
+];
+
+% A im freien Flug
+A_free_rot = [
+    0 0 0 1 0 0;
+    0 0 0 0 1 0;
+    0 0 0 0 0 1;
+    0 0 0 0 0 0;
+    0 0 0 0 0 0;
+    0 0 0 0 0 0;
+];
+
+B_rot = [
+    0 0 0;
+    0 0 0;
+    0 0 0;
+    1/J_xx 0 0;
+    0 1/J_yy 0;
+    0 0 1/J_zz;
+];
+
+C_rot = [
+    1 0 0 0 0 0;
+    0 1 0 0 0 0;
+    0 0 1 0 0 0;
+];
+
+A_test_rot_erw = [
+    A_test_rot zeros(6, 3);
+    -C_rot zeros(3, 3);
+];
+
+A_free_rot_erw = [
+    A_free_rot zeros(6, 3);
+    -C_rot zeros(3, 3);
+];
+
+B_rot_erw = [
+    B_rot;
+    zeros(3, 3);
+];
+
+C_rot_erw = [
+    C_rot, zeros(3, 3)
+];
+
+% LQR Parameters for Attitude Control
+Q = diag([130, 130, 130, 10, 10, 10, 130, 130, 130]);
+R = diag([100, 100, 100]);
+
+% params on teststand
+K_test_rot_erw = lqrd(A_test_rot_erw, B_rot_erw, Q, R, 0.005);
+K_test_rot = K_test_rot_erw(1:3, 1:6);
+Ki_test_rot = K_test_rot_erw(1:3, 7:9);
+
+S_test_rot = -inv(C_rot*inv((A_test_rot-B_rot*K_test_rot))* B_rot);
+
+% params in free flight
+K_free_rot_erw = lqrd(A_free_rot_erw, B_rot_erw, Q, R, 0.005);
+K_free_rot = K_free_rot_erw(1:3, 1:6);
+Ki_free_rot = K_free_rot_erw(1:3, 7:9);
+
+S_free_rot = -inv(C_rot*inv((A_free_rot-B_rot*K_free_rot))* B_rot);
+
+% PID Parameters for Position Control
 kp_x = 0.2;
 ki_x = 0.2;
 kd_x = 0.5;
@@ -93,14 +129,6 @@ ki_z = 2.5;
 kd_z = 2.0;
 
 N_pos = 100;
-
-Q = diag([0.01, 0.01, 0.01, 0.0001, 0.0001, 0.0001]);
-R = diag([0.01, 0.01, 0.01]);
-
-K = lqr(A, B, Q, R);
-Ki = [1 1 1];
-
-V = -inv(C*inv((A-B*K))* B);
 
 % translation
 A_trans = [
@@ -128,24 +156,25 @@ C_trans = [
     0 0 1 0 0 0;
 ];
 
-A_erw = [
+A_trans_erw = [
     A_trans zeros(6, 3);
     -C_trans zeros(3, 3);
 ];
 
-% inputs: thrust, 
-B_erw = [
+B_trans_erw = [
     B_trans;
     zeros(3, 3);
 ];
 
-C_erw = [
+C_trans_erw = [
     C_trans, zeros(3, 3)
 ];
+
+T_delay_actor = 20e-3;
 
 Q_erw = diag([0.01 0.01 0.1 10 10 1 1 1 10]);
 R_trans = diag([2 50 50]);
 
-[K_erw, ~, P_erw] = lqr(A_erw, B_erw, Q_erw, R_trans);
+[K_erw, ~, P_erw] = lqr(A_trans_erw, B_trans_erw, Q_erw, R_trans);
 K_trans = K_erw(1:3, 1:6);
 Ki_trans = K_erw(1:3, 7:9);

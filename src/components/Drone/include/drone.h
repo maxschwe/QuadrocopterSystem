@@ -11,7 +11,7 @@
 #include "esc_timer.h"
 
 // 3DOF Controller Mode (no position control, only attitude control)
-#define CONTROLLER_3DOF false
+#define CONTROLLER_3DOF true
 
 #define PID_3DOF false
 #define PID_6DOF false

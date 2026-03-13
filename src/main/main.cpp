@@ -152,6 +152,8 @@ void drone_control(void*) {
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .rx_flow_ctrl_thresh = 0,
+        .source_clk = UART_SCLK_APB,
     };
     uart_param_config(UART_NUM_0, &uart_config);
     uart_driver_install(UART_NUM_0, 1024, 0, 0, NULL, 0);
@@ -167,7 +169,9 @@ void drone_control(void*) {
     );
 
     ReferenceInputs& referenceInputs = drone.getReferenceInputs();
+    #if !CONTROLLER_3DOF
     PositionData& position = drone.getPosition();
+    #endif
 
     uint16_t lastToggleState = referenceInputs.toggle;
 
@@ -230,7 +234,7 @@ void drone_control(void*) {
             controller.rtU.y[0] = orientation.roll;
             controller.rtU.y[1] = orientation.pitch;
             controller.rtU.y[2] = orientation.yaw;
-            #else 
+            #else
             controller.rtU.w[0] = referenceInputs.x;
             controller.rtU.w[1] = referenceInputs.y;
             controller.rtU.w[2] = referenceInputs.z;
@@ -245,10 +249,10 @@ void drone_control(void*) {
 
             controller.step();
             
-            t1 = controller.rtY.u[0];
-            t2 = controller.rtY.u[1];
-            t3 = controller.rtY.u[2];
-            t4 = controller.rtY.u[3];
+            t1 = controller.rtY.throttles[0];
+            t2 = controller.rtY.throttles[1];
+            t3 = controller.rtY.throttles[2];
+            t4 = controller.rtY.throttles[3];
         } else {
             t1 = t2 = t3 = t4 = 0.0f; 
         }

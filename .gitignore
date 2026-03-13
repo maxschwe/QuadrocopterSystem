@@ -3,3 +3,4 @@
 **/*_ert_rtw/
 *.slxc
 recordings/
+__pycache__/

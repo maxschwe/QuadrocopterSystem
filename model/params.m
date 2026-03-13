@@ -172,9 +172,9 @@ C_trans_erw = [
 
 T_delay_actor = 20e-3;
 
-Q_erw = diag([0.01 0.01 0.1 10 10 1 1 1 10]);
-R_trans = diag([2 50 50]);
+Q_erw = diag([1 1 100 10 10 10 10 10 100]);
+R_trans = diag([50 130 130]);
 
-[K_erw, ~, P_erw] = lqr(A_trans_erw, B_trans_erw, Q_erw, R_trans);
+[K_erw, ~, P_erw] = lqrd(A_trans_erw, B_trans_erw, Q_erw, R_trans, 0.02);
 K_trans = K_erw(1:3, 1:6);
 Ki_trans = K_erw(1:3, 7:9);

@@ -4,7 +4,7 @@ from api_lasertracker import ltpy
 from gui import Gui
 import serial
 
-IN_6DOF_MODE = False
+IN_6DOF_MODE = True
 PID_ROT_ACTIVE = False
 PID_POS_ACTIVE = False
 

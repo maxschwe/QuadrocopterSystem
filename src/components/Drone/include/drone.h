@@ -11,8 +11,9 @@
 #include "esc_timer.h"
 
 // 3DOF Controller Mode (no position control, only attitude control)
-#define CONTROLLER_3DOF true
+#define CONTROLLER_3DOF false
 
+// activates PID parameter control from ground station
 #define PID_3DOF false
 #define PID_6DOF false
 

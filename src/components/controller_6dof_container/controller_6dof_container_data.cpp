@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_6dof_container'.
 //
-// Model version                  : 1.515
+// Model version                  : 1.517
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Mar  9 18:46:51 2026
+// C/C++ source code generated on : Fri Mar 13 20:41:26 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -34,56 +34,58 @@ Controller6dof::P Controller6dof::rtP{
   // Variable: J
   //  Referenced by: '<S6>/MATLAB Function2'
 
-  { 0.0258, 0.0, 0.0, 0.0, 0.0268, 0.0, 0.0, 0.0, 0.068 },
+  { 0.0304, 0.0, 0.0, 0.0, 0.0315, 0.0, 0.0, 0.0, 0.0476 },
 
-  // Variable: K
+  // Variable: K_free_rot
   //  Referenced by:
-  //    '<S178>/Gain'
-  //    '<S516>/Gain'
+  //    '<S175>/Gain'
+  //    '<S513>/Gain'
 
-  { 1.7563670662077679, -1.2698609834614055E-16, 7.3843539275653778E-17,
-    2.1850200759364754E-16, 1.7563670662077688, 1.6188710462632714E-15,
-    -3.8317272026029079E-16, -2.876136846988219E-15, 1.0000000000000029,
-    0.31722001925528159, 1.695022032664676E-17, 4.4901791306286382E-17,
-    5.3516229243932911E-17, 0.32270927279633083, -5.0638879409143236E-16,
-    -1.3622420633259404E-16, -1.5351106422209885E-16, 0.38209946349085777 },
+  { 1.4658808426730352, -1.3178719364900466E-16, -5.0003184913000655E-16,
+    1.2340210771938578E-15, 1.4701419835502234, -5.3238671917005261E-16,
+    1.1195725953743822E-16, -4.0476920385327121E-17, 1.5236753327298915,
+    0.4266672213053575, -4.5158131768681759E-17, -5.6899585532842519E-17,
+    -1.0318007996304637E-16, 0.43093467888750181, -4.7892474575655336E-17,
+    2.1093120464431523E-17, 1.9611881654182336E-17, 0.48959816801547795 },
 
   // Variable: K_trans
   //  Referenced by:
   //    '<S13>/Gain'
   //    '<S351>/Gain'
 
-  { -3.4466897622412041E-16, 7.2033734718998049E-16, 0.38672574164509788,
-    -7.7783699351924841E-16, -0.38672574164509749, 4.45848295193725E-16,
-    3.7195407832640641, 2.0628943996749794E-16, -5.9892899673442118E-16,
-    -1.7493251432970292E-16, 3.0491858590604214E-16, 0.52805602783332617,
-    -2.8984191803822978E-16, -0.52805602783332639, 4.9539853447560175E-16,
-    3.0824160484105736, 1.1359558774354835E-16, -4.5581893533444219E-16 },
+  { -2.9959286894540317E-15, -3.5231389930068649E-17, 0.473945095980733,
+    2.3591311323926019E-17, -0.47394509598073326, -7.9638512571646389E-17,
+    3.0897518205234555, 3.8087448573868891E-15, -2.8439325951851134E-14,
+    -8.2047065381355278E-15, 2.502195597078797E-19, 0.40859767447687945,
+    2.28073676868918E-17, -0.40859767447687872, -6.8279450341441591E-17,
+    2.7631469021834349, 1.821344479024897E-15, -2.0041777166354979E-14 },
 
-  // Variable: Ki
+  // Variable: Ki_free_rot
   //  Referenced by:
-  //    '<S178>/Gain2'
-  //    '<S516>/Gain2'
+  //    '<S175>/Gain2'
+  //    '<S513>/Gain2'
 
-  { 1.0, 1.0, 1.0 },
+  { -1.1000454440814511, 4.0381856701262286E-17, 1.2318751913849034E-15,
+    -6.6757575844800025E-16, -1.1010647170865533, 6.912699716282514E-16,
+    7.9657011498682125E-18, -8.76354170340842E-18, -1.1108058077650047 },
 
   // Variable: Ki_trans
   //  Referenced by:
   //    '<S13>/Gain2'
   //    '<S351>/Gain2'
 
-  { 3.5211595408221149E-16, -1.5925298604027004E-16, -0.14142135623730998,
-    -1.3872186704390749E-18, 0.14142135623730942, -1.4801717978270836E-16,
-    -2.2360679774997942, -1.5221331261496206E-16, 2.7121351916188709E-16 },
+  { -9.1096234148767587E-15, 8.8285075638692E-17, -0.26620035397537239,
+    -4.3871524208757143E-17, 0.26620035397538006, 8.1196078464423474E-17,
+    -1.3819160786979658, -2.4937062690067767E-15, 1.2204588711216398E-14 },
 
   // Variable: N
   //  Referenced by:
-  //    '<S222>/Filter Coefficient'
-  //    '<S274>/Filter Coefficient'
-  //    '<S326>/Filter Coefficient'
-  //    '<S560>/Filter Coefficient'
-  //    '<S612>/Filter Coefficient'
-  //    '<S664>/Filter Coefficient'
+  //    '<S217>/Filter Coefficient'
+  //    '<S269>/Filter Coefficient'
+  //    '<S321>/Filter Coefficient'
+  //    '<S555>/Filter Coefficient'
+  //    '<S607>/Filter Coefficient'
+  //    '<S659>/Filter Coefficient'
 
   100.0,
 
@@ -98,14 +100,14 @@ Controller6dof::P Controller6dof::rtP{
 
   100.0,
 
-  // Variable: V
+  // Variable: S_free_rot
   //  Referenced by:
-  //    '<S178>/Gain1'
-  //    '<S516>/Gain1'
+  //    '<S175>/Gain1'
+  //    '<S513>/Gain1'
 
-  { 1.1628620662077678, -1.2698609834614055E-16, 7.3843539275653766E-17,
-    2.1850200759364756E-16, 1.1628620662077689, 1.6188710462632716E-15,
-    -3.8317272026029079E-16, -2.876136846988219E-15, 1.0000000000000029 },
+  { 1.4658808426730354, -1.3178719364900466E-16, -5.0003184913000665E-16,
+    1.234021077193858E-15, 1.4701419835502234, -5.3238671917005252E-16,
+    1.1195725953743824E-16, -4.0476920385327115E-17, 1.5236753327298915 },
 
   // Variable: a
   //  Referenced by:
@@ -127,25 +129,27 @@ Controller6dof::P Controller6dof::rtP{
   //  Referenced by:
   //    '<S4>/MATLAB Function2'
   //    '<S6>/MATLAB Function2'
+  //    '<S11>/Constant'
+  //    '<S349>/Constant'
 
   9.81,
 
   // Variable: h
   //  Referenced by: '<S6>/MATLAB Function2'
 
-  0.05,
+  0.044,
 
   // Variable: kd_pitch
   //  Referenced by:
-  //    '<S264>/Derivative Gain'
-  //    '<S602>/Derivative Gain'
+  //    '<S259>/Derivative Gain'
+  //    '<S597>/Derivative Gain'
 
   0.35,
 
   // Variable: kd_roll
   //  Referenced by:
-  //    '<S212>/Derivative Gain'
-  //    '<S550>/Derivative Gain'
+  //    '<S207>/Derivative Gain'
+  //    '<S545>/Derivative Gain'
 
   0.33,
 
@@ -165,8 +169,8 @@ Controller6dof::P Controller6dof::rtP{
 
   // Variable: kd_yaw
   //  Referenced by:
-  //    '<S316>/Derivative Gain'
-  //    '<S654>/Derivative Gain'
+  //    '<S311>/Derivative Gain'
+  //    '<S649>/Derivative Gain'
 
   0.5,
 
@@ -179,15 +183,15 @@ Controller6dof::P Controller6dof::rtP{
 
   // Variable: ki_pitch
   //  Referenced by:
-  //    '<S268>/Integral Gain'
-  //    '<S606>/Integral Gain'
+  //    '<S263>/Integral Gain'
+  //    '<S601>/Integral Gain'
 
   1.21,
 
   // Variable: ki_roll
   //  Referenced by:
-  //    '<S216>/Integral Gain'
-  //    '<S554>/Integral Gain'
+  //    '<S211>/Integral Gain'
+  //    '<S549>/Integral Gain'
 
   1.18,
 
@@ -207,8 +211,8 @@ Controller6dof::P Controller6dof::rtP{
 
   // Variable: ki_yaw
   //  Referenced by:
-  //    '<S320>/Integral Gain'
-  //    '<S658>/Integral Gain'
+  //    '<S315>/Integral Gain'
+  //    '<S653>/Integral Gain'
 
   0.7,
 
@@ -219,70 +223,48 @@ Controller6dof::P Controller6dof::rtP{
 
   2.5,
 
+  // Variable: kp_x
+  //  Referenced by:
+  //    '<S56>/Proportional Gain'
+  //    '<S394>/Proportional Gain'
+
+  0.2,
+
+  // Variable: kp_y
+  //  Referenced by:
+  //    '<S108>/Proportional Gain'
+  //    '<S446>/Proportional Gain'
+
+  0.2,
+
+  // Variable: kp_z
+  //  Referenced by:
+  //    '<S160>/Proportional Gain'
+  //    '<S498>/Proportional Gain'
+
+  3.5,
+
   // Variable: m
   //  Referenced by:
   //    '<S4>/MATLAB Function2'
   //    '<S6>/MATLAB Function2'
+  //    '<S11>/Constant'
+  //    '<S349>/Constant'
 
   1.21,
 
-  // Variable: p
-  //  Referenced by: '<S6>/MATLAB Function2'
-
-  { 0.0, 0.0, 0.0 },
-
-  // Mask Parameter: PIDController_InitialConditionF
-  //  Referenced by: '<S214>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController1_InitialCondition
-  //  Referenced by: '<S266>/Filter'
-
-  0.0,
-
   // Mask Parameter: PIDController2_InitialCondition
-  //  Referenced by: '<S318>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController_InitialConditio_k
-  //  Referenced by: '<S46>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController1_InitialConditi_m
-  //  Referenced by: '<S98>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_InitialConditi_n
   //  Referenced by: '<S150>/Filter'
 
   0.0,
 
-  // Mask Parameter: PIDController_InitialConditio_a
-  //  Referenced by: '<S552>/Filter'
+  // Mask Parameter: PIDController1_InitialCondition
+  //  Referenced by: '<S98>/Filter'
 
   0.0,
 
-  // Mask Parameter: PIDController1_InitialConditi_a
-  //  Referenced by: '<S604>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController2_InitialConditi_c
-  //  Referenced by: '<S656>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController_InitialConditio_m
-  //  Referenced by: '<S384>/Filter'
-
-  0.0,
-
-  // Mask Parameter: PIDController1_InitialCondit_ms
-  //  Referenced by: '<S436>/Filter'
+  // Mask Parameter: PIDController_InitialConditionF
+  //  Referenced by: '<S46>/Filter'
 
   0.0,
 
@@ -291,28 +273,43 @@ Controller6dof::P Controller6dof::rtP{
 
   0.0,
 
-  // Mask Parameter: PIDController_InitialConditi_ay
-  //  Referenced by: '<S219>/Integrator'
+  // Mask Parameter: PIDController1_InitialConditi_m
+  //  Referenced by: '<S436>/Filter'
+
+  0.0,
+
+  // Mask Parameter: PIDController_InitialConditio_m
+  //  Referenced by: '<S384>/Filter'
+
+  0.0,
+
+  // Mask Parameter: PIDController_InitialConditio_i
+  //  Referenced by: '<S209>/Filter'
 
   0.0,
 
   // Mask Parameter: PIDController1_InitialConditi_n
-  //  Referenced by: '<S271>/Integrator'
+  //  Referenced by: '<S261>/Filter'
 
   0.0,
 
-  // Mask Parameter: PIDController2_InitialCondit_ng
-  //  Referenced by: '<S323>/Integrator'
+  // Mask Parameter: PIDController2_InitialConditi_h
+  //  Referenced by: '<S313>/Filter'
 
   0.0,
 
-  // Mask Parameter: PIDController_InitialConditio_o
-  //  Referenced by: '<S51>/Integrator'
+  // Mask Parameter: PIDController_InitialConditio_a
+  //  Referenced by: '<S547>/Filter'
 
   0.0,
 
-  // Mask Parameter: PIDController1_InitialConditi_j
-  //  Referenced by: '<S103>/Integrator'
+  // Mask Parameter: PIDController1_InitialConditi_a
+  //  Referenced by: '<S599>/Filter'
+
+  0.0,
+
+  // Mask Parameter: PIDController2_InitialConditi_c
+  //  Referenced by: '<S651>/Filter'
 
   0.0,
 
@@ -321,23 +318,18 @@ Controller6dof::P Controller6dof::rtP{
 
   0.0,
 
-  // Mask Parameter: PIDController_InitialConditio_b
-  //  Referenced by: '<S557>/Integrator'
+  // Mask Parameter: PIDController1_InitialConditi_j
+  //  Referenced by: '<S103>/Integrator'
 
   0.0,
 
-  // Mask Parameter: PIDController1_InitialConditi_b
-  //  Referenced by: '<S609>/Integrator'
+  // Mask Parameter: PIDController_InitialConditio_o
+  //  Referenced by: '<S51>/Integrator'
 
   0.0,
 
-  // Mask Parameter: PIDController2_InitialCondit_k5
-  //  Referenced by: '<S661>/Integrator'
-
-  0.0,
-
-  // Mask Parameter: PIDController_InitialConditi_a2
-  //  Referenced by: '<S389>/Integrator'
+  // Mask Parameter: PIDController2_InitialConditi_i
+  //  Referenced by: '<S493>/Integrator'
 
   0.0,
 
@@ -346,8 +338,38 @@ Controller6dof::P Controller6dof::rtP{
 
   0.0,
 
-  // Mask Parameter: PIDController2_InitialConditi_i
-  //  Referenced by: '<S493>/Integrator'
+  // Mask Parameter: PIDController_InitialConditi_a2
+  //  Referenced by: '<S389>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController_InitialConditi_ay
+  //  Referenced by: '<S214>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController1_InitialCondit_nz
+  //  Referenced by: '<S266>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController2_InitialConditi_n
+  //  Referenced by: '<S318>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController_InitialConditio_b
+  //  Referenced by: '<S552>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController1_InitialConditi_b
+  //  Referenced by: '<S604>/Integrator'
+
+  0.0,
+
+  // Mask Parameter: PIDController2_InitialCondit_k5
+  //  Referenced by: '<S656>/Integrator'
 
   0.0,
 
@@ -376,15 +398,15 @@ Controller6dof::P Controller6dof::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0.005; 0 1]
+  // Expression: [1 0.02; 0 1]
   //  Referenced by: '<S342>/Constant'
 
-  { 1.0, 0.0, 0.005, 1.0 },
+  { 1.0, 0.0, 0.02, 1.0 },
 
-  // Expression: [0.001 0; 0 50]
+  // Expression: [0.001 0; 0 1000]
   //  Referenced by: '<S342>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 50.0 },
+  { 0.001, 0.0, 0.0, 1000.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S342>/Unit Delay'
@@ -416,15 +438,15 @@ Controller6dof::P Controller6dof::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0.005; 0 1]
+  // Expression: [1 0.02; 0 1]
   //  Referenced by: '<S343>/Constant'
 
-  { 1.0, 0.0, 0.005, 1.0 },
+  { 1.0, 0.0, 0.02, 1.0 },
 
-  // Expression: [0.001 0; 0 50]
+  // Expression: [0.001 0; 0 1000]
   //  Referenced by: '<S343>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 50.0 },
+  { 0.001, 0.0, 0.0, 1000.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S343>/Unit Delay'
@@ -456,199 +478,42 @@ Controller6dof::P Controller6dof::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0.005; 0 1]
+  // Expression: [1 0.02; 0 1]
   //  Referenced by: '<S344>/Constant'
 
-  { 1.0, 0.0, 0.005, 1.0 },
+  { 1.0, 0.0, 0.02, 1.0 },
 
-  // Expression: [0.001 0; 0 50]
+  // Expression: [0.001 0; 0 1000]
   //  Referenced by: '<S344>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 50.0 },
+  { 0.001, 0.0, 0.0, 1000.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S344>/Unit Delay'
 
   { 1.0, 0.0, 0.0, 1.0 },
 
-  // Expression: [1; 0]
-  //  Referenced by: '<S174>/Constant1'
-
-  { 1.0, 0.0 },
-
-  // Expression: [1 0]
-  //  Referenced by: '<S174>/Constant2'
-
-  { 1.0, 0.0 },
-
-  // Expression: 10e-4
-  //  Referenced by: '<S174>/Cov Messrauschen'
-
-  0.001,
-
-  // Expression: 0
-  //  Referenced by: '<S174>/Constant5'
-
-  0.0,
-
-  // Expression: [0; 0]
-  //  Referenced by: '<S174>/Unit Delay1'
-
-  { 0.0, 0.0 },
-
-  // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S174>/Constant'
-
-  { 1.0, 0.0, 0.005, 1.0 },
-
-  // Expression: [0.001 0; 0 800]
-  //  Referenced by: '<S174>/Cov Prozessrauschen'
-
-  { 0.001, 0.0, 0.0, 800.0 },
-
-  // Expression: 1 * eye(2, 2)
-  //  Referenced by: '<S174>/Unit Delay'
-
-  { 1.0, 0.0, 0.0, 1.0 },
-
-  // Expression: [1; 0]
-  //  Referenced by: '<S175>/Constant1'
-
-  { 1.0, 0.0 },
-
-  // Expression: [1 0]
-  //  Referenced by: '<S175>/Constant2'
-
-  { 1.0, 0.0 },
-
-  // Expression: 10e-4
-  //  Referenced by: '<S175>/Cov Messrauschen'
-
-  0.001,
-
-  // Expression: 0
-  //  Referenced by: '<S175>/Constant5'
-
-  0.0,
-
-  // Expression: [0; 0]
-  //  Referenced by: '<S175>/Unit Delay1'
-
-  { 0.0, 0.0 },
-
-  // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S175>/Constant'
-
-  { 1.0, 0.0, 0.005, 1.0 },
-
-  // Expression: [0.001 0; 0 800]
-  //  Referenced by: '<S175>/Cov Prozessrauschen'
-
-  { 0.001, 0.0, 0.0, 800.0 },
-
-  // Expression: 1 * eye(2, 2)
-  //  Referenced by: '<S175>/Unit Delay'
-
-  { 1.0, 0.0, 0.0, 1.0 },
-
-  // Expression: [1; 0]
-  //  Referenced by: '<S177>/Constant1'
-
-  { 1.0, 0.0 },
-
-  // Expression: [1 0]
-  //  Referenced by: '<S177>/Constant2'
-
-  { 1.0, 0.0 },
-
-  // Expression: 10e-4
-  //  Referenced by: '<S177>/Cov Messrauschen'
-
-  0.001,
-
-  // Expression: 0
-  //  Referenced by: '<S177>/Constant5'
-
-  0.0,
-
-  // Expression: [0; 0]
-  //  Referenced by: '<S177>/Unit Delay1'
-
-  { 0.0, 0.0 },
-
-  // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S177>/Constant'
-
-  { 1.0, 0.0, 0.005, 1.0 },
-
-  // Expression: [0.001 0; 0 800]
-  //  Referenced by: '<S177>/Cov Prozessrauschen'
-
-  { 0.001, 0.0, 0.0, 800.0 },
-
-  // Expression: 1 * eye(2, 2)
-  //  Referenced by: '<S177>/Unit Delay'
-
-  { 1.0, 0.0, 0.0, 1.0 },
-
   // Expression: -inv(C_trans*inv((A_trans-B_trans*K_trans))* B_trans)
   //  Referenced by: '<S13>/Gain1'
 
-  { -3.4466897622412041E-16, 7.2033734718998059E-16, 0.38672574164509788,
-    -7.778369935192485E-16, -0.38672574164509749, 4.45848295193725E-16,
-    3.7195407832640646, 2.06289439967498E-16, -5.9892899673442127E-16 },
+  { -2.9959286894540321E-15, -3.5231389930068643E-17, 0.473945095980733,
+    2.3591311323926019E-17, -0.47394509598073326, -7.9638512571646376E-17,
+    3.0897518205234555, 3.8087448573868891E-15, -2.8439325951851128E-14 },
 
   // Expression: [m * g; 0; 0]
   //  Referenced by: '<S13>/Constant'
 
   { 11.8701, 0.0, 0.0 },
 
-  // Expression: 0
-  //  Referenced by: '<S13>/Integrator'
+  // Computed Parameter: DiscreteTimeIntegrator_gainval
+  //  Referenced by: '<S13>/Discrete-Time Integrator'
 
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S178>/Integrator'
-
-  0.0,
-
-  // Expression: 0.90
-  //  Referenced by: '<S173>/Saturation'
-
-  0.9,
-
-  // Expression: 0.15
-  //  Referenced by: '<S173>/Saturation'
-
-  0.15,
+  0.02,
 
   // Expression: 0
-  //  Referenced by: '<S12>/Integrator'
+  //  Referenced by: '<S13>/Discrete-Time Integrator'
 
   0.0,
-
-  // Expression: [0;0]
-  //  Referenced by: '<S2>/Constant1'
-
-  { 0.0, 0.0 },
-
-  // Expression: [0; 0; 0; 0; 0; 0]
-  //  Referenced by: '<S4>/Integrator'
-
-  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
-
-  // Expression: -inv(C_trans*inv((A_trans-B_trans*K_trans))* B_trans)
-  //  Referenced by: '<S351>/Gain1'
-
-  { -3.4466897622412041E-16, 7.2033734718998059E-16, 0.38672574164509788,
-    -7.778369935192485E-16, -0.38672574164509749, 4.45848295193725E-16,
-    3.7195407832640646, 2.06289439967498E-16, -5.9892899673442127E-16 },
-
-  // Expression: [m * g; 0; 0]
-  //  Referenced by: '<S351>/Constant'
-
-  { 11.8701, 0.0, 0.0 },
 
   // Expression: [1; 0]
   //  Referenced by: '<S680>/Constant1'
@@ -665,11 +530,6 @@ Controller6dof::P Controller6dof::rtP{
 
   0.001,
 
-  // Expression: [0; 0; 0; 0; 0; 0]
-  //  Referenced by: '<S6>/Integrator'
-
-  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
-
   // Expression: 0
   //  Referenced by: '<S680>/Constant5'
 
@@ -680,15 +540,15 @@ Controller6dof::P Controller6dof::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0.005; 0 1]
+  // Expression: [1 0.02; 0 1]
   //  Referenced by: '<S680>/Constant'
 
-  { 1.0, 0.0, 0.005, 1.0 },
+  { 1.0, 0.0, 0.02, 1.0 },
 
-  // Expression: [0.001 0; 0 50]
+  // Expression: [0.001 0; 0 1000]
   //  Referenced by: '<S680>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 50.0 },
+  { 0.001, 0.0, 0.0, 1000.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S680>/Unit Delay'
@@ -720,15 +580,15 @@ Controller6dof::P Controller6dof::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0.005; 0 1]
+  // Expression: [1 0.02; 0 1]
   //  Referenced by: '<S681>/Constant'
 
-  { 1.0, 0.0, 0.005, 1.0 },
+  { 1.0, 0.0, 0.02, 1.0 },
 
-  // Expression: [0.001 0; 0 50]
+  // Expression: [0.001 0; 0 1000]
   //  Referenced by: '<S681>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 50.0 },
+  { 0.001, 0.0, 0.0, 1000.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S681>/Unit Delay'
@@ -760,148 +620,315 @@ Controller6dof::P Controller6dof::rtP{
 
   { 0.0, 0.0 },
 
-  // Expression: [1 0.005; 0 1]
+  // Expression: [1 0.02; 0 1]
   //  Referenced by: '<S682>/Constant'
 
-  { 1.0, 0.0, 0.005, 1.0 },
+  { 1.0, 0.0, 0.02, 1.0 },
 
-  // Expression: [0.001 0; 0 50]
+  // Expression: [0.001 0; 0 1000]
   //  Referenced by: '<S682>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 50.0 },
+  { 0.001, 0.0, 0.0, 1000.0 },
 
   // Expression: 1 * eye(2, 2)
   //  Referenced by: '<S682>/Unit Delay'
 
   { 1.0, 0.0, 0.0, 1.0 },
 
+  // Expression: -inv(C_trans*inv((A_trans-B_trans*K_trans))* B_trans)
+  //  Referenced by: '<S351>/Gain1'
+
+  { -2.9959286894540321E-15, -3.5231389930068643E-17, 0.473945095980733,
+    2.3591311323926019E-17, -0.47394509598073326, -7.9638512571646376E-17,
+    3.0897518205234555, 3.8087448573868891E-15, -2.8439325951851128E-14 },
+
+  // Expression: [m * g; 0; 0]
+  //  Referenced by: '<S351>/Constant'
+
+  { 11.8701, 0.0, 0.0 },
+
+  // Computed Parameter: DiscreteTimeIntegrator_gainva_g
+  //  Referenced by: '<S351>/Discrete-Time Integrator'
+
+  0.02,
+
   // Expression: 0
-  //  Referenced by: '<S351>/Integrator'
+  //  Referenced by: '<S351>/Discrete-Time Integrator'
 
   0.0,
 
   // Expression: [1; 0]
-  //  Referenced by: '<S512>/Constant1'
+  //  Referenced by: '<S336>/Constant1'
 
   { 1.0, 0.0 },
 
   // Expression: [1 0]
-  //  Referenced by: '<S512>/Constant2'
+  //  Referenced by: '<S336>/Constant2'
 
   { 1.0, 0.0 },
 
-  // Expression: 10e-4
-  //  Referenced by: '<S512>/Cov Messrauschen'
+  // Expression: 10e-6
+  //  Referenced by: '<S336>/Cov Messrauschen'
 
-  0.001,
+  1.0E-5,
 
   // Expression: 0
-  //  Referenced by: '<S512>/Constant5'
+  //  Referenced by: '<S336>/Constant5'
 
   0.0,
 
   // Expression: [0; 0]
-  //  Referenced by: '<S512>/Unit Delay1'
+  //  Referenced by: '<S336>/Unit Delay1'
 
   { 0.0, 0.0 },
 
   // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S512>/Constant'
+  //  Referenced by: '<S336>/Constant'
 
   { 1.0, 0.0, 0.005, 1.0 },
 
-  // Expression: [0.001 0; 0 800]
-  //  Referenced by: '<S512>/Cov Prozessrauschen'
+  // Expression: [0.001 0; 0 50]
+  //  Referenced by: '<S336>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 800.0 },
+  { 0.001, 0.0, 0.0, 50.0 },
 
   // Expression: 1 * eye(2, 2)
-  //  Referenced by: '<S512>/Unit Delay'
+  //  Referenced by: '<S336>/Unit Delay'
 
   { 1.0, 0.0, 0.0, 1.0 },
 
   // Expression: [1; 0]
-  //  Referenced by: '<S513>/Constant1'
+  //  Referenced by: '<S337>/Constant1'
 
   { 1.0, 0.0 },
 
   // Expression: [1 0]
-  //  Referenced by: '<S513>/Constant2'
+  //  Referenced by: '<S337>/Constant2'
 
   { 1.0, 0.0 },
 
-  // Expression: 10e-4
-  //  Referenced by: '<S513>/Cov Messrauschen'
+  // Expression: 10e-6
+  //  Referenced by: '<S337>/Cov Messrauschen'
 
-  0.001,
+  1.0E-5,
 
   // Expression: 0
-  //  Referenced by: '<S513>/Constant5'
+  //  Referenced by: '<S337>/Constant5'
 
   0.0,
 
   // Expression: [0; 0]
-  //  Referenced by: '<S513>/Unit Delay1'
+  //  Referenced by: '<S337>/Unit Delay1'
 
   { 0.0, 0.0 },
 
   // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S513>/Constant'
+  //  Referenced by: '<S337>/Constant'
 
   { 1.0, 0.0, 0.005, 1.0 },
 
-  // Expression: [0.001 0; 0 800]
-  //  Referenced by: '<S513>/Cov Prozessrauschen'
+  // Expression: [0.001 0; 0 50]
+  //  Referenced by: '<S337>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 800.0 },
+  { 0.001, 0.0, 0.0, 50.0 },
 
   // Expression: 1 * eye(2, 2)
-  //  Referenced by: '<S513>/Unit Delay'
+  //  Referenced by: '<S337>/Unit Delay'
 
   { 1.0, 0.0, 0.0, 1.0 },
 
   // Expression: [1; 0]
-  //  Referenced by: '<S515>/Constant1'
+  //  Referenced by: '<S338>/Constant1'
 
   { 1.0, 0.0 },
 
   // Expression: [1 0]
-  //  Referenced by: '<S515>/Constant2'
+  //  Referenced by: '<S338>/Constant2'
 
   { 1.0, 0.0 },
 
-  // Expression: 10e-4
-  //  Referenced by: '<S515>/Cov Messrauschen'
+  // Expression: 10e-6
+  //  Referenced by: '<S338>/Cov Messrauschen'
 
-  0.001,
+  1.0E-5,
 
   // Expression: 0
-  //  Referenced by: '<S515>/Constant5'
+  //  Referenced by: '<S338>/Constant5'
 
   0.0,
 
   // Expression: [0; 0]
-  //  Referenced by: '<S515>/Unit Delay1'
+  //  Referenced by: '<S338>/Unit Delay1'
 
   { 0.0, 0.0 },
 
   // Expression: [1 0.005; 0 1]
-  //  Referenced by: '<S515>/Constant'
+  //  Referenced by: '<S338>/Constant'
 
   { 1.0, 0.0, 0.005, 1.0 },
 
-  // Expression: [0.001 0; 0 800]
-  //  Referenced by: '<S515>/Cov Prozessrauschen'
+  // Expression: [0.001 0; 0 50]
+  //  Referenced by: '<S338>/Cov Prozessrauschen'
 
-  { 0.001, 0.0, 0.0, 800.0 },
+  { 0.001, 0.0, 0.0, 50.0 },
 
   // Expression: 1 * eye(2, 2)
-  //  Referenced by: '<S515>/Unit Delay'
+  //  Referenced by: '<S338>/Unit Delay'
 
   { 1.0, 0.0, 0.0, 1.0 },
 
   // Expression: 0
-  //  Referenced by: '<S516>/Integrator'
+  //  Referenced by: '<S175>/Integrator'
+
+  0.0,
+
+  // Expression: 0.90
+  //  Referenced by: '<S173>/Saturation'
+
+  0.9,
+
+  // Expression: 0.15
+  //  Referenced by: '<S173>/Saturation'
+
+  0.15,
+
+  // Expression: [0;0]
+  //  Referenced by: '<S2>/Constant1'
+
+  { 0.0, 0.0 },
+
+  // Expression: [0; 0; 0; 0; 0; 0]
+  //  Referenced by: '<S4>/Integrator'
+
+  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+
+  // Expression: zeros(6, 1)
+  //  Referenced by: '<S6>/Integrator'
+
+  { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 },
+
+  // Expression: [1; 0]
+  //  Referenced by: '<S674>/Constant1'
+
+  { 1.0, 0.0 },
+
+  // Expression: [1 0]
+  //  Referenced by: '<S674>/Constant2'
+
+  { 1.0, 0.0 },
+
+  // Expression: 10e-6
+  //  Referenced by: '<S674>/Cov Messrauschen'
+
+  1.0E-5,
+
+  // Expression: 0
+  //  Referenced by: '<S674>/Constant5'
+
+  0.0,
+
+  // Expression: [0; 0]
+  //  Referenced by: '<S674>/Unit Delay1'
+
+  { 0.0, 0.0 },
+
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S674>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
+  // Expression: [0.001 0; 0 50]
+  //  Referenced by: '<S674>/Cov Prozessrauschen'
+
+  { 0.001, 0.0, 0.0, 50.0 },
+
+  // Expression: 1 * eye(2, 2)
+  //  Referenced by: '<S674>/Unit Delay'
+
+  { 1.0, 0.0, 0.0, 1.0 },
+
+  // Expression: [1; 0]
+  //  Referenced by: '<S675>/Constant1'
+
+  { 1.0, 0.0 },
+
+  // Expression: [1 0]
+  //  Referenced by: '<S675>/Constant2'
+
+  { 1.0, 0.0 },
+
+  // Expression: 10e-6
+  //  Referenced by: '<S675>/Cov Messrauschen'
+
+  1.0E-5,
+
+  // Expression: 0
+  //  Referenced by: '<S675>/Constant5'
+
+  0.0,
+
+  // Expression: [0; 0]
+  //  Referenced by: '<S675>/Unit Delay1'
+
+  { 0.0, 0.0 },
+
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S675>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
+  // Expression: [0.001 0; 0 50]
+  //  Referenced by: '<S675>/Cov Prozessrauschen'
+
+  { 0.001, 0.0, 0.0, 50.0 },
+
+  // Expression: 1 * eye(2, 2)
+  //  Referenced by: '<S675>/Unit Delay'
+
+  { 1.0, 0.0, 0.0, 1.0 },
+
+  // Expression: [1; 0]
+  //  Referenced by: '<S676>/Constant1'
+
+  { 1.0, 0.0 },
+
+  // Expression: [1 0]
+  //  Referenced by: '<S676>/Constant2'
+
+  { 1.0, 0.0 },
+
+  // Expression: 10e-6
+  //  Referenced by: '<S676>/Cov Messrauschen'
+
+  1.0E-5,
+
+  // Expression: 0
+  //  Referenced by: '<S676>/Constant5'
+
+  0.0,
+
+  // Expression: [0; 0]
+  //  Referenced by: '<S676>/Unit Delay1'
+
+  { 0.0, 0.0 },
+
+  // Expression: [1 0.005; 0 1]
+  //  Referenced by: '<S676>/Constant'
+
+  { 1.0, 0.0, 0.005, 1.0 },
+
+  // Expression: [0.001 0; 0 50]
+  //  Referenced by: '<S676>/Cov Prozessrauschen'
+
+  { 0.001, 0.0, 0.0, 50.0 },
+
+  // Expression: 1 * eye(2, 2)
+  //  Referenced by: '<S676>/Unit Delay'
+
+  { 1.0, 0.0, 0.0, 1.0 },
+
+  // Expression: 0
+  //  Referenced by: '<S513>/Integrator'
 
   0.0,
 
@@ -915,73 +942,78 @@ Controller6dof::P Controller6dof::rtP{
 
   0.15,
 
-  // Expression: 0
-  //  Referenced by: '<S350>/Integrator'
-
-  0.0,
-
   // Expression: [0;0]
   //  Referenced by: '<S3>/Constant1'
 
   { 0.0, 0.0 },
 
+  // Computed Parameter: TransferFcn_A
+  //  Referenced by: '<S5>/Transfer Fcn'
+
+  -50.0,
+
+  // Computed Parameter: TransferFcn_C
+  //  Referenced by: '<S5>/Transfer Fcn'
+
+  50.0,
+
+  // Computed Parameter: TransferFcn1_A
+  //  Referenced by: '<S5>/Transfer Fcn1'
+
+  -50.0,
+
+  // Computed Parameter: TransferFcn1_C
+  //  Referenced by: '<S5>/Transfer Fcn1'
+
+  50.0,
+
+  // Computed Parameter: TransferFcn2_A
+  //  Referenced by: '<S5>/Transfer Fcn2'
+
+  -50.0,
+
+  // Computed Parameter: TransferFcn2_C
+  //  Referenced by: '<S5>/Transfer Fcn2'
+
+  50.0,
+
+  // Computed Parameter: TransferFcn3_A
+  //  Referenced by: '<S5>/Transfer Fcn3'
+
+  -50.0,
+
+  // Computed Parameter: TransferFcn3_C
+  //  Referenced by: '<S5>/Transfer Fcn3'
+
+  50.0,
+
   // Expression: 0
-  //  Referenced by: '<S174>/Integrator1'
+  //  Referenced by: '<S336>/Integrator1'
 
   0.0,
 
   // Expression: 0
-  //  Referenced by: '<S175>/Integrator1'
+  //  Referenced by: '<S337>/Integrator1'
 
   0.0,
 
   // Expression: 0
-  //  Referenced by: '<S177>/Integrator1'
+  //  Referenced by: '<S338>/Integrator1'
 
   0.0,
 
   // Expression: 0
-  //  Referenced by: '<S342>/Integrator1'
+  //  Referenced by: '<S674>/Integrator1'
 
   0.0,
 
   // Expression: 0
-  //  Referenced by: '<S343>/Integrator1'
+  //  Referenced by: '<S675>/Integrator1'
 
   0.0,
 
   // Expression: 0
-  //  Referenced by: '<S344>/Integrator1'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S512>/Integrator1'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S513>/Integrator1'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S515>/Integrator1'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S680>/Integrator1'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S681>/Integrator1'
-
-  0.0,
-
-  // Expression: 0
-  //  Referenced by: '<S682>/Integrator1'
+  //  Referenced by: '<S676>/Integrator1'
 
   0.0,
 

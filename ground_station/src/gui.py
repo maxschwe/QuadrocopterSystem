@@ -18,6 +18,7 @@ from plots import show_new_recording_plot, setup_subplots, plot
 
 MAX_POINTS = 2000
 INITIAL_THROTTLE = 3.0
+INITIAL_Z = 0.2
 
 INITIAL_PIDS = {
     Axis.ROLL: (1.4, 1.18, 0.33),
@@ -54,7 +55,9 @@ class Gui(tk.Tk):
 
         if self._in_6dof_mode:
             self.dev.start_temporal_dynamic_measurement(20, self._com.update_position)
-        self._com.set_reference(0.0, 0.0, 0.0)
+            self._com.set_reference(0.0, 0.0, INITIAL_Z)
+        else:
+            self._com.set_reference(0.0, 0.0, 0.0)
 
         self.setup_ui()
 

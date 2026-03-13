@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_6dof_container'.
 //
-// Model version                  : 1.515
+// Model version                  : 1.517
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Mon Mar  9 18:46:51 2026
+// C/C++ source code generated on : Fri Mar 13 20:41:26 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor
@@ -20,11 +20,29 @@
 //
 #include "controller_6dof_container.h"
 #include "rtwtypes.h"
-#include <cstring>
 #include <cmath>
+#include <cstring>
 
 // private model entry point functions
 extern void controller_6dof_container_derivatives();
+static void rate_scheduler(Controller6dof::RT_MODEL *const rtM);
+
+//
+//         This function updates active task flag for each subrate.
+//         The function is called at model base rate, hence the
+//         generated code self-manages all its subrates.
+//
+static void rate_scheduler(Controller6dof::RT_MODEL *const rtM)
+{
+  // Compute which subrates run during the next base time step.  Subrates
+  //  are an integer multiple of the base rate counter.  Therefore, the subtask
+  //  counter is reset when it reaches its limit (zero means run).
+
+  (rtM->Timing.TaskCounters.TID[2])++;
+  if ((rtM->Timing.TaskCounters.TID[2]) > 3) {// Sample time: [0.02s, 0.0s]
+    rtM->Timing.TaskCounters.TID[2] = 0;
+  }
+}
 
 //
 // This function updates continuous states using the ODE1 fixed-step
@@ -43,7 +61,7 @@ void Controller6dof::rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
   real_T *f0 { id->f[0] };
 
   int_T i;
-  int_T nXc { 66 };
+  int_T nXc { 52 };
 
   rtsiSetSimTimeStep(si,MINOR_TIME_STEP);
   rtsiSetdX(si, f0);
@@ -58,10 +76,32 @@ void Controller6dof::rt_ertODEUpdateContinuousStates(RTWSolverInfo *si )
 
 //
 // Output and update for atomic system:
+//    '<S2>/MATLAB Function'
+//    '<S3>/MATLAB Function'
+//
+void Controller6dof::MATLABFunction(real_T rtu_u, real_T rtu_u_g, real_T rtu_u_h,
+  real_T rtu_u_hc, real_T rty_y[4])
+{
+  rty_y[0] = 0.0;
+  rty_y[1] = 0.0;
+  rty_y[2] = 0.0;
+  rty_y[3] = 0.0;
+
+  // SignalConversion generated from: '<S10>/ SFunction '
+  rty_y[0] = std::fmin(std::fmax(rtu_u, 0.0), 13.0);
+  rty_y[1] = std::fmin(std::fmax(rtu_u_g, -0.087266462599716474),
+                       0.087266462599716474);
+  rty_y[2] = std::fmin(std::fmax(rtu_u_h, -0.087266462599716474),
+                       0.087266462599716474);
+  rty_y[3] = rtu_u_hc;
+}
+
+//
+// Output and update for atomic system:
 //    '<S173>/MATLAB Function'
 //    '<S511>/MATLAB Function'
 //
-void Controller6dof::MATLABFunction(const real_T rtu_tau[4], real_T rty_u[4])
+void Controller6dof::MATLABFunction_e(const real_T rtu_tau[4], real_T rty_u[4])
 {
   real_T A[16];
   real_T B_0[4];
@@ -194,12 +234,17 @@ void Controller6dof::MATLABFunction(const real_T rtu_tau[4], real_T rty_u[4])
 
 //
 // Output and update for atomic system:
-//    '<S174>/KF_Elevation'
-//    '<S175>/KF_Elevation'
-//    '<S177>/KF_Elevation'
+//    '<S336>/KF_Elevation'
+//    '<S337>/KF_Elevation'
+//    '<S338>/KF_Elevation'
 //    '<S342>/KF_Elevation'
 //    '<S343>/KF_Elevation'
 //    '<S344>/KF_Elevation'
+//    '<S674>/KF_Elevation'
+//    '<S675>/KF_Elevation'
+//    '<S676>/KF_Elevation'
+//    '<S680>/KF_Elevation'
+//    ...
 //
 void Controller6dof::KF_Elevation(const real_T rtu_A[4], const real_T rtu_B[2],
   const real_T rtu_C[2], const real_T rtu_Q[4], real_T rtu_R, real_T rtu_y,
@@ -310,25 +355,26 @@ void Controller6dof::step()
   real_T dx_c_tmp_3[9];
   real_T dx_c_tmp_4[9];
   real_T dx_c_tmp_5[9];
-  real_T tmp_1[6];
+  real_T rtb_TmpSignalConversionAtGainIn[6];
   real_T rtb_VectorConcatenate1[4];
-  real_T rtb_VectorConcatenate1_m[4];
   real_T rtb_thrust[4];
-  real_T rtb_y_i[4];
+  real_T y_e[4];
   real_T B_1[3];
   real_T tmp_0[3];
-  real_T Gain;
-  real_T Gain_0;
-  real_T a21;
+  real_T RateTransition;
+  real_T RateTransition_0;
+  real_T RateTransition_1;
   real_T dx_c_tmp;
   real_T dx_c_tmp_0;
   real_T dx_c_tmp_1;
   real_T dx_c_tmp_2;
   real_T maxval;
+  real_T rtb_Sum1_h;
+  real_T rtb_Sum2;
+  real_T rtb_Sum_l5;
   real_T tau_idx_0;
   real_T tau_idx_1;
-  real_T tmp_2;
-  real_T w;
+  real_T tau_idx_2;
   int32_T i;
   int32_T r1;
   int32_T r3;
@@ -351,335 +397,289 @@ void Controller6dof::step()
     (&rtM)->Timing.t[0] = rtsiGetT(&(&rtM)->solverInfo);
   }
 
-  tmp = ((&rtM)->isMajorTimeStep());
+  tmp = ((&rtM)->isMajorTimeStep() &&
+         (&rtM)->Timing.TaskCounters.TID[1] == 0);
   if (tmp) {
-    // UnitDelay: '<S342>/Unit Delay1'
-    rtDW.x_dach_mn[0] = rtDW.UnitDelay1_DSTATE[0];
-    rtDW.x_dach_mn[1] = rtDW.UnitDelay1_DSTATE[1];
+    // UnitDelay: '<S336>/Unit Delay1'
+    rtDW.x_dach_fe[0] = rtDW.UnitDelay1_DSTATE[0];
+    rtDW.x_dach_fe[1] = rtDW.UnitDelay1_DSTATE[1];
 
-    // MATLAB Function: '<S342>/KF_Elevation' incorporates:
-    //   Constant: '<S342>/Constant'
-    //   Constant: '<S342>/Constant1'
-    //   Constant: '<S342>/Constant2'
-    //   Constant: '<S342>/Constant5'
-    //   Constant: '<S342>/Cov Messrauschen'
-    //   Constant: '<S342>/Cov Prozessrauschen'
+    // MATLAB Function: '<S336>/KF_Elevation' incorporates:
+    //   Constant: '<S336>/Constant'
+    //   Constant: '<S336>/Constant1'
+    //   Constant: '<S336>/Constant2'
+    //   Constant: '<S336>/Constant5'
+    //   Constant: '<S336>/Cov Messrauschen'
+    //   Constant: '<S336>/Cov Prozessrauschen'
     //   Inport: '<Root>/y'
-    //   UnitDelay: '<S342>/Unit Delay'
+    //   UnitDelay: '<S336>/Unit Delay'
 
-    KF_Elevation(rtP.Constant_Value, rtP.Constant1_Value, rtP.Constant2_Value,
-                 rtP.CovProzessrauschen_Value, rtP.CovMessrauschen_Value, rtU.y
-                 [0], rtP.Constant5_Value, rtDW.UnitDelay_DSTATE, rtDW.x_dach_mn,
-                 rtDW.P_m);
+    KF_Elevation(rtP.Constant_Value_b2, rtP.Constant1_Value_e,
+                 rtP.Constant2_Value_n, rtP.CovProzessrauschen_Value_l,
+                 rtP.CovMessrauschen_Value_k, rtU.y[3], rtP.Constant5_Value_j,
+                 rtDW.UnitDelay_DSTATE, rtDW.x_dach_fe, rtDW.P_h);
 
-    // UnitDelay: '<S343>/Unit Delay1'
-    rtDW.x_dach_mj[0] = rtDW.UnitDelay1_DSTATE_d[0];
-    rtDW.x_dach_mj[1] = rtDW.UnitDelay1_DSTATE_d[1];
+    // UnitDelay: '<S337>/Unit Delay1'
+    rtDW.x_dach_l[0] = rtDW.UnitDelay1_DSTATE_h[0];
+    rtDW.x_dach_l[1] = rtDW.UnitDelay1_DSTATE_h[1];
 
-    // MATLAB Function: '<S343>/KF_Elevation' incorporates:
-    //   Constant: '<S343>/Constant'
-    //   Constant: '<S343>/Constant1'
-    //   Constant: '<S343>/Constant2'
-    //   Constant: '<S343>/Constant5'
-    //   Constant: '<S343>/Cov Messrauschen'
-    //   Constant: '<S343>/Cov Prozessrauschen'
+    // MATLAB Function: '<S337>/KF_Elevation' incorporates:
+    //   Constant: '<S337>/Constant'
+    //   Constant: '<S337>/Constant1'
+    //   Constant: '<S337>/Constant2'
+    //   Constant: '<S337>/Constant5'
+    //   Constant: '<S337>/Cov Messrauschen'
+    //   Constant: '<S337>/Cov Prozessrauschen'
     //   Inport: '<Root>/y'
-    //   UnitDelay: '<S343>/Unit Delay'
-
-    KF_Elevation(rtP.Constant_Value_p, rtP.Constant1_Value_j,
-                 rtP.Constant2_Value_i, rtP.CovProzessrauschen_Value_f,
-                 rtP.CovMessrauschen_Value_a, rtU.y[1], rtP.Constant5_Value_p,
-                 rtDW.UnitDelay_DSTATE_a, rtDW.x_dach_mj, rtDW.P_a);
-
-    // UnitDelay: '<S344>/Unit Delay1'
-    rtDW.x_dach_b[0] = rtDW.UnitDelay1_DSTATE_c[0];
-    rtDW.x_dach_b[1] = rtDW.UnitDelay1_DSTATE_c[1];
-
-    // MATLAB Function: '<S344>/KF_Elevation' incorporates:
-    //   Constant: '<S344>/Constant'
-    //   Constant: '<S344>/Constant1'
-    //   Constant: '<S344>/Constant2'
-    //   Constant: '<S344>/Constant5'
-    //   Constant: '<S344>/Cov Messrauschen'
-    //   Constant: '<S344>/Cov Prozessrauschen'
-    //   Inport: '<Root>/y'
-    //   UnitDelay: '<S344>/Unit Delay'
-
-    KF_Elevation(rtP.Constant_Value_n, rtP.Constant1_Value_m,
-                 rtP.Constant2_Value_g, rtP.CovProzessrauschen_Value_c,
-                 rtP.CovMessrauschen_Value_e, rtU.y[2], rtP.Constant5_Value_o,
-                 rtDW.UnitDelay_DSTATE_o, rtDW.x_dach_b, rtDW.P_p);
-
-    // UnitDelay: '<S174>/Unit Delay1'
-    rtDW.x_dach_es[0] = rtDW.UnitDelay1_DSTATE_f[0];
-    rtDW.x_dach_es[1] = rtDW.UnitDelay1_DSTATE_f[1];
-
-    // MATLAB Function: '<S174>/KF_Elevation' incorporates:
-    //   Constant: '<S174>/Constant'
-    //   Constant: '<S174>/Constant1'
-    //   Constant: '<S174>/Constant2'
-    //   Constant: '<S174>/Constant5'
-    //   Constant: '<S174>/Cov Messrauschen'
-    //   Constant: '<S174>/Cov Prozessrauschen'
-    //   Inport: '<Root>/y'
-    //   UnitDelay: '<S174>/Unit Delay'
-
-    KF_Elevation(rtP.Constant_Value_o, rtP.Constant1_Value_mx,
-                 rtP.Constant2_Value_c, rtP.CovProzessrauschen_Value_a,
-                 rtP.CovMessrauschen_Value_k, rtU.y[3], rtP.Constant5_Value_d,
-                 rtDW.UnitDelay_DSTATE_f, rtDW.x_dach_es, rtDW.P_i);
-
-    // UnitDelay: '<S175>/Unit Delay1'
-    rtDW.x_dach_k[0] = rtDW.UnitDelay1_DSTATE_a[0];
-    rtDW.x_dach_k[1] = rtDW.UnitDelay1_DSTATE_a[1];
-
-    // MATLAB Function: '<S175>/KF_Elevation' incorporates:
-    //   Constant: '<S175>/Constant'
-    //   Constant: '<S175>/Constant1'
-    //   Constant: '<S175>/Constant2'
-    //   Constant: '<S175>/Constant5'
-    //   Constant: '<S175>/Cov Messrauschen'
-    //   Constant: '<S175>/Cov Prozessrauschen'
-    //   Inport: '<Root>/y'
-    //   UnitDelay: '<S175>/Unit Delay'
+    //   UnitDelay: '<S337>/Unit Delay'
 
     KF_Elevation(rtP.Constant_Value_f, rtP.Constant1_Value_o,
-                 rtP.Constant2_Value_l, rtP.CovProzessrauschen_Value_fr,
-                 rtP.CovMessrauschen_Value_n, rtU.y[4], rtP.Constant5_Value_e,
-                 rtDW.UnitDelay_DSTATE_fb, rtDW.x_dach_k, rtDW.P_kl);
+                 rtP.Constant2_Value_j, rtP.CovProzessrauschen_Value_cd,
+                 rtP.CovMessrauschen_Value_mi, rtU.y[4], rtP.Constant5_Value_e,
+                 rtDW.UnitDelay_DSTATE_o, rtDW.x_dach_l, rtDW.P_jh);
 
-    // UnitDelay: '<S177>/Unit Delay1'
-    rtDW.x_dach_gh[0] = rtDW.UnitDelay1_DSTATE_o[0];
-    rtDW.x_dach_gh[1] = rtDW.UnitDelay1_DSTATE_o[1];
+    // UnitDelay: '<S338>/Unit Delay1'
+    rtDW.x_dach_m[0] = rtDW.UnitDelay1_DSTATE_i[0];
+    rtDW.x_dach_m[1] = rtDW.UnitDelay1_DSTATE_i[1];
 
-    // MATLAB Function: '<S177>/KF_Elevation' incorporates:
-    //   Constant: '<S177>/Constant'
-    //   Constant: '<S177>/Constant1'
-    //   Constant: '<S177>/Constant2'
-    //   Constant: '<S177>/Constant5'
-    //   Constant: '<S177>/Cov Messrauschen'
-    //   Constant: '<S177>/Cov Prozessrauschen'
+    // MATLAB Function: '<S338>/KF_Elevation' incorporates:
+    //   Constant: '<S338>/Constant'
+    //   Constant: '<S338>/Constant1'
+    //   Constant: '<S338>/Constant2'
+    //   Constant: '<S338>/Constant5'
+    //   Constant: '<S338>/Cov Messrauschen'
+    //   Constant: '<S338>/Cov Prozessrauschen'
     //   Inport: '<Root>/y'
-    //   UnitDelay: '<S177>/Unit Delay'
+    //   UnitDelay: '<S338>/Unit Delay'
 
-    KF_Elevation(rtP.Constant_Value_px, rtP.Constant1_Value_f,
-                 rtP.Constant2_Value_k, rtP.CovProzessrauschen_Value_j,
-                 rtP.CovMessrauschen_Value_k4, rtU.y[5], rtP.Constant5_Value_m,
-                 rtDW.UnitDelay_DSTATE_k, rtDW.x_dach_gh, rtDW.P_k);
+    KF_Elevation(rtP.Constant_Value_g, rtP.Constant1_Value_f,
+                 rtP.Constant2_Value_l, rtP.CovProzessrauschen_Value_h,
+                 rtP.CovMessrauschen_Value_kq, rtU.y[5], rtP.Constant5_Value_cj,
+                 rtDW.UnitDelay_DSTATE_d, rtDW.x_dach_m, rtDW.P_j);
 
-    // SignalConversion generated from: '<S13>/Gain'
-    tmp_1[0] = rtDW.x_dach_mn[0];
-    tmp_1[1] = rtDW.x_dach_mj[0];
-    tmp_1[2] = rtDW.x_dach_b[0];
-    tmp_1[3] = rtDW.x_dach_mn[1];
-    tmp_1[4] = rtDW.x_dach_mj[1];
-    tmp_1[5] = rtDW.x_dach_b[1];
+    // SignalConversion generated from: '<S175>/Gain'
+    rtb_TmpSignalConversionAtGainIn[0] = rtDW.x_dach_fe[0];
+    rtb_TmpSignalConversionAtGainIn[1] = rtDW.x_dach_l[0];
+    rtb_TmpSignalConversionAtGainIn[2] = rtDW.x_dach_m[0];
+    rtb_TmpSignalConversionAtGainIn[3] = rtDW.x_dach_fe[1];
+    rtb_TmpSignalConversionAtGainIn[4] = rtDW.x_dach_l[1];
+    rtb_TmpSignalConversionAtGainIn[5] = rtDW.x_dach_m[1];
 
-    // Gain: '<S13>/Gain'
-    Gain = 0.0;
-    a21 = 0.0;
-    Gain_0 = 0.0;
-    for (i = 0; i < 6; i++) {
-      maxval = tmp_1[i];
-      Gain += rtP.K_trans[3 * i] * maxval;
-      a21 += rtP.K_trans[3 * i + 1] * maxval;
-      Gain_0 += rtP.K_trans[3 * i + 2] * maxval;
-    }
+    // Sum: '<S11>/Sum2' incorporates:
+    //   Inport: '<Root>/w'
+    //   Inport: '<Root>/y'
 
-    rtDW.Gain[2] = Gain_0;
-    rtDW.Gain[1] = a21;
-    rtDW.Gain[0] = Gain;
+    rtb_Sum_l5 = rtU.w[2] - rtU.y[2];
 
-    // End of Gain: '<S13>/Gain'
+    // Gain: '<S160>/Proportional Gain'
+    rtDW.ProportionalGain = rtP.kp_z * rtb_Sum_l5;
+
+    // Gain: '<S148>/Derivative Gain'
+    rtDW.DerivativeGain = rtP.kd_z * rtb_Sum_l5;
+
+    // Sum: '<S11>/Sum1' incorporates:
+    //   Inport: '<Root>/w'
+    //   Inport: '<Root>/y'
+
+    rtb_Sum1_h = rtU.y[1] - rtU.w[1];
+
+    // Gain: '<S108>/Proportional Gain'
+    rtDW.ProportionalGain_p = rtP.kp_y * rtb_Sum1_h;
+
+    // Gain: '<S96>/Derivative Gain'
+    rtDW.DerivativeGain_d = rtP.kd_y * rtb_Sum1_h;
+
+    // Sum: '<S11>/Sum' incorporates:
+    //   Inport: '<Root>/w'
+    //   Inport: '<Root>/y'
+
+    rtb_Sum2 = rtU.w[0] - rtU.y[0];
+
+    // Gain: '<S56>/Proportional Gain'
+    rtDW.ProportionalGain_c = rtP.kp_x * rtb_Sum2;
+
+    // Gain: '<S44>/Derivative Gain'
+    rtDW.DerivativeGain_b = rtP.kd_x * rtb_Sum2;
   }
 
-  // Sum: '<S13>/Sum2' incorporates:
-  //   Gain: '<S13>/Gain1'
-  //   Inport: '<Root>/w'
+  // Gain: '<S158>/Filter Coefficient' incorporates:
+  //   Integrator: '<S150>/Filter'
+  //   Sum: '<S150>/SumD'
 
-  Gain = rtU.w[1];
-  tau_idx_0 = rtU.w[0];
-  w = rtU.w[2];
+  rtDW.FilterCoefficient = (rtDW.DerivativeGain - rtX.Filter_CSTATE) * rtP.N_pos;
 
-  // Gain: '<S13>/Gain2'
-  maxval = 0.0;
-  Gain_0 = 0.0;
-  a21 = 0.0;
-  for (i = 0; i < 3; i++) {
-    // Sum: '<S13>/Sum2' incorporates:
-    //   Constant: '<S13>/Constant'
-    //   Gain: '<S13>/Gain1'
-    //   Sum: '<S13>/Sum1'
+  // Gain: '<S106>/Filter Coefficient' incorporates:
+  //   Integrator: '<S98>/Filter'
+  //   Sum: '<S98>/SumD'
 
-    tmp_0[i] = (((rtP.Gain1_Gain[i + 3] * Gain + rtP.Gain1_Gain[i] * tau_idx_0)
-                 + rtP.Gain1_Gain[i + 6] * w) + rtP.Constant_Value_a[i]) -
-      rtDW.Gain[i];
+  rtDW.FilterCoefficient_n = (rtDW.DerivativeGain_d - rtX.Filter_CSTATE_b) *
+    rtP.N_pos;
 
-    // Gain: '<S13>/Gain2' incorporates:
-    //   Integrator: '<S13>/Integrator'
+  // Gain: '<S54>/Filter Coefficient' incorporates:
+  //   Integrator: '<S46>/Filter'
+  //   Sum: '<S46>/SumD'
 
-    tau_idx_1 = rtX.Integrator_CSTATE[i];
-    maxval += rtP.Ki_trans[3 * i] * tau_idx_1;
-    Gain_0 += rtP.Ki_trans[3 * i + 1] * tau_idx_1;
-    a21 += rtP.Ki_trans[3 * i + 2] * tau_idx_1;
-  }
-
-  // Sum: '<S13>/Sum2' incorporates:
-  //   Gain: '<S13>/Gain2'
-
-  rtb_VectorConcatenate1[0] = tmp_0[0] - maxval;
-  rtb_VectorConcatenate1[1] = tmp_0[1] - Gain_0;
-  rtb_VectorConcatenate1[2] = tmp_0[2] - a21;
-
-  // SignalConversion generated from: '<S13>/Vector Concatenate1' incorporates:
-  //   Inport: '<Root>/w'
-
-  rtb_VectorConcatenate1[3] = rtU.w[3];
+  rtDW.FilterCoefficient_m = (rtDW.DerivativeGain_b - rtX.Filter_CSTATE_f) *
+    rtP.N_pos;
 
   // MATLAB Function: '<S2>/MATLAB Function' incorporates:
+  //   Constant: '<S11>/Constant'
   //   Inport: '<Root>/w'
-  //   SignalConversion generated from: '<S13>/Vector Concatenate1'
+  //   Integrator: '<S103>/Integrator'
+  //   Integrator: '<S155>/Integrator'
+  //   Integrator: '<S51>/Integrator'
+  //   Sum: '<S112>/Sum'
+  //   Sum: '<S11>/Sum3'
+  //   Sum: '<S164>/Sum'
+  //   Sum: '<S60>/Sum'
 
-  rtb_y_i[0] = std::fmin(std::fmax(rtb_VectorConcatenate1[0], 0.0), 13.0);
-  rtb_y_i[1] = std::fmin(std::fmax(rtb_VectorConcatenate1[1],
-    -0.087266462599716474), 0.087266462599716474);
-  Gain = std::fmin(std::fmax(rtb_VectorConcatenate1[2], -0.087266462599716474),
-                   0.087266462599716474);
-  rtb_y_i[2] = Gain;
-  rtb_y_i[3] = rtU.w[3];
+  MATLABFunction(rtP.m * rtP.g + ((rtDW.ProportionalGain + rtX.Integrator_CSTATE)
+    + rtDW.FilterCoefficient), (rtDW.ProportionalGain_p +
+    rtX.Integrator_CSTATE_b) + rtDW.FilterCoefficient_n,
+                 (rtDW.ProportionalGain_c + rtX.Integrator_CSTATE_m) +
+                 rtDW.FilterCoefficient_m, rtU.w[3], y_e);
 
-  // SignalConversion generated from: '<S178>/Vector Concatenate1' incorporates:
-  //   Concatenate: '<S178>/Vector Concatenate1'
+  // RateTransition: '<S2>/Rate Transition'
+  if (tmp) {
+    // RateTransition: '<S2>/Rate Transition'
+    rtDW.RateTransition[0] = y_e[0];
+    rtDW.RateTransition[1] = y_e[1];
+    rtDW.RateTransition[2] = y_e[2];
+    rtDW.RateTransition[3] = y_e[3];
 
-  rtb_VectorConcatenate1_m[0] = rtb_y_i[0];
+    // Gain: '<S175>/Gain'
+    tau_idx_1 = 0.0;
+    tau_idx_2 = 0.0;
+    tau_idx_0 = 0.0;
+    for (i = 0; i < 6; i++) {
+      maxval = rtb_TmpSignalConversionAtGainIn[i];
+      tau_idx_1 += rtP.K_free_rot[3 * i] * maxval;
+      tau_idx_2 += rtP.K_free_rot[3 * i + 1] * maxval;
+      tau_idx_0 += rtP.K_free_rot[3 * i + 2] * maxval;
+    }
+
+    rtDW.Gain[2] = tau_idx_0;
+    rtDW.Gain[1] = tau_idx_2;
+    rtDW.Gain[0] = tau_idx_1;
+
+    // End of Gain: '<S175>/Gain'
+  }
+
+  // End of RateTransition: '<S2>/Rate Transition'
+
+  // SignalConversion generated from: '<S12>/Vector Concatenate1' incorporates:
+  //   Concatenate: '<S12>/Vector Concatenate1'
+
+  rtb_VectorConcatenate1[0] = rtDW.RateTransition[0];
 
   // SignalConversion generated from: '<S2>/Vector Concatenate' incorporates:
   //   Concatenate: '<S2>/Vector Concatenate'
-  //   Inport: '<Root>/w'
-  //   MATLAB Function: '<S2>/MATLAB Function'
-  //   SignalConversion generated from: '<S13>/Vector Concatenate1'
 
-  rtDW.VectorConcatenate[0] = rtb_y_i[0];
-  rtDW.VectorConcatenate[1] = rtb_y_i[1];
-  rtDW.VectorConcatenate[2] = Gain;
-  rtDW.VectorConcatenate[3] = rtU.w[3];
+  rtDW.VectorConcatenate[0] = y_e[0];
+  rtDW.VectorConcatenate[1] = y_e[1];
+  rtDW.VectorConcatenate[2] = y_e[2];
+  rtDW.VectorConcatenate[3] = y_e[3];
 
-  // SignalConversion generated from: '<S178>/Gain'
-  tmp_1[0] = rtDW.x_dach_es[0];
-  tmp_1[1] = rtDW.x_dach_k[0];
-  tmp_1[2] = rtDW.x_dach_gh[0];
-  tmp_1[3] = rtDW.x_dach_es[1];
-  tmp_1[4] = rtDW.x_dach_k[1];
-  tmp_1[5] = rtDW.x_dach_gh[1];
+  // Sum: '<S175>/Sum2' incorporates:
+  //   Gain: '<S175>/Gain1'
 
-  // Gain: '<S178>/Gain1'
-  tau_idx_0 = 0.0;
-  w = 0.0;
-  tmp_2 = 0.0;
-  for (i = 0; i < 3; i++) {
-    maxval = rtb_y_i[i + 1];
-    tau_idx_0 += rtP.V[3 * i] * maxval;
-    w += rtP.V[3 * i + 1] * maxval;
-    tmp_2 += rtP.V[3 * i + 2] * maxval;
-  }
+  RateTransition = rtDW.RateTransition[2];
+  RateTransition_0 = rtDW.RateTransition[1];
+  RateTransition_1 = rtDW.RateTransition[3];
 
-  // End of Gain: '<S178>/Gain1'
-
-  // Gain: '<S178>/Gain'
+  // Gain: '<S175>/Gain2'
   maxval = 0.0;
-  Gain_0 = 0.0;
-  a21 = 0.0;
-  for (i = 0; i < 6; i++) {
-    tau_idx_1 = tmp_1[i];
-    maxval += rtP.K[3 * i] * tau_idx_1;
-    Gain_0 += rtP.K[3 * i + 1] * tau_idx_1;
-    a21 += rtP.K[3 * i + 2] * tau_idx_1;
+  tau_idx_1 = 0.0;
+  tau_idx_2 = 0.0;
+  for (i = 0; i < 3; i++) {
+    // Sum: '<S175>/Sum2' incorporates:
+    //   Gain: '<S175>/Gain1'
+
+    tmp_0[i] = ((rtP.S_free_rot[i + 3] * RateTransition + rtP.S_free_rot[i] *
+                 RateTransition_0) + rtP.S_free_rot[i + 6] * RateTransition_1) -
+      rtDW.Gain[i];
+
+    // Gain: '<S175>/Gain2' incorporates:
+    //   Integrator: '<S175>/Integrator'
+
+    tau_idx_0 = rtX.Integrator_CSTATE_a[i];
+    maxval += rtP.Ki_free_rot[3 * i] * tau_idx_0;
+    tau_idx_1 += rtP.Ki_free_rot[3 * i + 1] * tau_idx_0;
+    tau_idx_2 += rtP.Ki_free_rot[3 * i + 2] * tau_idx_0;
   }
 
-  // Sum: '<S178>/Sum2' incorporates:
-  //   Concatenate: '<S178>/Vector Concatenate1'
-  //   Gain: '<S178>/Gain'
-  //   Gain: '<S178>/Gain2'
-  //   Integrator: '<S178>/Integrator'
+  // Sum: '<S175>/Sum2' incorporates:
+  //   Concatenate: '<S12>/Vector Concatenate1'
+  //   Gain: '<S175>/Gain2'
 
-  rtb_VectorConcatenate1_m[1] = (tau_idx_0 - maxval) + rtP.Ki[0] *
-    rtX.Integrator_CSTATE_a[0];
-  rtb_VectorConcatenate1_m[2] = (w - Gain_0) + rtP.Ki[1] *
-    rtX.Integrator_CSTATE_a[1];
-  rtb_VectorConcatenate1_m[3] = (tmp_2 - a21) + rtP.Ki[2] *
-    rtX.Integrator_CSTATE_a[2];
+  rtb_VectorConcatenate1[1] = tmp_0[0] - maxval;
+  rtb_VectorConcatenate1[2] = tmp_0[1] - tau_idx_1;
+  rtb_VectorConcatenate1[3] = tmp_0[2] - tau_idx_2;
 
   // MATLAB Function: '<S173>/MATLAB Function'
-  MATLABFunction(rtb_VectorConcatenate1_m, rtb_VectorConcatenate1);
+  MATLABFunction_e(rtb_VectorConcatenate1, y_e);
 
   // Saturate: '<S173>/Saturation'
-  if (rtb_VectorConcatenate1[0] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[0] = rtP.Saturation_UpperSat;
-  } else if (rtb_VectorConcatenate1[0] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[0] = rtP.Saturation_LowerSat;
+  if (y_e[0] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[0] = rtP.Saturation_UpperSat;
+  } else if (y_e[0] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[0] = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[0] = rtb_VectorConcatenate1[0];
+    // Outport: '<Root>/throttles'
+    rtY.throttles[0] = y_e[0];
   }
 
-  if (rtb_VectorConcatenate1[1] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[1] = rtP.Saturation_UpperSat;
-  } else if (rtb_VectorConcatenate1[1] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[1] = rtP.Saturation_LowerSat;
+  if (y_e[1] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[1] = rtP.Saturation_UpperSat;
+  } else if (y_e[1] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[1] = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[1] = rtb_VectorConcatenate1[1];
+    // Outport: '<Root>/throttles'
+    rtY.throttles[1] = y_e[1];
   }
 
-  if (rtb_VectorConcatenate1[2] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[2] = rtP.Saturation_UpperSat;
-  } else if (rtb_VectorConcatenate1[2] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[2] = rtP.Saturation_LowerSat;
+  if (y_e[2] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[2] = rtP.Saturation_UpperSat;
+  } else if (y_e[2] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[2] = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[2] = rtb_VectorConcatenate1[2];
+    // Outport: '<Root>/throttles'
+    rtY.throttles[2] = y_e[2];
   }
 
-  if (rtb_VectorConcatenate1[3] > rtP.Saturation_UpperSat) {
-    // Outport: '<Root>/u'
-    rtY.u[3] = rtP.Saturation_UpperSat;
-  } else if (rtb_VectorConcatenate1[3] < rtP.Saturation_LowerSat) {
-    // Outport: '<Root>/u'
-    rtY.u[3] = rtP.Saturation_LowerSat;
+  if (y_e[3] > rtP.Saturation_UpperSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[3] = rtP.Saturation_UpperSat;
+  } else if (y_e[3] < rtP.Saturation_LowerSat) {
+    // Outport: '<Root>/throttles'
+    rtY.throttles[3] = rtP.Saturation_LowerSat;
   } else {
-    // Outport: '<Root>/u'
-    rtY.u[3] = rtb_VectorConcatenate1[3];
+    // Outport: '<Root>/throttles'
+    rtY.throttles[3] = y_e[3];
   }
 
   // End of Saturate: '<S173>/Saturation'
 
-  // Sum: '<S178>/Sum' incorporates:
-  //   Inport: '<Root>/w'
-  //   MATLAB Function: '<S2>/MATLAB Function'
-  //   SignalConversion generated from: '<S13>/Vector Concatenate1'
-
-  rtDW.Sum[0] = rtb_y_i[1] - rtDW.x_dach_es[0];
-  rtDW.Sum[1] = Gain - rtDW.x_dach_k[0];
-  rtDW.Sum[2] = rtU.w[3] - rtDW.x_dach_gh[0];
-
-  // SignalConversion generated from: '<S12>/Integrator'
-  rtDW.TmpSignalConversionAtIntegrator[0] = rtDW.x_dach_es[1];
-  rtDW.TmpSignalConversionAtIntegrator[1] = rtDW.x_dach_k[1];
-  rtDW.TmpSignalConversionAtIntegrator[2] = rtDW.x_dach_gh[1];
-
-  // Sum: '<S13>/Sum' incorporates:
-  //   Inport: '<Root>/w'
-
-  rtDW.Sum_l[0] = rtU.w[0] - rtDW.x_dach_mn[0];
-  rtDW.Sum_l[1] = rtU.w[1] - rtDW.x_dach_mj[0];
-  rtDW.Sum_l[2] = rtU.w[2] - rtDW.x_dach_b[0];
+  // Sum: '<S175>/Sum'
+  rtDW.Sum[0] = rtDW.RateTransition[1] - rtDW.x_dach_fe[0];
+  rtDW.Sum[1] = rtDW.RateTransition[2] - rtDW.x_dach_l[0];
+  rtDW.Sum[2] = rtDW.RateTransition[3] - rtDW.x_dach_m[0];
   if (tmp) {
+    // Gain: '<S48>/Integral Gain'
+    rtDW.IntegralGain = rtP.ki_x * rtb_Sum2;
+
+    // Gain: '<S100>/Integral Gain'
+    rtDW.IntegralGain_f = rtP.ki_y * rtb_Sum1_h;
+
+    // Gain: '<S152>/Integral Gain'
+    rtDW.IntegralGain_l = rtP.ki_z * rtb_Sum_l5;
+
     // Constant: '<S2>/Constant1' incorporates:
     //   Concatenate: '<S2>/Vector Concatenate'
 
@@ -688,9 +688,7 @@ void Controller6dof::step()
   }
 
   for (i = 0; i < 6; i++) {
-    // Outport: '<Root>/values' incorporates:
-    //   Concatenate: '<S2>/Vector Concatenate'
-
+    // Outport: '<Root>/values'
     rtY.values[i] = rtDW.VectorConcatenate[i];
 
     // SignalConversion generated from: '<S1>/Vector Concatenate1' incorporates:
@@ -701,335 +699,296 @@ void Controller6dof::step()
   }
 
   if (tmp) {
-    // UnitDelay: '<S680>/Unit Delay1'
-    rtDW.x_dach_g[0] = rtDW.UnitDelay1_DSTATE_ff[0];
-    rtDW.x_dach_g[1] = rtDW.UnitDelay1_DSTATE_ff[1];
-
-    // MATLAB Function: '<S680>/KF_Elevation' incorporates:
-    //   Constant: '<S680>/Constant'
-    //   Constant: '<S680>/Constant1'
-    //   Constant: '<S680>/Constant2'
-    //   Constant: '<S680>/Constant5'
-    //   Constant: '<S680>/Cov Messrauschen'
-    //   Constant: '<S680>/Cov Prozessrauschen'
+    // Sum: '<S349>/Sum2' incorporates:
+    //   Inport: '<Root>/w'
     //   Integrator: '<S4>/Integrator'
-    //   UnitDelay: '<S680>/Unit Delay'
 
-    KF_Elevation(rtP.Constant_Value_b, rtP.Constant1_Value_b,
-                 rtP.Constant2_Value_f, rtP.CovProzessrauschen_Value_d,
-                 rtP.CovMessrauschen_Value_i, rtX.Integrator_CSTATE_e[0],
-                 rtP.Constant5_Value_c, rtDW.UnitDelay_DSTATE_kb, rtDW.x_dach_g,
-                 rtDW.P_f);
+    rtb_Sum2 = rtU.w[2] - rtX.Integrator_CSTATE_e[2];
 
-    // UnitDelay: '<S681>/Unit Delay1'
-    rtDW.x_dach_l[0] = rtDW.UnitDelay1_DSTATE_e[0];
-    rtDW.x_dach_l[1] = rtDW.UnitDelay1_DSTATE_e[1];
+    // Gain: '<S498>/Proportional Gain'
+    rtDW.ProportionalGain_l = rtP.kp_z * rtb_Sum2;
 
-    // MATLAB Function: '<S681>/KF_Elevation' incorporates:
-    //   Constant: '<S681>/Constant'
-    //   Constant: '<S681>/Constant1'
-    //   Constant: '<S681>/Constant2'
-    //   Constant: '<S681>/Constant5'
-    //   Constant: '<S681>/Cov Messrauschen'
-    //   Constant: '<S681>/Cov Prozessrauschen'
+    // Gain: '<S486>/Derivative Gain'
+    rtDW.DerivativeGain_i = rtP.kd_z * rtb_Sum2;
+
+    // Sum: '<S349>/Sum1' incorporates:
+    //   Inport: '<Root>/w'
     //   Integrator: '<S4>/Integrator'
-    //   UnitDelay: '<S681>/Unit Delay'
 
-    KF_Elevation(rtP.Constant_Value_n1, rtP.Constant1_Value_n,
-                 rtP.Constant2_Value_p, rtP.CovProzessrauschen_Value_dl,
-                 rtP.CovMessrauschen_Value_m, rtX.Integrator_CSTATE_e[1],
-                 rtP.Constant5_Value_i, rtDW.UnitDelay_DSTATE_p, rtDW.x_dach_l,
-                 rtDW.P_c);
+    rtb_Sum1_h = rtX.Integrator_CSTATE_e[1] - rtU.w[1];
 
-    // UnitDelay: '<S682>/Unit Delay1'
-    rtDW.x_dach[0] = rtDW.UnitDelay1_DSTATE_fj[0];
-    rtDW.x_dach[1] = rtDW.UnitDelay1_DSTATE_fj[1];
+    // Gain: '<S446>/Proportional Gain'
+    rtDW.ProportionalGain_j = rtP.kp_y * rtb_Sum1_h;
 
-    // MATLAB Function: '<S682>/KF_Elevation' incorporates:
-    //   Constant: '<S682>/Constant'
-    //   Constant: '<S682>/Constant1'
-    //   Constant: '<S682>/Constant2'
-    //   Constant: '<S682>/Constant5'
-    //   Constant: '<S682>/Cov Messrauschen'
-    //   Constant: '<S682>/Cov Prozessrauschen'
+    // Gain: '<S434>/Derivative Gain'
+    rtDW.DerivativeGain_k = rtP.kd_y * rtb_Sum1_h;
+
+    // Sum: '<S349>/Sum' incorporates:
+    //   Inport: '<Root>/w'
     //   Integrator: '<S4>/Integrator'
-    //   UnitDelay: '<S682>/Unit Delay'
 
-    KF_Elevation(rtP.Constant_Value_l, rtP.Constant1_Value_p,
-                 rtP.Constant2_Value_i1, rtP.CovProzessrauschen_Value_o,
-                 rtP.CovMessrauschen_Value_l, rtX.Integrator_CSTATE_e[2],
-                 rtP.Constant5_Value_b, rtDW.UnitDelay_DSTATE_i, rtDW.x_dach,
-                 rtDW.P_b);
+    rtb_Sum_l5 = rtU.w[0] - rtX.Integrator_CSTATE_e[0];
 
-    // SignalConversion generated from: '<S351>/Gain'
-    tmp_1[0] = rtDW.x_dach_g[0];
-    tmp_1[1] = rtDW.x_dach_l[0];
-    tmp_1[2] = rtDW.x_dach[0];
-    tmp_1[3] = rtDW.x_dach_g[1];
-    tmp_1[4] = rtDW.x_dach_l[1];
-    tmp_1[5] = rtDW.x_dach[1];
+    // Gain: '<S394>/Proportional Gain'
+    rtDW.ProportionalGain_b = rtP.kp_x * rtb_Sum_l5;
 
-    // Gain: '<S351>/Gain'
-    Gain = 0.0;
-    a21 = 0.0;
-    Gain_0 = 0.0;
-    for (i = 0; i < 6; i++) {
-      maxval = tmp_1[i];
-      Gain += rtP.K_trans[3 * i] * maxval;
-      a21 += rtP.K_trans[3 * i + 1] * maxval;
-      Gain_0 += rtP.K_trans[3 * i + 2] * maxval;
-    }
-
-    rtDW.Gain_m[2] = Gain_0;
-    rtDW.Gain_m[1] = a21;
-    rtDW.Gain_m[0] = Gain;
-
-    // End of Gain: '<S351>/Gain'
+    // Gain: '<S382>/Derivative Gain'
+    rtDW.DerivativeGain_io = rtP.kd_x * rtb_Sum_l5;
   }
 
-  // Sum: '<S351>/Sum2' incorporates:
-  //   Gain: '<S351>/Gain1'
-  //   Inport: '<Root>/w'
+  // Gain: '<S496>/Filter Coefficient' incorporates:
+  //   Integrator: '<S488>/Filter'
+  //   Sum: '<S488>/SumD'
 
-  Gain = rtU.w[1];
-  tau_idx_0 = rtU.w[0];
-  w = rtU.w[2];
+  rtDW.FilterCoefficient_a = (rtDW.DerivativeGain_i - rtX.Filter_CSTATE_n) *
+    rtP.N_pos;
 
-  // Gain: '<S351>/Gain2'
-  maxval = 0.0;
-  Gain_0 = 0.0;
-  a21 = 0.0;
-  for (i = 0; i < 3; i++) {
-    // Sum: '<S351>/Sum2' incorporates:
-    //   Constant: '<S351>/Constant'
-    //   Gain: '<S351>/Gain1'
-    //   Sum: '<S351>/Sum1'
+  // Gain: '<S444>/Filter Coefficient' incorporates:
+  //   Integrator: '<S436>/Filter'
+  //   Sum: '<S436>/SumD'
 
-    tmp_0[i] = (((rtP.Gain1_Gain_d[i + 3] * Gain + rtP.Gain1_Gain_d[i] *
-                  tau_idx_0) + rtP.Gain1_Gain_d[i + 6] * w) +
-                rtP.Constant_Value_j[i]) - rtDW.Gain_m[i];
+  rtDW.FilterCoefficient_d = (rtDW.DerivativeGain_k - rtX.Filter_CSTATE_m) *
+    rtP.N_pos;
 
-    // Gain: '<S351>/Gain2' incorporates:
-    //   Integrator: '<S351>/Integrator'
+  // Gain: '<S392>/Filter Coefficient' incorporates:
+  //   Integrator: '<S384>/Filter'
+  //   Sum: '<S384>/SumD'
 
-    tau_idx_1 = rtX.Integrator_CSTATE_ee[i];
-    maxval += rtP.Ki_trans[3 * i] * tau_idx_1;
-    Gain_0 += rtP.Ki_trans[3 * i + 1] * tau_idx_1;
-    a21 += rtP.Ki_trans[3 * i + 2] * tau_idx_1;
-  }
-
-  // Sum: '<S351>/Sum2' incorporates:
-  //   Gain: '<S351>/Gain2'
-
-  rtb_VectorConcatenate1[0] = tmp_0[0] - maxval;
-  rtb_VectorConcatenate1[1] = tmp_0[1] - Gain_0;
-  rtb_VectorConcatenate1[2] = tmp_0[2] - a21;
-
-  // SignalConversion generated from: '<S351>/Vector Concatenate1' incorporates:
-  //   Inport: '<Root>/w'
-
-  rtb_VectorConcatenate1[3] = rtU.w[3];
+  rtDW.FilterCoefficient_p = (rtDW.DerivativeGain_io - rtX.Filter_CSTATE_p) *
+    rtP.N_pos;
 
   // MATLAB Function: '<S3>/MATLAB Function' incorporates:
+  //   Constant: '<S349>/Constant'
   //   Inport: '<Root>/w'
-  //   SignalConversion generated from: '<S351>/Vector Concatenate1'
+  //   Integrator: '<S389>/Integrator'
+  //   Integrator: '<S441>/Integrator'
+  //   Integrator: '<S493>/Integrator'
+  //   Sum: '<S349>/Sum3'
+  //   Sum: '<S398>/Sum'
+  //   Sum: '<S450>/Sum'
+  //   Sum: '<S502>/Sum'
 
-  rtb_y_i[0] = std::fmin(std::fmax(rtb_VectorConcatenate1[0], 0.0), 13.0);
-  rtb_y_i[1] = std::fmin(std::fmax(rtb_VectorConcatenate1[1],
-    -0.087266462599716474), 0.087266462599716474);
-  Gain = std::fmin(std::fmax(rtb_VectorConcatenate1[2], -0.087266462599716474),
-                   0.087266462599716474);
-  rtb_y_i[2] = Gain;
-  rtb_y_i[3] = rtU.w[3];
+  MATLABFunction(rtP.m * rtP.g + ((rtDW.ProportionalGain_l +
+    rtX.Integrator_CSTATE_bh) + rtDW.FilterCoefficient_a),
+                 (rtDW.ProportionalGain_j + rtX.Integrator_CSTATE_j) +
+                 rtDW.FilterCoefficient_d, (rtDW.ProportionalGain_b +
+    rtX.Integrator_CSTATE_f) + rtDW.FilterCoefficient_p, rtU.w[3], y_e);
 
-  // SignalConversion generated from: '<S516>/Vector Concatenate1' incorporates:
-  //   Concatenate: '<S516>/Vector Concatenate1'
-
-  rtb_VectorConcatenate1_m[0] = rtb_y_i[0];
+  // RateTransition: '<S3>/Rate Transition'
   if (tmp) {
-    // UnitDelay: '<S512>/Unit Delay1'
-    rtDW.x_dach_e[0] = rtDW.UnitDelay1_DSTATE_b[0];
-    rtDW.x_dach_e[1] = rtDW.UnitDelay1_DSTATE_b[1];
+    // RateTransition: '<S3>/Rate Transition'
+    rtDW.RateTransition_i[0] = y_e[0];
+    rtDW.RateTransition_i[1] = y_e[1];
+    rtDW.RateTransition_i[2] = y_e[2];
+    rtDW.RateTransition_i[3] = y_e[3];
+  }
 
-    // MATLAB Function: '<S512>/KF_Elevation' incorporates:
-    //   Constant: '<S512>/Constant'
-    //   Constant: '<S512>/Constant1'
-    //   Constant: '<S512>/Constant2'
-    //   Constant: '<S512>/Constant5'
-    //   Constant: '<S512>/Cov Messrauschen'
-    //   Constant: '<S512>/Cov Prozessrauschen'
+  // End of RateTransition: '<S3>/Rate Transition'
+
+  // SignalConversion generated from: '<S350>/Vector Concatenate1' incorporates:
+  //   Concatenate: '<S350>/Vector Concatenate1'
+
+  rtb_VectorConcatenate1[0] = rtDW.RateTransition_i[0];
+  if (tmp) {
+    // UnitDelay: '<S674>/Unit Delay1'
+    rtDW.x_dach_e[0] = rtDW.UnitDelay1_DSTATE_j[0];
+    rtDW.x_dach_e[1] = rtDW.UnitDelay1_DSTATE_j[1];
+
+    // MATLAB Function: '<S674>/KF_Elevation' incorporates:
+    //   Constant: '<S674>/Constant'
+    //   Constant: '<S674>/Constant1'
+    //   Constant: '<S674>/Constant2'
+    //   Constant: '<S674>/Constant5'
+    //   Constant: '<S674>/Cov Messrauschen'
+    //   Constant: '<S674>/Cov Prozessrauschen'
     //   Integrator: '<S6>/Integrator'
-    //   UnitDelay: '<S512>/Unit Delay'
+    //   UnitDelay: '<S674>/Unit Delay'
 
-    KF_Elevation(rtP.Constant_Value_oi, rtP.Constant1_Value_n0,
-                 rtP.Constant2_Value_j, rtP.CovProzessrauschen_Value_b,
-                 rtP.CovMessrauschen_Value_g, rtX.Integrator_CSTATE_h[0],
-                 rtP.Constant5_Value_cw, rtDW.UnitDelay_DSTATE_kf, rtDW.x_dach_e,
-                 rtDW.P_bo);
+    KF_Elevation(rtP.Constant_Value_n1b, rtP.Constant1_Value_d,
+                 rtP.Constant2_Value_e, rtP.CovProzessrauschen_Value_b,
+                 rtP.CovMessrauschen_Value_a2, rtX.Integrator_CSTATE_h[0],
+                 rtP.Constant5_Value_a, rtDW.UnitDelay_DSTATE_j, rtDW.x_dach_e,
+                 rtDW.P_k);
 
-    // UnitDelay: '<S513>/Unit Delay1'
-    rtDW.x_dach_o[0] = rtDW.UnitDelay1_DSTATE_as[0];
-    rtDW.x_dach_o[1] = rtDW.UnitDelay1_DSTATE_as[1];
+    // UnitDelay: '<S675>/Unit Delay1'
+    rtDW.x_dach_f[0] = rtDW.UnitDelay1_DSTATE_c[0];
+    rtDW.x_dach_f[1] = rtDW.UnitDelay1_DSTATE_c[1];
 
-    // MATLAB Function: '<S513>/KF_Elevation' incorporates:
-    //   Constant: '<S513>/Constant'
-    //   Constant: '<S513>/Constant1'
-    //   Constant: '<S513>/Constant2'
-    //   Constant: '<S513>/Constant5'
-    //   Constant: '<S513>/Cov Messrauschen'
-    //   Constant: '<S513>/Cov Prozessrauschen'
+    // MATLAB Function: '<S675>/KF_Elevation' incorporates:
+    //   Constant: '<S675>/Constant'
+    //   Constant: '<S675>/Constant1'
+    //   Constant: '<S675>/Constant2'
+    //   Constant: '<S675>/Constant5'
+    //   Constant: '<S675>/Cov Messrauschen'
+    //   Constant: '<S675>/Cov Prozessrauschen'
     //   Integrator: '<S6>/Integrator'
-    //   UnitDelay: '<S513>/Unit Delay'
+    //   UnitDelay: '<S675>/Unit Delay'
 
-    KF_Elevation(rtP.Constant_Value_a5, rtP.Constant1_Value_jg,
-                 rtP.Constant2_Value_b, rtP.CovProzessrauschen_Value_e,
-                 rtP.CovMessrauschen_Value_o, rtX.Integrator_CSTATE_h[1],
-                 rtP.Constant5_Value_da, rtDW.UnitDelay_DSTATE_m, rtDW.x_dach_o,
-                 rtDW.P_n);
-
-    // UnitDelay: '<S515>/Unit Delay1'
-    rtDW.x_dach_m[0] = rtDW.UnitDelay1_DSTATE_k[0];
-    rtDW.x_dach_m[1] = rtDW.UnitDelay1_DSTATE_k[1];
-
-    // MATLAB Function: '<S515>/KF_Elevation' incorporates:
-    //   Constant: '<S515>/Constant'
-    //   Constant: '<S515>/Constant1'
-    //   Constant: '<S515>/Constant2'
-    //   Constant: '<S515>/Constant5'
-    //   Constant: '<S515>/Cov Messrauschen'
-    //   Constant: '<S515>/Cov Prozessrauschen'
-    //   Integrator: '<S6>/Integrator'
-    //   UnitDelay: '<S515>/Unit Delay'
-
-    KF_Elevation(rtP.Constant_Value_p4, rtP.Constant1_Value_a,
-                 rtP.Constant2_Value_lz, rtP.CovProzessrauschen_Value_p,
-                 rtP.CovMessrauschen_Value_f, rtX.Integrator_CSTATE_h[2],
-                 rtP.Constant5_Value_g, rtDW.UnitDelay_DSTATE_j, rtDW.x_dach_m,
+    KF_Elevation(rtP.Constant_Value_e, rtP.Constant1_Value_et,
+                 rtP.Constant2_Value_gl, rtP.CovProzessrauschen_Value_a,
+                 rtP.CovMessrauschen_Value_h, rtX.Integrator_CSTATE_h[1],
+                 rtP.Constant5_Value_ek, rtDW.UnitDelay_DSTATE_a, rtDW.x_dach_f,
                  rtDW.P_l);
+
+    // UnitDelay: '<S676>/Unit Delay1'
+    rtDW.x_dach[0] = rtDW.UnitDelay1_DSTATE_k[0];
+    rtDW.x_dach[1] = rtDW.UnitDelay1_DSTATE_k[1];
+
+    // MATLAB Function: '<S676>/KF_Elevation' incorporates:
+    //   Constant: '<S676>/Constant'
+    //   Constant: '<S676>/Constant1'
+    //   Constant: '<S676>/Constant2'
+    //   Constant: '<S676>/Constant5'
+    //   Constant: '<S676>/Cov Messrauschen'
+    //   Constant: '<S676>/Cov Prozessrauschen'
+    //   Integrator: '<S6>/Integrator'
+    //   UnitDelay: '<S676>/Unit Delay'
+
+    KF_Elevation(rtP.Constant_Value_h, rtP.Constant1_Value_jl,
+                 rtP.Constant2_Value_jg, rtP.CovProzessrauschen_Value_g,
+                 rtP.CovMessrauschen_Value_j, rtX.Integrator_CSTATE_h[2],
+                 rtP.Constant5_Value_ia, rtDW.UnitDelay_DSTATE_n, rtDW.x_dach,
+                 rtDW.P_o);
+
+    // SignalConversion generated from: '<S513>/Gain'
+    rtb_TmpSignalConversionAtGainIn[0] = rtDW.x_dach_e[0];
+    rtb_TmpSignalConversionAtGainIn[1] = rtDW.x_dach_f[0];
+    rtb_TmpSignalConversionAtGainIn[2] = rtDW.x_dach[0];
+    rtb_TmpSignalConversionAtGainIn[3] = rtDW.x_dach_e[1];
+    rtb_TmpSignalConversionAtGainIn[4] = rtDW.x_dach_f[1];
+    rtb_TmpSignalConversionAtGainIn[5] = rtDW.x_dach[1];
+
+    // Gain: '<S513>/Gain'
+    tau_idx_1 = 0.0;
+    tau_idx_2 = 0.0;
+    tau_idx_0 = 0.0;
+    for (i = 0; i < 6; i++) {
+      maxval = rtb_TmpSignalConversionAtGainIn[i];
+      tau_idx_1 += rtP.K_free_rot[3 * i] * maxval;
+      tau_idx_2 += rtP.K_free_rot[3 * i + 1] * maxval;
+      tau_idx_0 += rtP.K_free_rot[3 * i + 2] * maxval;
+    }
+
+    rtDW.Gain_d[2] = tau_idx_0;
+    rtDW.Gain_d[1] = tau_idx_2;
+    rtDW.Gain_d[0] = tau_idx_1;
+
+    // End of Gain: '<S513>/Gain'
   }
 
-  // SignalConversion generated from: '<S516>/Gain'
-  tmp_1[0] = rtDW.x_dach_e[0];
-  tmp_1[1] = rtDW.x_dach_o[0];
-  tmp_1[2] = rtDW.x_dach_m[0];
-  tmp_1[3] = rtDW.x_dach_e[1];
-  tmp_1[4] = rtDW.x_dach_o[1];
-  tmp_1[5] = rtDW.x_dach_m[1];
+  // Sum: '<S513>/Sum2' incorporates:
+  //   Gain: '<S513>/Gain1'
 
-  // Gain: '<S516>/Gain1'
-  tau_idx_0 = 0.0;
-  w = 0.0;
-  tmp_2 = 0.0;
-  for (i = 0; i < 3; i++) {
-    maxval = rtb_y_i[i + 1];
-    tau_idx_0 += rtP.V[3 * i] * maxval;
-    w += rtP.V[3 * i + 1] * maxval;
-    tmp_2 += rtP.V[3 * i + 2] * maxval;
-  }
+  RateTransition = rtDW.RateTransition_i[2];
+  RateTransition_0 = rtDW.RateTransition_i[1];
+  RateTransition_1 = rtDW.RateTransition_i[3];
 
-  // End of Gain: '<S516>/Gain1'
-
-  // Gain: '<S516>/Gain'
+  // Gain: '<S513>/Gain2'
   maxval = 0.0;
-  Gain_0 = 0.0;
-  a21 = 0.0;
-  for (i = 0; i < 6; i++) {
-    tau_idx_1 = tmp_1[i];
-    maxval += rtP.K[3 * i] * tau_idx_1;
-    Gain_0 += rtP.K[3 * i + 1] * tau_idx_1;
-    a21 += rtP.K[3 * i + 2] * tau_idx_1;
+  tau_idx_1 = 0.0;
+  tau_idx_2 = 0.0;
+  for (i = 0; i < 3; i++) {
+    // Sum: '<S513>/Sum2' incorporates:
+    //   Gain: '<S513>/Gain1'
+
+    tmp_0[i] = ((rtP.S_free_rot[i + 3] * RateTransition + rtP.S_free_rot[i] *
+                 RateTransition_0) + rtP.S_free_rot[i + 6] * RateTransition_1) -
+      rtDW.Gain_d[i];
+
+    // Gain: '<S513>/Gain2' incorporates:
+    //   Integrator: '<S513>/Integrator'
+
+    tau_idx_0 = rtX.Integrator_CSTATE_n[i];
+    maxval += rtP.Ki_free_rot[3 * i] * tau_idx_0;
+    tau_idx_1 += rtP.Ki_free_rot[3 * i + 1] * tau_idx_0;
+    tau_idx_2 += rtP.Ki_free_rot[3 * i + 2] * tau_idx_0;
   }
 
-  // Sum: '<S516>/Sum2' incorporates:
-  //   Concatenate: '<S516>/Vector Concatenate1'
-  //   Gain: '<S516>/Gain'
-  //   Gain: '<S516>/Gain2'
-  //   Integrator: '<S516>/Integrator'
+  // Sum: '<S513>/Sum2' incorporates:
+  //   Concatenate: '<S350>/Vector Concatenate1'
+  //   Gain: '<S513>/Gain2'
 
-  rtb_VectorConcatenate1_m[1] = (tau_idx_0 - maxval) + rtP.Ki[0] *
-    rtX.Integrator_CSTATE_n[0];
-  rtb_VectorConcatenate1_m[2] = (w - Gain_0) + rtP.Ki[1] *
-    rtX.Integrator_CSTATE_n[1];
-  rtb_VectorConcatenate1_m[3] = (tmp_2 - a21) + rtP.Ki[2] *
-    rtX.Integrator_CSTATE_n[2];
+  rtb_VectorConcatenate1[1] = tmp_0[0] - maxval;
+  rtb_VectorConcatenate1[2] = tmp_0[1] - tau_idx_1;
+  rtb_VectorConcatenate1[3] = tmp_0[2] - tau_idx_2;
 
   // MATLAB Function: '<S511>/MATLAB Function'
-  MATLABFunction(rtb_VectorConcatenate1_m, rtb_VectorConcatenate1);
+  MATLABFunction_e(rtb_VectorConcatenate1, y_e);
 
   // Saturate: '<S511>/Saturation'
-  if (rtb_VectorConcatenate1[0] > rtP.Saturation_UpperSat_d) {
+  if (y_e[0] > rtP.Saturation_UpperSat_d) {
     maxval = rtP.Saturation_UpperSat_d;
-  } else if (rtb_VectorConcatenate1[0] < rtP.Saturation_LowerSat_l) {
+  } else if (y_e[0] < rtP.Saturation_LowerSat_l) {
     maxval = rtP.Saturation_LowerSat_l;
   } else {
-    maxval = rtb_VectorConcatenate1[0];
+    maxval = y_e[0];
   }
 
   // MATLAB Function: '<S5>/MATLAB Function1' incorporates:
   //   Saturate: '<S511>/Saturation'
 
-  tau_idx_0 = maxval - rtP.b;
-  rtb_thrust[0] = tau_idx_0 * tau_idx_0;
+  RateTransition = maxval - rtP.b;
+  rtb_thrust[0] = RateTransition * RateTransition;
 
   // Saturate: '<S511>/Saturation'
-  if (rtb_VectorConcatenate1[1] > rtP.Saturation_UpperSat_d) {
+  if (y_e[1] > rtP.Saturation_UpperSat_d) {
     maxval = rtP.Saturation_UpperSat_d;
-  } else if (rtb_VectorConcatenate1[1] < rtP.Saturation_LowerSat_l) {
+  } else if (y_e[1] < rtP.Saturation_LowerSat_l) {
     maxval = rtP.Saturation_LowerSat_l;
   } else {
-    maxval = rtb_VectorConcatenate1[1];
+    maxval = y_e[1];
   }
 
   // MATLAB Function: '<S5>/MATLAB Function1' incorporates:
   //   Saturate: '<S511>/Saturation'
 
-  tau_idx_0 = maxval - rtP.b;
-  rtb_thrust[1] = tau_idx_0 * tau_idx_0;
+  RateTransition = maxval - rtP.b;
+  rtb_thrust[1] = RateTransition * RateTransition;
 
   // Saturate: '<S511>/Saturation'
-  if (rtb_VectorConcatenate1[2] > rtP.Saturation_UpperSat_d) {
+  if (y_e[2] > rtP.Saturation_UpperSat_d) {
     maxval = rtP.Saturation_UpperSat_d;
-  } else if (rtb_VectorConcatenate1[2] < rtP.Saturation_LowerSat_l) {
+  } else if (y_e[2] < rtP.Saturation_LowerSat_l) {
     maxval = rtP.Saturation_LowerSat_l;
   } else {
-    maxval = rtb_VectorConcatenate1[2];
+    maxval = y_e[2];
   }
 
   // MATLAB Function: '<S5>/MATLAB Function1' incorporates:
   //   Saturate: '<S511>/Saturation'
 
-  tau_idx_0 = maxval - rtP.b;
-  rtb_thrust[2] = tau_idx_0 * tau_idx_0;
+  RateTransition = maxval - rtP.b;
+  rtb_thrust[2] = RateTransition * RateTransition;
 
   // Saturate: '<S511>/Saturation'
-  if (rtb_VectorConcatenate1[3] > rtP.Saturation_UpperSat_d) {
+  if (y_e[3] > rtP.Saturation_UpperSat_d) {
     maxval = rtP.Saturation_UpperSat_d;
-  } else if (rtb_VectorConcatenate1[3] < rtP.Saturation_LowerSat_l) {
+  } else if (y_e[3] < rtP.Saturation_LowerSat_l) {
     maxval = rtP.Saturation_LowerSat_l;
   } else {
-    maxval = rtb_VectorConcatenate1[3];
+    maxval = y_e[3];
   }
 
   // MATLAB Function: '<S5>/MATLAB Function1' incorporates:
   //   Saturate: '<S511>/Saturation'
 
-  tau_idx_0 = maxval - rtP.b;
-  rtb_thrust[3] = tau_idx_0 * tau_idx_0;
+  RateTransition = maxval - rtP.b;
+  rtb_thrust[3] = RateTransition * RateTransition;
 
   // Gain: '<S5>/B_Eff' incorporates:
   //   MATLAB Function: '<S5>/MATLAB Function1'
 
+  RateTransition = 0.0;
   tau_idx_0 = 0.0;
   tau_idx_1 = 0.0;
-  Gain_0 = 0.0;
-  a21 = 0.0;
+  tau_idx_2 = 0.0;
   for (i = 0; i < 4; i++) {
     maxval = rtP.a * rtb_thrust[i];
     r1 = i << 2;
-    tau_idx_0 += rtP.B_eff[r1] * maxval;
-    tau_idx_1 += rtP.B_eff[r1 + 1] * maxval;
-    Gain_0 += rtP.B_eff[r1 + 2] * maxval;
-    a21 += rtP.B_eff[r1 + 3] * maxval;
+    RateTransition += rtP.B_eff[r1] * maxval;
+    tau_idx_0 += rtP.B_eff[r1 + 1] * maxval;
+    tau_idx_1 += rtP.B_eff[r1 + 2] * maxval;
+    tau_idx_2 += rtP.B_eff[r1 + 3] * maxval;
   }
 
   // MATLAB Function: '<S4>/MATLAB Function2' incorporates:
@@ -1037,17 +996,17 @@ void Controller6dof::step()
   //   Integrator: '<S4>/Integrator'
   //   Integrator: '<S6>/Integrator'
 
-  w = 1.0 / rtP.m;
-  tmp_2 = std::sin(rtX.Integrator_CSTATE_h[2]);
+  RateTransition_0 = 1.0 / rtP.m;
+  RateTransition_1 = std::sin(rtX.Integrator_CSTATE_h[2]);
   dx_c_tmp = std::cos(rtX.Integrator_CSTATE_h[2]);
   dx_c_tmp_0 = std::sin(rtX.Integrator_CSTATE_h[1]);
   maxval = std::cos(rtX.Integrator_CSTATE_h[1]);
   dx_c_tmp_1 = std::sin(rtX.Integrator_CSTATE_h[0]);
   dx_c_tmp_2 = std::cos(rtX.Integrator_CSTATE_h[0]);
   dx_c_tmp_3[0] = dx_c_tmp;
-  dx_c_tmp_3[3] = -tmp_2;
+  dx_c_tmp_3[3] = -RateTransition_1;
   dx_c_tmp_3[6] = 0.0;
-  dx_c_tmp_3[1] = tmp_2;
+  dx_c_tmp_3[1] = RateTransition_1;
   dx_c_tmp_3[4] = dx_c_tmp;
   dx_c_tmp_3[7] = 0.0;
   dx_c_tmp_4[0] = maxval;
@@ -1067,21 +1026,21 @@ void Controller6dof::step()
   }
 
   for (i = 0; i < 3; i++) {
-    tmp_2 = dx_c_tmp_5[3 * i];
+    RateTransition_1 = dx_c_tmp_5[3 * i];
     r1 = 3 * i + 1;
     dx_c_tmp = dx_c_tmp_5[r1];
     r3 = 3 * i + 2;
     dx_c_tmp_0 = dx_c_tmp_5[r3];
     for (rtemp = 0; rtemp < 3; rtemp++) {
       maxval = dx_c_tmp_4[3 * i + rtemp];
-      tmp_2 += dx_c_tmp_3[3 * rtemp] * maxval;
+      RateTransition_1 += dx_c_tmp_3[3 * rtemp] * maxval;
       dx_c_tmp += dx_c_tmp_3[3 * rtemp + 1] * maxval;
       dx_c_tmp_0 += dx_c_tmp_3[3 * rtemp + 2] * maxval;
     }
 
     dx_c_tmp_5[r3] = dx_c_tmp_0;
     dx_c_tmp_5[r1] = dx_c_tmp;
-    dx_c_tmp_5[3 * i] = tmp_2;
+    dx_c_tmp_5[3 * i] = RateTransition_1;
   }
 
   dx_c_tmp_4[1] = 0.0;
@@ -1092,42 +1051,42 @@ void Controller6dof::step()
   dx_c_tmp_4[8] = dx_c_tmp_2;
   for (i = 0; i < 3; i++) {
     dx_c_tmp_4[3 * i] = d[i];
-    tmp_2 = 0.0;
+    RateTransition_1 = 0.0;
     dx_c_tmp = 0.0;
     dx_c_tmp_0 = 0.0;
     for (rtemp = 0; rtemp < 3; rtemp++) {
       maxval = dx_c_tmp_4[3 * i + rtemp];
-      tmp_2 += dx_c_tmp_5[3 * rtemp] * maxval;
+      RateTransition_1 += dx_c_tmp_5[3 * rtemp] * maxval;
       dx_c_tmp += dx_c_tmp_5[3 * rtemp + 1] * maxval;
       dx_c_tmp_0 += dx_c_tmp_5[3 * rtemp + 2] * maxval;
     }
 
     dx_c_tmp_3[3 * i + 2] = dx_c_tmp_0;
     dx_c_tmp_3[3 * i + 1] = dx_c_tmp;
-    dx_c_tmp_3[3 * i] = tmp_2;
+    dx_c_tmp_3[3 * i] = RateTransition_1;
   }
 
   for (i = 0; i < 9; i++) {
-    dx_c_tmp_5[i] = w * dx_c_tmp_3[i];
+    dx_c_tmp_5[i] = RateTransition_0 * dx_c_tmp_3[i];
   }
 
   tmp_0[0] = 0.0;
   tmp_0[1] = 0.0;
-  tmp_0[2] = tau_idx_0;
-  tau_idx_0 = 0.0;
-  w = 0.0;
-  tmp_2 = 0.0;
+  tmp_0[2] = RateTransition;
+  RateTransition = 0.0;
+  RateTransition_0 = 0.0;
+  RateTransition_1 = 0.0;
   for (i = 0; i < 3; i++) {
     maxval = tmp_0[i];
-    tau_idx_0 += dx_c_tmp_5[3 * i] * maxval;
-    w += dx_c_tmp_5[3 * i + 1] * maxval;
-    tmp_2 += dx_c_tmp_5[3 * i + 2] * maxval;
+    RateTransition += dx_c_tmp_5[3 * i] * maxval;
+    RateTransition_0 += dx_c_tmp_5[3 * i + 1] * maxval;
+    RateTransition_1 += dx_c_tmp_5[3 * i + 2] * maxval;
     rtDW.dx_c[i] = rtX.Integrator_CSTATE_e[i + 3];
   }
 
-  rtDW.dx_c[3] = tau_idx_0;
-  rtDW.dx_c[4] = w;
-  rtDW.dx_c[5] = -rtP.g + tmp_2;
+  rtDW.dx_c[3] = RateTransition;
+  rtDW.dx_c[4] = RateTransition_0;
+  rtDW.dx_c[5] = -rtP.g + RateTransition_1;
 
   // End of MATLAB Function: '<S4>/MATLAB Function2'
 
@@ -1136,40 +1095,36 @@ void Controller6dof::step()
   //   Gain: '<S5>/B_Eff'
   //   Integrator: '<S6>/Integrator'
 
-  maxval = (-rtP.p[0] * rtX.Integrator_CSTATE_h[3] + -rtP.p[1] *
-            rtX.Integrator_CSTATE_h[4]) + -rtP.p[2] * rtX.Integrator_CSTATE_h[5];
-  tau_idx_0 = tau_idx_1 + maxval;
-  tau_idx_1 = Gain_0 + maxval;
   if (rtP.Constant_Value_c) {
     tau_idx_0 += rtP.m * rtP.g * std::sin(rtX.Integrator_CSTATE_h[0]) * std::cos
       (rtX.Integrator_CSTATE_h[1]) * rtP.h;
     tau_idx_1 += rtP.m * rtP.g * std::sin(rtX.Integrator_CSTATE_h[1]) * rtP.h;
   }
 
-  w = 0.0;
-  tmp_2 = 0.0;
-  dx_c_tmp = 0.0;
+  RateTransition = 0.0;
+  RateTransition_0 = 0.0;
+  RateTransition_1 = 0.0;
   for (i = 0; i < 3; i++) {
-    Gain_0 = rtX.Integrator_CSTATE_h[i + 3];
-    w += rtP.J[3 * i] * Gain_0;
-    tmp_2 += rtP.J[3 * i + 1] * Gain_0;
-    dx_c_tmp += rtP.J[3 * i + 2] * Gain_0;
+    maxval = rtX.Integrator_CSTATE_h[i + 3];
+    RateTransition += rtP.J[3 * i] * maxval;
+    RateTransition_0 += rtP.J[3 * i + 1] * maxval;
+    RateTransition_1 += rtP.J[3 * i + 2] * maxval;
   }
 
   std::memcpy(&dx_c_tmp_3[0], &rtP.J[0], 9U * sizeof(real_T));
-  B_1[0] = (tau_idx_0 + maxval) - (dx_c_tmp * rtX.Integrator_CSTATE_h[4] - tmp_2
-    * rtX.Integrator_CSTATE_h[5]);
-  B_1[1] = (tau_idx_1 + maxval) - (w * rtX.Integrator_CSTATE_h[5] - dx_c_tmp *
-    rtX.Integrator_CSTATE_h[3]);
-  B_1[2] = ((a21 + maxval) + maxval) - (tmp_2 * rtX.Integrator_CSTATE_h[3] - w *
-    rtX.Integrator_CSTATE_h[4]);
+  B_1[0] = tau_idx_0 - (RateTransition_1 * rtX.Integrator_CSTATE_h[4] -
+                        RateTransition_0 * rtX.Integrator_CSTATE_h[5]);
+  B_1[1] = tau_idx_1 - (RateTransition * rtX.Integrator_CSTATE_h[5] -
+                        RateTransition_1 * rtX.Integrator_CSTATE_h[3]);
+  B_1[2] = tau_idx_2 - (RateTransition_0 * rtX.Integrator_CSTATE_h[3] -
+                        RateTransition * rtX.Integrator_CSTATE_h[4]);
   r1 = 0;
   i = 1;
   r3 = 2;
   maxval = std::abs(rtP.J[0]);
-  a21 = std::abs(rtP.J[1]);
-  if (a21 > maxval) {
-    maxval = a21;
+  tau_idx_1 = std::abs(rtP.J[1]);
+  if (tau_idx_1 > maxval) {
+    maxval = tau_idx_1;
     r1 = 1;
     i = 0;
   }
@@ -1195,9 +1150,9 @@ void Controller6dof::step()
   dx_c_tmp_3[r3 + 3] /= dx_c_tmp_3[i + 3];
   dx_c_tmp_3[r3 + 6] -= dx_c_tmp_3[r3 + 3] * dx_c_tmp_3[i + 6];
   tau_idx_1 = B_1[i] - B_1[r1] * dx_c_tmp_3[i];
-  a21 = ((B_1[r3] - B_1[r1] * dx_c_tmp_3[r3]) - dx_c_tmp_3[r3 + 3] * tau_idx_1) /
-    dx_c_tmp_3[r3 + 6];
-  tau_idx_1 = (tau_idx_1 - dx_c_tmp_3[i + 6] * a21) / dx_c_tmp_3[i + 3];
+  tau_idx_2 = ((B_1[r3] - B_1[r1] * dx_c_tmp_3[r3]) - dx_c_tmp_3[r3 + 3] *
+               tau_idx_1) / dx_c_tmp_3[r3 + 6];
+  tau_idx_1 = (tau_idx_1 - dx_c_tmp_3[i + 6] * tau_idx_2) / dx_c_tmp_3[i + 3];
   dx_c_tmp_5[0] = 1.0;
   dx_c_tmp_5[3] = std::sin(rtX.Integrator_CSTATE_h[0]) * std::tan
     (rtX.Integrator_CSTATE_h[1]);
@@ -1212,22 +1167,22 @@ void Controller6dof::step()
   dx_c_tmp_5[8] = std::cos(rtX.Integrator_CSTATE_h[0]) / std::cos
     (rtX.Integrator_CSTATE_h[1]);
   tau_idx_0 = 0.0;
-  w = 0.0;
-  tmp_2 = 0.0;
+  RateTransition = 0.0;
+  RateTransition_0 = 0.0;
   for (i = 0; i < 3; i++) {
     maxval = rtX.Integrator_CSTATE_h[i + 3];
     tau_idx_0 += dx_c_tmp_5[3 * i] * maxval;
-    w += dx_c_tmp_5[3 * i + 1] * maxval;
-    tmp_2 += dx_c_tmp_5[3 * i + 2] * maxval;
+    RateTransition += dx_c_tmp_5[3 * i + 1] * maxval;
+    RateTransition_0 += dx_c_tmp_5[3 * i + 2] * maxval;
   }
 
   rtDW.dx[0] = tau_idx_0;
-  rtDW.dx[3] = ((B_1[r1] - dx_c_tmp_3[r1 + 6] * a21) - dx_c_tmp_3[r1 + 3] *
+  rtDW.dx[3] = ((B_1[r1] - dx_c_tmp_3[r1 + 6] * tau_idx_2) - dx_c_tmp_3[r1 + 3] *
                 tau_idx_1) / dx_c_tmp_3[r1];
-  rtDW.dx[1] = w;
+  rtDW.dx[1] = RateTransition;
   rtDW.dx[4] = tau_idx_1;
-  rtDW.dx[2] = tmp_2;
-  rtDW.dx[5] = a21;
+  rtDW.dx[2] = RateTransition_0;
+  rtDW.dx[5] = tau_idx_2;
 
   // End of MATLAB Function: '<S6>/MATLAB Function2'
 
@@ -1239,298 +1194,311 @@ void Controller6dof::step()
     rtY.x_pred[i + 6] = rtX.Integrator_CSTATE_h[i];
   }
 
-  // SignalConversion generated from: '<S350>/Integrator'
-  rtDW.TmpSignalConversionAtIntegrat_j[0] = rtDW.x_dach_e[1];
-  rtDW.TmpSignalConversionAtIntegrat_j[1] = rtDW.x_dach_o[1];
-  rtDW.TmpSignalConversionAtIntegrat_j[2] = rtDW.x_dach_m[1];
-
-  // Sum: '<S516>/Sum' incorporates:
-  //   Inport: '<Root>/w'
-  //   MATLAB Function: '<S3>/MATLAB Function'
-  //   SignalConversion generated from: '<S351>/Vector Concatenate1'
-
-  rtDW.Sum_j[0] = rtb_y_i[1] - rtDW.x_dach_e[0];
-  rtDW.Sum_j[1] = Gain - rtDW.x_dach_o[0];
-  rtDW.Sum_j[2] = rtU.w[3] - rtDW.x_dach_m[0];
-
-  // Sum: '<S351>/Sum' incorporates:
-  //   Inport: '<Root>/w'
-
-  rtDW.Sum_m[0] = rtU.w[0] - rtDW.x_dach_g[0];
-  rtDW.Sum_m[1] = rtU.w[1] - rtDW.x_dach_l[0];
-  rtDW.Sum_m[2] = rtU.w[2] - rtDW.x_dach[0];
-
-  // Sum: '<S214>/SumD' incorporates:
-  //   Gain: '<S222>/Filter Coefficient'
-  //   Integrator: '<S214>/Filter'
-  //   UnaryMinus: '<S213>/Unary Minus'
-
-  rtDW.SumD = 0.0 - rtP.N * rtX.Filter_CSTATE;
-
-  // Gain: '<S216>/Integral Gain' incorporates:
-  //   Sum: '<S176>/Sum'
-
-  rtDW.IntegralGain = 0.0;
-
-  // Sum: '<S266>/SumD' incorporates:
-  //   Gain: '<S274>/Filter Coefficient'
-  //   Integrator: '<S266>/Filter'
-  //   UnaryMinus: '<S265>/Unary Minus'
-
-  rtDW.SumD_h = 0.0 - rtP.N * rtX.Filter_CSTATE_j;
-
-  // Gain: '<S268>/Integral Gain' incorporates:
-  //   Sum: '<S176>/Sum1'
-
-  rtDW.IntegralGain_i = 0.0;
-
-  // Sum: '<S318>/SumD' incorporates:
-  //   Gain: '<S326>/Filter Coefficient'
-  //   Integrator: '<S318>/Filter'
-  //   UnaryMinus: '<S317>/Unary Minus'
-
-  rtDW.SumD_e = 0.0 - rtP.N * rtX.Filter_CSTATE_l;
-
-  // Gain: '<S320>/Integral Gain' incorporates:
-  //   Sum: '<S176>/Sum2'
-
-  rtDW.IntegralGain_p = 0.0;
+  // Sum: '<S513>/Sum'
+  rtDW.Sum_j[0] = rtDW.RateTransition_i[1] - rtDW.x_dach_e[0];
+  rtDW.Sum_j[1] = rtDW.RateTransition_i[2] - rtDW.x_dach_f[0];
+  rtDW.Sum_j[2] = rtDW.RateTransition_i[3] - rtDW.x_dach[0];
   if (tmp) {
-    // Gain: '<S44>/Derivative Gain'
-    rtDW.DerivativeGain = 0.0;
-
-    // Gain: '<S48>/Integral Gain'
-    rtDW.IntegralGain_g = 0.0;
-
-    // Gain: '<S96>/Derivative Gain'
-    rtDW.DerivativeGain_d = 0.0;
-
-    // Gain: '<S100>/Integral Gain'
-    rtDW.IntegralGain_f = 0.0;
-
-    // Gain: '<S148>/Derivative Gain'
-    rtDW.DerivativeGain_e = 0.0;
-
-    // Gain: '<S152>/Integral Gain'
-    rtDW.IntegralGain_l = 0.0;
-
-    // Gain: '<S382>/Derivative Gain'
-    rtDW.DerivativeGain_i = 0.0;
-
     // Gain: '<S386>/Integral Gain'
-    rtDW.IntegralGain_h = 0.0;
-
-    // Gain: '<S434>/Derivative Gain'
-    rtDW.DerivativeGain_k = 0.0;
+    rtDW.IntegralGain_h = rtP.ki_x * rtb_Sum_l5;
 
     // Gain: '<S438>/Integral Gain'
-    rtDW.IntegralGain_l4 = 0.0;
-
-    // Gain: '<S486>/Derivative Gain'
-    rtDW.DerivativeGain_ic = 0.0;
+    rtDW.IntegralGain_l4 = rtP.ki_y * rtb_Sum1_h;
 
     // Gain: '<S490>/Integral Gain'
-    rtDW.IntegralGain_fl = 0.0;
+    rtDW.IntegralGain_fl = rtP.ki_z * rtb_Sum2;
   }
 
-  // Gain: '<S54>/Filter Coefficient' incorporates:
-  //   Integrator: '<S46>/Filter'
-  //   Sum: '<S46>/SumD'
+  if ((&rtM)->isMajorTimeStep() &&
+      (&rtM)->Timing.TaskCounters.TID[2] == 0) {
+    // Outputs for Atomic SubSystem: '<S2>/Subsystem Reference1'
+    // UnitDelay: '<S342>/Unit Delay'
+    rtb_thrust[0] = rtDW.UnitDelay_DSTATE_nf[0];
+    rtb_thrust[1] = rtDW.UnitDelay_DSTATE_nf[1];
+    rtb_thrust[2] = rtDW.UnitDelay_DSTATE_nf[2];
+    rtb_thrust[3] = rtDW.UnitDelay_DSTATE_nf[3];
 
-  rtDW.FilterCoefficient = (rtDW.DerivativeGain - rtX.Filter_CSTATE_f) *
-    rtP.N_pos;
+    // MATLAB Function: '<S342>/KF_Elevation' incorporates:
+    //   Constant: '<S342>/Constant'
+    //   Constant: '<S342>/Constant1'
+    //   Constant: '<S342>/Constant2'
+    //   Constant: '<S342>/Constant5'
+    //   Constant: '<S342>/Cov Messrauschen'
+    //   Constant: '<S342>/Cov Prozessrauschen'
+    //   UnitDelay: '<S342>/Unit Delay'
+    //   UnitDelay: '<S342>/Unit Delay1'
 
-  // Gain: '<S106>/Filter Coefficient' incorporates:
-  //   Integrator: '<S98>/Filter'
-  //   Sum: '<S98>/SumD'
+    KF_Elevation(rtP.Constant_Value, rtP.Constant1_Value, rtP.Constant2_Value,
+                 rtP.CovProzessrauschen_Value, rtP.CovMessrauschen_Value, 0.0,
+                 rtP.Constant5_Value, rtb_thrust, rtDW.UnitDelay1_DSTATE_o,
+                 rtDW.UnitDelay_DSTATE_nf);
 
-  rtDW.FilterCoefficient_n = (rtDW.DerivativeGain_d - rtX.Filter_CSTATE_b) *
-    rtP.N_pos;
+    // UnitDelay: '<S343>/Unit Delay'
+    rtb_thrust[0] = rtDW.UnitDelay_DSTATE_ax[0];
+    rtb_thrust[1] = rtDW.UnitDelay_DSTATE_ax[1];
+    rtb_thrust[2] = rtDW.UnitDelay_DSTATE_ax[2];
+    rtb_thrust[3] = rtDW.UnitDelay_DSTATE_ax[3];
 
-  // Gain: '<S158>/Filter Coefficient' incorporates:
-  //   Integrator: '<S150>/Filter'
-  //   Sum: '<S150>/SumD'
+    // MATLAB Function: '<S343>/KF_Elevation' incorporates:
+    //   Constant: '<S343>/Constant'
+    //   Constant: '<S343>/Constant1'
+    //   Constant: '<S343>/Constant2'
+    //   Constant: '<S343>/Constant5'
+    //   Constant: '<S343>/Cov Messrauschen'
+    //   Constant: '<S343>/Cov Prozessrauschen'
+    //   UnitDelay: '<S343>/Unit Delay'
+    //   UnitDelay: '<S343>/Unit Delay1'
 
-  rtDW.FilterCoefficient_f = (rtDW.DerivativeGain_e - rtX.Filter_CSTATE_k) *
-    rtP.N_pos;
+    KF_Elevation(rtP.Constant_Value_p, rtP.Constant1_Value_j,
+                 rtP.Constant2_Value_i, rtP.CovProzessrauschen_Value_f,
+                 rtP.CovMessrauschen_Value_a, 0.0, rtP.Constant5_Value_p,
+                 rtb_thrust, rtDW.UnitDelay1_DSTATE_d, rtDW.UnitDelay_DSTATE_ax);
 
-  // Sum: '<S552>/SumD' incorporates:
-  //   Gain: '<S560>/Filter Coefficient'
-  //   Integrator: '<S552>/Filter'
-  //   UnaryMinus: '<S551>/Unary Minus'
+    // UnitDelay: '<S344>/Unit Delay'
+    rtb_thrust[0] = rtDW.UnitDelay_DSTATE_oo[0];
+    rtb_thrust[1] = rtDW.UnitDelay_DSTATE_oo[1];
+    rtb_thrust[2] = rtDW.UnitDelay_DSTATE_oo[2];
+    rtb_thrust[3] = rtDW.UnitDelay_DSTATE_oo[3];
 
-  rtDW.SumD_d = 0.0 - rtP.N * rtX.Filter_CSTATE_n;
+    // MATLAB Function: '<S344>/KF_Elevation' incorporates:
+    //   Constant: '<S344>/Constant'
+    //   Constant: '<S344>/Constant1'
+    //   Constant: '<S344>/Constant2'
+    //   Constant: '<S344>/Constant5'
+    //   Constant: '<S344>/Cov Messrauschen'
+    //   Constant: '<S344>/Cov Prozessrauschen'
+    //   UnitDelay: '<S344>/Unit Delay'
+    //   UnitDelay: '<S344>/Unit Delay1'
 
-  // Gain: '<S554>/Integral Gain' incorporates:
-  //   Sum: '<S514>/Sum'
+    KF_Elevation(rtP.Constant_Value_n, rtP.Constant1_Value_m,
+                 rtP.Constant2_Value_g, rtP.CovProzessrauschen_Value_c,
+                 rtP.CovMessrauschen_Value_e, 0.0, rtP.Constant5_Value_o,
+                 rtb_thrust, rtDW.UnitDelay1_DSTATE_co, rtDW.UnitDelay_DSTATE_oo);
 
+    // Update for DiscreteIntegrator: '<S13>/Discrete-Time Integrator' incorporates:
+    //   SignalConversion generated from: '<S13>/w'
+    //   Sum: '<S13>/Sum'
+    //   UnitDelay: '<S342>/Unit Delay1'
+    //   UnitDelay: '<S343>/Unit Delay1'
+    //   UnitDelay: '<S344>/Unit Delay1'
+
+    maxval = rtDW.DiscreteTimeIntegrator_DSTATE_b[0];
+    tau_idx_1 = rtDW.DiscreteTimeIntegrator_DSTATE_b[1];
+    tau_idx_2 = rtDW.DiscreteTimeIntegrator_DSTATE_b[2];
+    rtDW.DiscreteTimeIntegrator_DSTATE_b[0] = (0.0 - rtDW.UnitDelay1_DSTATE_o[0])
+      * rtP.DiscreteTimeIntegrator_gainval + maxval;
+    rtDW.DiscreteTimeIntegrator_DSTATE_b[1] = (0.0 - rtDW.UnitDelay1_DSTATE_d[0])
+      * rtP.DiscreteTimeIntegrator_gainval + tau_idx_1;
+    rtDW.DiscreteTimeIntegrator_DSTATE_b[2] = (0.0 - rtDW.UnitDelay1_DSTATE_co[0])
+      * rtP.DiscreteTimeIntegrator_gainval + tau_idx_2;
+
+    // End of Outputs for SubSystem: '<S2>/Subsystem Reference1'
+
+    // Outputs for Atomic SubSystem: '<S3>/Subsystem Reference1'
+    // UnitDelay: '<S680>/Unit Delay'
+    rtb_thrust[0] = rtDW.UnitDelay_DSTATE_k[0];
+    rtb_thrust[1] = rtDW.UnitDelay_DSTATE_k[1];
+    rtb_thrust[2] = rtDW.UnitDelay_DSTATE_k[2];
+    rtb_thrust[3] = rtDW.UnitDelay_DSTATE_k[3];
+
+    // MATLAB Function: '<S680>/KF_Elevation' incorporates:
+    //   Constant: '<S680>/Constant'
+    //   Constant: '<S680>/Constant1'
+    //   Constant: '<S680>/Constant2'
+    //   Constant: '<S680>/Constant5'
+    //   Constant: '<S680>/Cov Messrauschen'
+    //   Constant: '<S680>/Cov Prozessrauschen'
+    //   UnitDelay: '<S680>/Unit Delay'
+    //   UnitDelay: '<S680>/Unit Delay1'
+
+    KF_Elevation(rtP.Constant_Value_b, rtP.Constant1_Value_b,
+                 rtP.Constant2_Value_f, rtP.CovProzessrauschen_Value_d,
+                 rtP.CovMessrauschen_Value_i, 0.0, rtP.Constant5_Value_c,
+                 rtb_thrust, rtDW.UnitDelay1_DSTATE_f, rtDW.UnitDelay_DSTATE_k);
+
+    // UnitDelay: '<S681>/Unit Delay'
+    rtb_thrust[0] = rtDW.UnitDelay_DSTATE_p[0];
+    rtb_thrust[1] = rtDW.UnitDelay_DSTATE_p[1];
+    rtb_thrust[2] = rtDW.UnitDelay_DSTATE_p[2];
+    rtb_thrust[3] = rtDW.UnitDelay_DSTATE_p[3];
+
+    // MATLAB Function: '<S681>/KF_Elevation' incorporates:
+    //   Constant: '<S681>/Constant'
+    //   Constant: '<S681>/Constant1'
+    //   Constant: '<S681>/Constant2'
+    //   Constant: '<S681>/Constant5'
+    //   Constant: '<S681>/Cov Messrauschen'
+    //   Constant: '<S681>/Cov Prozessrauschen'
+    //   UnitDelay: '<S681>/Unit Delay'
+    //   UnitDelay: '<S681>/Unit Delay1'
+
+    KF_Elevation(rtP.Constant_Value_n1, rtP.Constant1_Value_n,
+                 rtP.Constant2_Value_p, rtP.CovProzessrauschen_Value_dl,
+                 rtP.CovMessrauschen_Value_m, 0.0, rtP.Constant5_Value_i,
+                 rtb_thrust, rtDW.UnitDelay1_DSTATE_e, rtDW.UnitDelay_DSTATE_p);
+
+    // UnitDelay: '<S682>/Unit Delay'
+    rtb_thrust[0] = rtDW.UnitDelay_DSTATE_i[0];
+    rtb_thrust[1] = rtDW.UnitDelay_DSTATE_i[1];
+    rtb_thrust[2] = rtDW.UnitDelay_DSTATE_i[2];
+    rtb_thrust[3] = rtDW.UnitDelay_DSTATE_i[3];
+
+    // MATLAB Function: '<S682>/KF_Elevation' incorporates:
+    //   Constant: '<S682>/Constant'
+    //   Constant: '<S682>/Constant1'
+    //   Constant: '<S682>/Constant2'
+    //   Constant: '<S682>/Constant5'
+    //   Constant: '<S682>/Cov Messrauschen'
+    //   Constant: '<S682>/Cov Prozessrauschen'
+    //   UnitDelay: '<S682>/Unit Delay'
+    //   UnitDelay: '<S682>/Unit Delay1'
+
+    KF_Elevation(rtP.Constant_Value_l, rtP.Constant1_Value_p,
+                 rtP.Constant2_Value_i1, rtP.CovProzessrauschen_Value_o,
+                 rtP.CovMessrauschen_Value_l, 0.0, rtP.Constant5_Value_b,
+                 rtb_thrust, rtDW.UnitDelay1_DSTATE_fj, rtDW.UnitDelay_DSTATE_i);
+
+    // Update for DiscreteIntegrator: '<S351>/Discrete-Time Integrator' incorporates:
+    //   SignalConversion generated from: '<S351>/w'
+    //   Sum: '<S351>/Sum'
+    //   UnitDelay: '<S680>/Unit Delay1'
+    //   UnitDelay: '<S681>/Unit Delay1'
+    //   UnitDelay: '<S682>/Unit Delay1'
+
+    maxval = rtDW.DiscreteTimeIntegrator_DSTATE[0];
+    tau_idx_1 = rtDW.DiscreteTimeIntegrator_DSTATE[1];
+    tau_idx_2 = rtDW.DiscreteTimeIntegrator_DSTATE[2];
+    rtDW.DiscreteTimeIntegrator_DSTATE[0] = (0.0 - rtDW.UnitDelay1_DSTATE_f[0]) *
+      rtP.DiscreteTimeIntegrator_gainva_g + maxval;
+    rtDW.DiscreteTimeIntegrator_DSTATE[1] = (0.0 - rtDW.UnitDelay1_DSTATE_e[0]) *
+      rtP.DiscreteTimeIntegrator_gainva_g + tau_idx_1;
+    rtDW.DiscreteTimeIntegrator_DSTATE[2] = (0.0 - rtDW.UnitDelay1_DSTATE_fj[0])
+      * rtP.DiscreteTimeIntegrator_gainva_g + tau_idx_2;
+
+    // End of Outputs for SubSystem: '<S3>/Subsystem Reference1'
+  }
+
+  // Gain: '<S217>/Filter Coefficient' incorporates:
+  //   Gain: '<S207>/Derivative Gain'
+  //   Integrator: '<S209>/Filter'
+  //   Sum: '<S209>/SumD'
+
+  rtDW.FilterCoefficient_e = (0.0 - rtX.Filter_CSTATE_o) * rtP.N;
+
+  // Gain: '<S211>/Integral Gain'
+  rtDW.IntegralGain_o = 0.0;
+
+  // Gain: '<S269>/Filter Coefficient' incorporates:
+  //   Gain: '<S259>/Derivative Gain'
+  //   Integrator: '<S261>/Filter'
+  //   Sum: '<S261>/SumD'
+
+  rtDW.FilterCoefficient_g = (0.0 - rtX.Filter_CSTATE_n4) * rtP.N;
+
+  // Gain: '<S263>/Integral Gain'
+  rtDW.IntegralGain_i = 0.0;
+
+  // Gain: '<S321>/Filter Coefficient' incorporates:
+  //   Gain: '<S311>/Derivative Gain'
+  //   Integrator: '<S313>/Filter'
+  //   Sum: '<S313>/SumD'
+
+  rtDW.FilterCoefficient_af = (0.0 - rtX.Filter_CSTATE_a) * rtP.N;
+
+  // Gain: '<S315>/Integral Gain'
+  rtDW.IntegralGain_p = 0.0;
+
+  // Gain: '<S555>/Filter Coefficient' incorporates:
+  //   Gain: '<S545>/Derivative Gain'
+  //   Integrator: '<S547>/Filter'
+  //   Sum: '<S547>/SumD'
+
+  rtDW.FilterCoefficient_mw = (0.0 - rtX.Filter_CSTATE_mt) * rtP.N;
+
+  // Gain: '<S549>/Integral Gain'
   rtDW.IntegralGain_e = 0.0;
 
-  // Sum: '<S604>/SumD' incorporates:
-  //   Gain: '<S612>/Filter Coefficient'
-  //   Integrator: '<S604>/Filter'
-  //   UnaryMinus: '<S603>/Unary Minus'
+  // Gain: '<S607>/Filter Coefficient' incorporates:
+  //   Gain: '<S597>/Derivative Gain'
+  //   Integrator: '<S599>/Filter'
+  //   Sum: '<S599>/SumD'
 
-  rtDW.SumD_n = 0.0 - rtP.N * rtX.Filter_CSTATE_e;
+  rtDW.FilterCoefficient_ma = (0.0 - rtX.Filter_CSTATE_d) * rtP.N;
 
-  // Gain: '<S606>/Integral Gain' incorporates:
-  //   Sum: '<S514>/Sum1'
-
+  // Gain: '<S601>/Integral Gain'
   rtDW.IntegralGain_k = 0.0;
 
-  // Sum: '<S656>/SumD' incorporates:
-  //   Gain: '<S664>/Filter Coefficient'
-  //   Integrator: '<S656>/Filter'
-  //   UnaryMinus: '<S655>/Unary Minus'
+  // Gain: '<S659>/Filter Coefficient' incorporates:
+  //   Gain: '<S649>/Derivative Gain'
+  //   Integrator: '<S651>/Filter'
+  //   Sum: '<S651>/SumD'
 
-  rtDW.SumD_m = 0.0 - rtP.N * rtX.Filter_CSTATE_j5;
+  rtDW.FilterCoefficient_f = (0.0 - rtX.Filter_CSTATE_g) * rtP.N;
 
-  // Gain: '<S658>/Integral Gain' incorporates:
-  //   Sum: '<S514>/Sum2'
-
+  // Gain: '<S653>/Integral Gain'
   rtDW.IntegralGain_c = 0.0;
-
-  // Gain: '<S392>/Filter Coefficient' incorporates:
-  //   Integrator: '<S384>/Filter'
-  //   Sum: '<S384>/SumD'
-
-  rtDW.FilterCoefficient_p = (rtDW.DerivativeGain_i - rtX.Filter_CSTATE_p) *
-    rtP.N_pos;
-
-  // Gain: '<S444>/Filter Coefficient' incorporates:
-  //   Integrator: '<S436>/Filter'
-  //   Sum: '<S436>/SumD'
-
-  rtDW.FilterCoefficient_d = (rtDW.DerivativeGain_k - rtX.Filter_CSTATE_m) *
-    rtP.N_pos;
-
-  // Gain: '<S496>/Filter Coefficient' incorporates:
-  //   Integrator: '<S488>/Filter'
-  //   Sum: '<S488>/SumD'
-
-  rtDW.FilterCoefficient_a = (rtDW.DerivativeGain_ic - rtX.Filter_CSTATE_nw) *
-    rtP.N_pos;
   if ((&rtM)->isMajorTimeStep()) {
-    if ((&rtM)->isMajorTimeStep()) {
-      // Update for UnitDelay: '<S342>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE[0] = rtDW.x_dach_mn[0];
-      rtDW.UnitDelay1_DSTATE[1] = rtDW.x_dach_mn[1];
+    if ((&rtM)->isMajorTimeStep() &&
+        (&rtM)->Timing.TaskCounters.TID[1] == 0) {
+      // Update for UnitDelay: '<S336>/Unit Delay1'
+      rtDW.UnitDelay1_DSTATE[0] = rtDW.x_dach_fe[0];
+      rtDW.UnitDelay1_DSTATE[1] = rtDW.x_dach_fe[1];
 
-      // Update for UnitDelay: '<S342>/Unit Delay'
-      rtDW.UnitDelay_DSTATE[0] = rtDW.P_m[0];
-      rtDW.UnitDelay_DSTATE[1] = rtDW.P_m[1];
-      rtDW.UnitDelay_DSTATE[2] = rtDW.P_m[2];
-      rtDW.UnitDelay_DSTATE[3] = rtDW.P_m[3];
+      // Update for UnitDelay: '<S336>/Unit Delay'
+      rtDW.UnitDelay_DSTATE[0] = rtDW.P_h[0];
+      rtDW.UnitDelay_DSTATE[1] = rtDW.P_h[1];
+      rtDW.UnitDelay_DSTATE[2] = rtDW.P_h[2];
+      rtDW.UnitDelay_DSTATE[3] = rtDW.P_h[3];
 
-      // Update for UnitDelay: '<S343>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_d[0] = rtDW.x_dach_mj[0];
-      rtDW.UnitDelay1_DSTATE_d[1] = rtDW.x_dach_mj[1];
+      // Update for UnitDelay: '<S337>/Unit Delay1'
+      rtDW.UnitDelay1_DSTATE_h[0] = rtDW.x_dach_l[0];
+      rtDW.UnitDelay1_DSTATE_h[1] = rtDW.x_dach_l[1];
 
-      // Update for UnitDelay: '<S343>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_a[0] = rtDW.P_a[0];
-      rtDW.UnitDelay_DSTATE_a[1] = rtDW.P_a[1];
-      rtDW.UnitDelay_DSTATE_a[2] = rtDW.P_a[2];
-      rtDW.UnitDelay_DSTATE_a[3] = rtDW.P_a[3];
+      // Update for UnitDelay: '<S337>/Unit Delay'
+      rtDW.UnitDelay_DSTATE_o[0] = rtDW.P_jh[0];
+      rtDW.UnitDelay_DSTATE_o[1] = rtDW.P_jh[1];
+      rtDW.UnitDelay_DSTATE_o[2] = rtDW.P_jh[2];
+      rtDW.UnitDelay_DSTATE_o[3] = rtDW.P_jh[3];
 
-      // Update for UnitDelay: '<S344>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_c[0] = rtDW.x_dach_b[0];
-      rtDW.UnitDelay1_DSTATE_c[1] = rtDW.x_dach_b[1];
+      // Update for UnitDelay: '<S338>/Unit Delay1'
+      rtDW.UnitDelay1_DSTATE_i[0] = rtDW.x_dach_m[0];
+      rtDW.UnitDelay1_DSTATE_i[1] = rtDW.x_dach_m[1];
 
-      // Update for UnitDelay: '<S344>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_o[0] = rtDW.P_p[0];
-      rtDW.UnitDelay_DSTATE_o[1] = rtDW.P_p[1];
-      rtDW.UnitDelay_DSTATE_o[2] = rtDW.P_p[2];
-      rtDW.UnitDelay_DSTATE_o[3] = rtDW.P_p[3];
+      // Update for UnitDelay: '<S338>/Unit Delay'
+      rtDW.UnitDelay_DSTATE_d[0] = rtDW.P_j[0];
+      rtDW.UnitDelay_DSTATE_d[1] = rtDW.P_j[1];
+      rtDW.UnitDelay_DSTATE_d[2] = rtDW.P_j[2];
+      rtDW.UnitDelay_DSTATE_d[3] = rtDW.P_j[3];
 
-      // Update for UnitDelay: '<S174>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_f[0] = rtDW.x_dach_es[0];
-      rtDW.UnitDelay1_DSTATE_f[1] = rtDW.x_dach_es[1];
+      // Update for UnitDelay: '<S674>/Unit Delay1'
+      rtDW.UnitDelay1_DSTATE_j[0] = rtDW.x_dach_e[0];
+      rtDW.UnitDelay1_DSTATE_j[1] = rtDW.x_dach_e[1];
 
-      // Update for UnitDelay: '<S174>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_f[0] = rtDW.P_i[0];
-      rtDW.UnitDelay_DSTATE_f[1] = rtDW.P_i[1];
-      rtDW.UnitDelay_DSTATE_f[2] = rtDW.P_i[2];
-      rtDW.UnitDelay_DSTATE_f[3] = rtDW.P_i[3];
+      // Update for UnitDelay: '<S674>/Unit Delay'
+      rtDW.UnitDelay_DSTATE_j[0] = rtDW.P_k[0];
+      rtDW.UnitDelay_DSTATE_j[1] = rtDW.P_k[1];
+      rtDW.UnitDelay_DSTATE_j[2] = rtDW.P_k[2];
+      rtDW.UnitDelay_DSTATE_j[3] = rtDW.P_k[3];
 
-      // Update for UnitDelay: '<S175>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_a[0] = rtDW.x_dach_k[0];
-      rtDW.UnitDelay1_DSTATE_a[1] = rtDW.x_dach_k[1];
+      // Update for UnitDelay: '<S675>/Unit Delay1'
+      rtDW.UnitDelay1_DSTATE_c[0] = rtDW.x_dach_f[0];
+      rtDW.UnitDelay1_DSTATE_c[1] = rtDW.x_dach_f[1];
 
-      // Update for UnitDelay: '<S175>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_fb[0] = rtDW.P_kl[0];
-      rtDW.UnitDelay_DSTATE_fb[1] = rtDW.P_kl[1];
-      rtDW.UnitDelay_DSTATE_fb[2] = rtDW.P_kl[2];
-      rtDW.UnitDelay_DSTATE_fb[3] = rtDW.P_kl[3];
+      // Update for UnitDelay: '<S675>/Unit Delay'
+      rtDW.UnitDelay_DSTATE_a[0] = rtDW.P_l[0];
+      rtDW.UnitDelay_DSTATE_a[1] = rtDW.P_l[1];
+      rtDW.UnitDelay_DSTATE_a[2] = rtDW.P_l[2];
+      rtDW.UnitDelay_DSTATE_a[3] = rtDW.P_l[3];
 
-      // Update for UnitDelay: '<S177>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_o[0] = rtDW.x_dach_gh[0];
-      rtDW.UnitDelay1_DSTATE_o[1] = rtDW.x_dach_gh[1];
+      // Update for UnitDelay: '<S676>/Unit Delay1'
+      rtDW.UnitDelay1_DSTATE_k[0] = rtDW.x_dach[0];
+      rtDW.UnitDelay1_DSTATE_k[1] = rtDW.x_dach[1];
 
-      // Update for UnitDelay: '<S177>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_k[0] = rtDW.P_k[0];
-      rtDW.UnitDelay_DSTATE_k[1] = rtDW.P_k[1];
-      rtDW.UnitDelay_DSTATE_k[2] = rtDW.P_k[2];
-      rtDW.UnitDelay_DSTATE_k[3] = rtDW.P_k[3];
-
-      // Update for UnitDelay: '<S680>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_ff[0] = rtDW.x_dach_g[0];
-      rtDW.UnitDelay1_DSTATE_ff[1] = rtDW.x_dach_g[1];
-
-      // Update for UnitDelay: '<S680>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_kb[0] = rtDW.P_f[0];
-      rtDW.UnitDelay_DSTATE_kb[1] = rtDW.P_f[1];
-      rtDW.UnitDelay_DSTATE_kb[2] = rtDW.P_f[2];
-      rtDW.UnitDelay_DSTATE_kb[3] = rtDW.P_f[3];
-
-      // Update for UnitDelay: '<S681>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_e[0] = rtDW.x_dach_l[0];
-      rtDW.UnitDelay1_DSTATE_e[1] = rtDW.x_dach_l[1];
-
-      // Update for UnitDelay: '<S681>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_p[0] = rtDW.P_c[0];
-      rtDW.UnitDelay_DSTATE_p[1] = rtDW.P_c[1];
-      rtDW.UnitDelay_DSTATE_p[2] = rtDW.P_c[2];
-      rtDW.UnitDelay_DSTATE_p[3] = rtDW.P_c[3];
-
-      // Update for UnitDelay: '<S682>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_fj[0] = rtDW.x_dach[0];
-      rtDW.UnitDelay1_DSTATE_fj[1] = rtDW.x_dach[1];
-
-      // Update for UnitDelay: '<S682>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_i[0] = rtDW.P_b[0];
-      rtDW.UnitDelay_DSTATE_i[1] = rtDW.P_b[1];
-      rtDW.UnitDelay_DSTATE_i[2] = rtDW.P_b[2];
-      rtDW.UnitDelay_DSTATE_i[3] = rtDW.P_b[3];
-
-      // Update for UnitDelay: '<S512>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_b[0] = rtDW.x_dach_e[0];
-      rtDW.UnitDelay1_DSTATE_b[1] = rtDW.x_dach_e[1];
-
-      // Update for UnitDelay: '<S512>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_kf[0] = rtDW.P_bo[0];
-      rtDW.UnitDelay_DSTATE_kf[1] = rtDW.P_bo[1];
-      rtDW.UnitDelay_DSTATE_kf[2] = rtDW.P_bo[2];
-      rtDW.UnitDelay_DSTATE_kf[3] = rtDW.P_bo[3];
-
-      // Update for UnitDelay: '<S513>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_as[0] = rtDW.x_dach_o[0];
-      rtDW.UnitDelay1_DSTATE_as[1] = rtDW.x_dach_o[1];
-
-      // Update for UnitDelay: '<S513>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_m[0] = rtDW.P_n[0];
-      rtDW.UnitDelay_DSTATE_m[1] = rtDW.P_n[1];
-      rtDW.UnitDelay_DSTATE_m[2] = rtDW.P_n[2];
-      rtDW.UnitDelay_DSTATE_m[3] = rtDW.P_n[3];
-
-      // Update for UnitDelay: '<S515>/Unit Delay1'
-      rtDW.UnitDelay1_DSTATE_k[0] = rtDW.x_dach_m[0];
-      rtDW.UnitDelay1_DSTATE_k[1] = rtDW.x_dach_m[1];
-
-      // Update for UnitDelay: '<S515>/Unit Delay'
-      rtDW.UnitDelay_DSTATE_j[0] = rtDW.P_l[0];
-      rtDW.UnitDelay_DSTATE_j[1] = rtDW.P_l[1];
-      rtDW.UnitDelay_DSTATE_j[2] = rtDW.P_l[2];
-      rtDW.UnitDelay_DSTATE_j[3] = rtDW.P_l[3];
+      // Update for UnitDelay: '<S676>/Unit Delay'
+      rtDW.UnitDelay_DSTATE_n[0] = rtDW.P_o[0];
+      rtDW.UnitDelay_DSTATE_n[1] = rtDW.P_o[1];
+      rtDW.UnitDelay_DSTATE_n[2] = rtDW.P_o[2];
+      rtDW.UnitDelay_DSTATE_n[3] = rtDW.P_o[3];
     }
   }                                    // end MajorTimeStep
 
@@ -1555,6 +1523,8 @@ void Controller6dof::step()
 
       (&rtM)->Timing.clockTick1++;
     }
+
+    rate_scheduler((&rtM));
   }                                    // end MajorTimeStep
 }
 
@@ -1565,32 +1535,28 @@ void Controller6dof::controller_6dof_container_derivatives()
   int32_T i;
   _rtXdot = ((XDot *) (&rtM)->derivs);
 
-  // Derivatives for Integrator: '<S13>/Integrator'
-  _rtXdot->Integrator_CSTATE[0] = rtDW.Sum_l[0];
+  // Derivatives for Integrator: '<S155>/Integrator'
+  _rtXdot->Integrator_CSTATE = rtDW.IntegralGain_l;
 
-  // Derivatives for Integrator: '<S178>/Integrator'
+  // Derivatives for Integrator: '<S150>/Filter'
+  _rtXdot->Filter_CSTATE = rtDW.FilterCoefficient;
+
+  // Derivatives for Integrator: '<S103>/Integrator'
+  _rtXdot->Integrator_CSTATE_b = rtDW.IntegralGain_f;
+
+  // Derivatives for Integrator: '<S98>/Filter'
+  _rtXdot->Filter_CSTATE_b = rtDW.FilterCoefficient_n;
+
+  // Derivatives for Integrator: '<S51>/Integrator'
+  _rtXdot->Integrator_CSTATE_m = rtDW.IntegralGain;
+
+  // Derivatives for Integrator: '<S46>/Filter'
+  _rtXdot->Filter_CSTATE_f = rtDW.FilterCoefficient_m;
+
+  // Derivatives for Integrator: '<S175>/Integrator'
   _rtXdot->Integrator_CSTATE_a[0] = rtDW.Sum[0];
-
-  // Derivatives for Integrator: '<S12>/Integrator'
-  _rtXdot->Integrator_CSTATE_b[0] = rtDW.TmpSignalConversionAtIntegrator[0];
-
-  // Derivatives for Integrator: '<S13>/Integrator'
-  _rtXdot->Integrator_CSTATE[1] = rtDW.Sum_l[1];
-
-  // Derivatives for Integrator: '<S178>/Integrator'
   _rtXdot->Integrator_CSTATE_a[1] = rtDW.Sum[1];
-
-  // Derivatives for Integrator: '<S12>/Integrator'
-  _rtXdot->Integrator_CSTATE_b[1] = rtDW.TmpSignalConversionAtIntegrator[1];
-
-  // Derivatives for Integrator: '<S13>/Integrator'
-  _rtXdot->Integrator_CSTATE[2] = rtDW.Sum_l[2];
-
-  // Derivatives for Integrator: '<S178>/Integrator'
   _rtXdot->Integrator_CSTATE_a[2] = rtDW.Sum[2];
-
-  // Derivatives for Integrator: '<S12>/Integrator'
-  _rtXdot->Integrator_CSTATE_b[2] = rtDW.TmpSignalConversionAtIntegrator[2];
   for (i = 0; i < 6; i++) {
     // Derivatives for Integrator: '<S4>/Integrator'
     _rtXdot->Integrator_CSTATE_e[i] = rtDW.dx_c[i];
@@ -1599,140 +1565,94 @@ void Controller6dof::controller_6dof_container_derivatives()
     _rtXdot->Integrator_CSTATE_h[i] = rtDW.dx[i];
   }
 
-  // Derivatives for Integrator: '<S351>/Integrator'
-  _rtXdot->Integrator_CSTATE_ee[0] = rtDW.Sum_m[0];
+  // Derivatives for Integrator: '<S493>/Integrator'
+  _rtXdot->Integrator_CSTATE_bh = rtDW.IntegralGain_fl;
 
-  // Derivatives for Integrator: '<S516>/Integrator'
-  _rtXdot->Integrator_CSTATE_n[0] = rtDW.Sum_j[0];
-
-  // Derivatives for Integrator: '<S350>/Integrator'
-  _rtXdot->Integrator_CSTATE_p[0] = rtDW.TmpSignalConversionAtIntegrat_j[0];
-
-  // Derivatives for Integrator: '<S351>/Integrator'
-  _rtXdot->Integrator_CSTATE_ee[1] = rtDW.Sum_m[1];
-
-  // Derivatives for Integrator: '<S516>/Integrator'
-  _rtXdot->Integrator_CSTATE_n[1] = rtDW.Sum_j[1];
-
-  // Derivatives for Integrator: '<S350>/Integrator'
-  _rtXdot->Integrator_CSTATE_p[1] = rtDW.TmpSignalConversionAtIntegrat_j[1];
-
-  // Derivatives for Integrator: '<S351>/Integrator'
-  _rtXdot->Integrator_CSTATE_ee[2] = rtDW.Sum_m[2];
-
-  // Derivatives for Integrator: '<S516>/Integrator'
-  _rtXdot->Integrator_CSTATE_n[2] = rtDW.Sum_j[2];
-
-  // Derivatives for Integrator: '<S350>/Integrator'
-  _rtXdot->Integrator_CSTATE_p[2] = rtDW.TmpSignalConversionAtIntegrat_j[2];
-
-  // Derivatives for Integrator: '<S174>/Integrator1'
-  _rtXdot->Integrator1_CSTATE = rtDW.x_dach_es[1];
-
-  // Derivatives for Integrator: '<S175>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_p = rtDW.x_dach_k[1];
-
-  // Derivatives for Integrator: '<S177>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_d = rtDW.x_dach_gh[1];
-
-  // Derivatives for Integrator: '<S214>/Filter'
-  _rtXdot->Filter_CSTATE = rtDW.SumD;
-
-  // Derivatives for Integrator: '<S219>/Integrator'
-  _rtXdot->Integrator_CSTATE_bg = rtDW.IntegralGain;
-
-  // Derivatives for Integrator: '<S266>/Filter'
-  _rtXdot->Filter_CSTATE_j = rtDW.SumD_h;
-
-  // Derivatives for Integrator: '<S271>/Integrator'
-  _rtXdot->Integrator_CSTATE_f = rtDW.IntegralGain_i;
-
-  // Derivatives for Integrator: '<S318>/Filter'
-  _rtXdot->Filter_CSTATE_l = rtDW.SumD_e;
-
-  // Derivatives for Integrator: '<S323>/Integrator'
-  _rtXdot->Integrator_CSTATE_bj = rtDW.IntegralGain_p;
-
-  // Derivatives for Integrator: '<S342>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_pi = rtDW.x_dach_mn[1];
-
-  // Derivatives for Integrator: '<S343>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_k = rtDW.x_dach_mj[1];
-
-  // Derivatives for Integrator: '<S344>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_n = rtDW.x_dach_b[1];
-
-  // Derivatives for Integrator: '<S46>/Filter'
-  _rtXdot->Filter_CSTATE_f = rtDW.FilterCoefficient;
-
-  // Derivatives for Integrator: '<S51>/Integrator'
-  _rtXdot->Integrator_CSTATE_m = rtDW.IntegralGain_g;
-
-  // Derivatives for Integrator: '<S98>/Filter'
-  _rtXdot->Filter_CSTATE_b = rtDW.FilterCoefficient_n;
-
-  // Derivatives for Integrator: '<S103>/Integrator'
-  _rtXdot->Integrator_CSTATE_bn = rtDW.IntegralGain_f;
-
-  // Derivatives for Integrator: '<S150>/Filter'
-  _rtXdot->Filter_CSTATE_k = rtDW.FilterCoefficient_f;
-
-  // Derivatives for Integrator: '<S155>/Integrator'
-  _rtXdot->Integrator_CSTATE_l = rtDW.IntegralGain_l;
-
-  // Derivatives for Integrator: '<S512>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_g = rtDW.x_dach_e[1];
-
-  // Derivatives for Integrator: '<S513>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_m = rtDW.x_dach_o[1];
-
-  // Derivatives for Integrator: '<S515>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_a = rtDW.x_dach_m[1];
-
-  // Derivatives for Integrator: '<S552>/Filter'
-  _rtXdot->Filter_CSTATE_n = rtDW.SumD_d;
-
-  // Derivatives for Integrator: '<S557>/Integrator'
-  _rtXdot->Integrator_CSTATE_my = rtDW.IntegralGain_e;
-
-  // Derivatives for Integrator: '<S604>/Filter'
-  _rtXdot->Filter_CSTATE_e = rtDW.SumD_n;
-
-  // Derivatives for Integrator: '<S609>/Integrator'
-  _rtXdot->Integrator_CSTATE_bu = rtDW.IntegralGain_k;
-
-  // Derivatives for Integrator: '<S656>/Filter'
-  _rtXdot->Filter_CSTATE_j5 = rtDW.SumD_m;
-
-  // Derivatives for Integrator: '<S661>/Integrator'
-  _rtXdot->Integrator_CSTATE_lw = rtDW.IntegralGain_c;
-
-  // Derivatives for Integrator: '<S680>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_i = rtDW.x_dach_g[1];
-
-  // Derivatives for Integrator: '<S681>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_l = rtDW.x_dach_l[1];
-
-  // Derivatives for Integrator: '<S682>/Integrator1'
-  _rtXdot->Integrator1_CSTATE_iu = rtDW.x_dach[1];
-
-  // Derivatives for Integrator: '<S384>/Filter'
-  _rtXdot->Filter_CSTATE_p = rtDW.FilterCoefficient_p;
-
-  // Derivatives for Integrator: '<S389>/Integrator'
-  _rtXdot->Integrator_CSTATE_fq = rtDW.IntegralGain_h;
-
-  // Derivatives for Integrator: '<S436>/Filter'
-  _rtXdot->Filter_CSTATE_m = rtDW.FilterCoefficient_d;
+  // Derivatives for Integrator: '<S488>/Filter'
+  _rtXdot->Filter_CSTATE_n = rtDW.FilterCoefficient_a;
 
   // Derivatives for Integrator: '<S441>/Integrator'
   _rtXdot->Integrator_CSTATE_j = rtDW.IntegralGain_l4;
 
-  // Derivatives for Integrator: '<S488>/Filter'
-  _rtXdot->Filter_CSTATE_nw = rtDW.FilterCoefficient_a;
+  // Derivatives for Integrator: '<S436>/Filter'
+  _rtXdot->Filter_CSTATE_m = rtDW.FilterCoefficient_d;
 
-  // Derivatives for Integrator: '<S493>/Integrator'
-  _rtXdot->Integrator_CSTATE_bh = rtDW.IntegralGain_fl;
+  // Derivatives for Integrator: '<S389>/Integrator'
+  _rtXdot->Integrator_CSTATE_f = rtDW.IntegralGain_h;
+
+  // Derivatives for Integrator: '<S384>/Filter'
+  _rtXdot->Filter_CSTATE_p = rtDW.FilterCoefficient_p;
+
+  // Derivatives for Integrator: '<S513>/Integrator'
+  _rtXdot->Integrator_CSTATE_n[0] = rtDW.Sum_j[0];
+  _rtXdot->Integrator_CSTATE_n[1] = rtDW.Sum_j[1];
+  _rtXdot->Integrator_CSTATE_n[2] = rtDW.Sum_j[2];
+
+  // Derivatives for TransferFcn: '<S5>/Transfer Fcn'
+  _rtXdot->TransferFcn_CSTATE = rtP.TransferFcn_A * rtX.TransferFcn_CSTATE;
+
+  // Derivatives for TransferFcn: '<S5>/Transfer Fcn1'
+  _rtXdot->TransferFcn1_CSTATE = rtP.TransferFcn1_A * rtX.TransferFcn1_CSTATE;
+
+  // Derivatives for TransferFcn: '<S5>/Transfer Fcn2'
+  _rtXdot->TransferFcn2_CSTATE = rtP.TransferFcn2_A * rtX.TransferFcn2_CSTATE;
+
+  // Derivatives for TransferFcn: '<S5>/Transfer Fcn3'
+  _rtXdot->TransferFcn3_CSTATE = rtP.TransferFcn3_A * rtX.TransferFcn3_CSTATE;
+
+  // Derivatives for Integrator: '<S336>/Integrator1'
+  _rtXdot->Integrator1_CSTATE = rtDW.x_dach_fe[1];
+
+  // Derivatives for Integrator: '<S337>/Integrator1'
+  _rtXdot->Integrator1_CSTATE_c = rtDW.x_dach_l[1];
+
+  // Derivatives for Integrator: '<S338>/Integrator1'
+  _rtXdot->Integrator1_CSTATE_i = rtDW.x_dach_m[1];
+
+  // Derivatives for Integrator: '<S209>/Filter'
+  _rtXdot->Filter_CSTATE_o = rtDW.FilterCoefficient_e;
+
+  // Derivatives for Integrator: '<S214>/Integrator'
+  _rtXdot->Integrator_CSTATE_bg = rtDW.IntegralGain_o;
+
+  // Derivatives for Integrator: '<S261>/Filter'
+  _rtXdot->Filter_CSTATE_n4 = rtDW.FilterCoefficient_g;
+
+  // Derivatives for Integrator: '<S266>/Integrator'
+  _rtXdot->Integrator_CSTATE_fs = rtDW.IntegralGain_i;
+
+  // Derivatives for Integrator: '<S313>/Filter'
+  _rtXdot->Filter_CSTATE_a = rtDW.FilterCoefficient_af;
+
+  // Derivatives for Integrator: '<S318>/Integrator'
+  _rtXdot->Integrator_CSTATE_bj = rtDW.IntegralGain_p;
+
+  // Derivatives for Integrator: '<S674>/Integrator1'
+  _rtXdot->Integrator1_CSTATE_n = rtDW.x_dach_e[1];
+
+  // Derivatives for Integrator: '<S675>/Integrator1'
+  _rtXdot->Integrator1_CSTATE_p = rtDW.x_dach_f[1];
+
+  // Derivatives for Integrator: '<S676>/Integrator1'
+  _rtXdot->Integrator1_CSTATE_o = rtDW.x_dach[1];
+
+  // Derivatives for Integrator: '<S547>/Filter'
+  _rtXdot->Filter_CSTATE_mt = rtDW.FilterCoefficient_mw;
+
+  // Derivatives for Integrator: '<S552>/Integrator'
+  _rtXdot->Integrator_CSTATE_my = rtDW.IntegralGain_e;
+
+  // Derivatives for Integrator: '<S599>/Filter'
+  _rtXdot->Filter_CSTATE_d = rtDW.FilterCoefficient_ma;
+
+  // Derivatives for Integrator: '<S604>/Integrator'
+  _rtXdot->Integrator_CSTATE_bu = rtDW.IntegralGain_k;
+
+  // Derivatives for Integrator: '<S651>/Filter'
+  _rtXdot->Filter_CSTATE_g = rtDW.FilterCoefficient_f;
+
+  // Derivatives for Integrator: '<S656>/Integrator'
+  _rtXdot->Integrator_CSTATE_l = rtDW.IntegralGain_c;
 }
 
 // Model initialize function
@@ -1774,92 +1694,58 @@ void Controller6dof::initialize()
   {
     int32_T i;
 
-    // InitializeConditions for UnitDelay: '<S342>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE[0] = rtP.UnitDelay1_InitialCondition[0];
-    rtDW.UnitDelay1_DSTATE[1] = rtP.UnitDelay1_InitialCondition[1];
+    // InitializeConditions for UnitDelay: '<S336>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE[0] = rtP.UnitDelay1_InitialCondition_n[0];
+    rtDW.UnitDelay1_DSTATE[1] = rtP.UnitDelay1_InitialCondition_n[1];
 
-    // InitializeConditions for UnitDelay: '<S342>/Unit Delay'
-    rtDW.UnitDelay_DSTATE[0] = rtP.UnitDelay_InitialCondition[0];
-    rtDW.UnitDelay_DSTATE[1] = rtP.UnitDelay_InitialCondition[1];
-    rtDW.UnitDelay_DSTATE[2] = rtP.UnitDelay_InitialCondition[2];
-    rtDW.UnitDelay_DSTATE[3] = rtP.UnitDelay_InitialCondition[3];
+    // InitializeConditions for UnitDelay: '<S336>/Unit Delay'
+    rtDW.UnitDelay_DSTATE[0] = rtP.UnitDelay_InitialCondition_g[0];
+    rtDW.UnitDelay_DSTATE[1] = rtP.UnitDelay_InitialCondition_g[1];
+    rtDW.UnitDelay_DSTATE[2] = rtP.UnitDelay_InitialCondition_g[2];
+    rtDW.UnitDelay_DSTATE[3] = rtP.UnitDelay_InitialCondition_g[3];
 
-    // InitializeConditions for UnitDelay: '<S343>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_d[0] = rtP.UnitDelay1_InitialCondition_o[0];
-    rtDW.UnitDelay1_DSTATE_d[1] = rtP.UnitDelay1_InitialCondition_o[1];
+    // InitializeConditions for UnitDelay: '<S337>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_h[0] = rtP.UnitDelay1_InitialCondition_ah[0];
+    rtDW.UnitDelay1_DSTATE_h[1] = rtP.UnitDelay1_InitialCondition_ah[1];
 
-    // InitializeConditions for UnitDelay: '<S343>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_a[0] = rtP.UnitDelay_InitialCondition_n[0];
-    rtDW.UnitDelay_DSTATE_a[1] = rtP.UnitDelay_InitialCondition_n[1];
-    rtDW.UnitDelay_DSTATE_a[2] = rtP.UnitDelay_InitialCondition_n[2];
-    rtDW.UnitDelay_DSTATE_a[3] = rtP.UnitDelay_InitialCondition_n[3];
+    // InitializeConditions for UnitDelay: '<S337>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_o[0] = rtP.UnitDelay_InitialCondition_fw[0];
+    rtDW.UnitDelay_DSTATE_o[1] = rtP.UnitDelay_InitialCondition_fw[1];
+    rtDW.UnitDelay_DSTATE_o[2] = rtP.UnitDelay_InitialCondition_fw[2];
+    rtDW.UnitDelay_DSTATE_o[3] = rtP.UnitDelay_InitialCondition_fw[3];
 
-    // InitializeConditions for UnitDelay: '<S344>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_c[0] = rtP.UnitDelay1_InitialCondition_p[0];
-    rtDW.UnitDelay1_DSTATE_c[1] = rtP.UnitDelay1_InitialCondition_p[1];
+    // InitializeConditions for UnitDelay: '<S338>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_i[0] = rtP.UnitDelay1_InitialCondition_e[0];
+    rtDW.UnitDelay1_DSTATE_i[1] = rtP.UnitDelay1_InitialCondition_e[1];
 
-    // InitializeConditions for UnitDelay: '<S344>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_o[0] = rtP.UnitDelay_InitialCondition_h[0];
-    rtDW.UnitDelay_DSTATE_o[1] = rtP.UnitDelay_InitialCondition_h[1];
-    rtDW.UnitDelay_DSTATE_o[2] = rtP.UnitDelay_InitialCondition_h[2];
-    rtDW.UnitDelay_DSTATE_o[3] = rtP.UnitDelay_InitialCondition_h[3];
+    // InitializeConditions for UnitDelay: '<S338>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_d[0] = rtP.UnitDelay_InitialCondition_a[0];
+    rtDW.UnitDelay_DSTATE_d[1] = rtP.UnitDelay_InitialCondition_a[1];
+    rtDW.UnitDelay_DSTATE_d[2] = rtP.UnitDelay_InitialCondition_a[2];
+    rtDW.UnitDelay_DSTATE_d[3] = rtP.UnitDelay_InitialCondition_a[3];
 
-    // InitializeConditions for UnitDelay: '<S174>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_f[0] = rtP.UnitDelay1_InitialCondition_m[0];
-    rtDW.UnitDelay1_DSTATE_f[1] = rtP.UnitDelay1_InitialCondition_m[1];
+    // InitializeConditions for Integrator: '<S155>/Integrator'
+    rtX.Integrator_CSTATE = rtP.PIDController2_InitialConditi_k;
 
-    // InitializeConditions for UnitDelay: '<S174>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_f[0] = rtP.UnitDelay_InitialCondition_j[0];
-    rtDW.UnitDelay_DSTATE_f[1] = rtP.UnitDelay_InitialCondition_j[1];
-    rtDW.UnitDelay_DSTATE_f[2] = rtP.UnitDelay_InitialCondition_j[2];
-    rtDW.UnitDelay_DSTATE_f[3] = rtP.UnitDelay_InitialCondition_j[3];
+    // InitializeConditions for Integrator: '<S150>/Filter'
+    rtX.Filter_CSTATE = rtP.PIDController2_InitialCondition;
 
-    // InitializeConditions for UnitDelay: '<S175>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_a[0] = rtP.UnitDelay1_InitialCondition_a[0];
-    rtDW.UnitDelay1_DSTATE_a[1] = rtP.UnitDelay1_InitialCondition_a[1];
+    // InitializeConditions for Integrator: '<S103>/Integrator'
+    rtX.Integrator_CSTATE_b = rtP.PIDController1_InitialConditi_j;
 
-    // InitializeConditions for UnitDelay: '<S175>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_fb[0] = rtP.UnitDelay_InitialCondition_i[0];
-    rtDW.UnitDelay_DSTATE_fb[1] = rtP.UnitDelay_InitialCondition_i[1];
-    rtDW.UnitDelay_DSTATE_fb[2] = rtP.UnitDelay_InitialCondition_i[2];
-    rtDW.UnitDelay_DSTATE_fb[3] = rtP.UnitDelay_InitialCondition_i[3];
+    // InitializeConditions for Integrator: '<S98>/Filter'
+    rtX.Filter_CSTATE_b = rtP.PIDController1_InitialCondition;
 
-    // InitializeConditions for UnitDelay: '<S177>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_o[0] = rtP.UnitDelay1_InitialCondition_f[0];
-    rtDW.UnitDelay1_DSTATE_o[1] = rtP.UnitDelay1_InitialCondition_f[1];
+    // InitializeConditions for Integrator: '<S51>/Integrator'
+    rtX.Integrator_CSTATE_m = rtP.PIDController_InitialConditio_o;
 
-    // InitializeConditions for UnitDelay: '<S177>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_k[0] = rtP.UnitDelay_InitialCondition_g[0];
-    rtDW.UnitDelay_DSTATE_k[1] = rtP.UnitDelay_InitialCondition_g[1];
-    rtDW.UnitDelay_DSTATE_k[2] = rtP.UnitDelay_InitialCondition_g[2];
-    rtDW.UnitDelay_DSTATE_k[3] = rtP.UnitDelay_InitialCondition_g[3];
+    // InitializeConditions for Integrator: '<S46>/Filter'
+    rtX.Filter_CSTATE_f = rtP.PIDController_InitialConditionF;
 
-    // InitializeConditions for Integrator: '<S13>/Integrator'
-    rtX.Integrator_CSTATE[0] = rtP.Integrator_IC;
-
-    // InitializeConditions for Integrator: '<S178>/Integrator'
-    rtX.Integrator_CSTATE_a[0] = rtP.Integrator_IC_p;
-
-    // InitializeConditions for Integrator: '<S12>/Integrator'
-    rtX.Integrator_CSTATE_b[0] = rtP.Integrator_IC_m;
-
-    // InitializeConditions for Integrator: '<S13>/Integrator'
-    rtX.Integrator_CSTATE[1] = rtP.Integrator_IC;
-
-    // InitializeConditions for Integrator: '<S178>/Integrator'
-    rtX.Integrator_CSTATE_a[1] = rtP.Integrator_IC_p;
-
-    // InitializeConditions for Integrator: '<S12>/Integrator'
-    rtX.Integrator_CSTATE_b[1] = rtP.Integrator_IC_m;
-
-    // InitializeConditions for Integrator: '<S13>/Integrator'
-    rtX.Integrator_CSTATE[2] = rtP.Integrator_IC;
-
-    // InitializeConditions for Integrator: '<S178>/Integrator'
-    rtX.Integrator_CSTATE_a[2] = rtP.Integrator_IC_p;
-
-    // InitializeConditions for Integrator: '<S12>/Integrator'
-    rtX.Integrator_CSTATE_b[2] = rtP.Integrator_IC_m;
+    // InitializeConditions for Integrator: '<S175>/Integrator'
+    rtX.Integrator_CSTATE_a[0] = rtP.Integrator_IC;
+    rtX.Integrator_CSTATE_a[1] = rtP.Integrator_IC;
+    rtX.Integrator_CSTATE_a[2] = rtP.Integrator_IC;
     for (i = 0; i < 6; i++) {
       // InitializeConditions for Integrator: '<S4>/Integrator'
       rtX.Integrator_CSTATE_e[i] = rtP.Integrator_IC_g[i];
@@ -1868,15 +1754,173 @@ void Controller6dof::initialize()
       rtX.Integrator_CSTATE_h[i] = rtP.Integrator_IC_b[i];
     }
 
+    // InitializeConditions for Integrator: '<S493>/Integrator'
+    rtX.Integrator_CSTATE_bh = rtP.PIDController2_InitialConditi_i;
+
+    // InitializeConditions for Integrator: '<S488>/Filter'
+    rtX.Filter_CSTATE_n = rtP.PIDController2_InitialConditi_a;
+
+    // InitializeConditions for Integrator: '<S441>/Integrator'
+    rtX.Integrator_CSTATE_j = rtP.PIDController1_InitialCondit_jr;
+
+    // InitializeConditions for Integrator: '<S436>/Filter'
+    rtX.Filter_CSTATE_m = rtP.PIDController1_InitialConditi_m;
+
+    // InitializeConditions for Integrator: '<S389>/Integrator'
+    rtX.Integrator_CSTATE_f = rtP.PIDController_InitialConditi_a2;
+
+    // InitializeConditions for Integrator: '<S384>/Filter'
+    rtX.Filter_CSTATE_p = rtP.PIDController_InitialConditio_m;
+
+    // InitializeConditions for UnitDelay: '<S674>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_j[0] = rtP.UnitDelay1_InitialCondition_d[0];
+    rtDW.UnitDelay1_DSTATE_j[1] = rtP.UnitDelay1_InitialCondition_d[1];
+
+    // InitializeConditions for UnitDelay: '<S674>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_j[0] = rtP.UnitDelay_InitialCondition_b[0];
+    rtDW.UnitDelay_DSTATE_j[1] = rtP.UnitDelay_InitialCondition_b[1];
+    rtDW.UnitDelay_DSTATE_j[2] = rtP.UnitDelay_InitialCondition_b[2];
+    rtDW.UnitDelay_DSTATE_j[3] = rtP.UnitDelay_InitialCondition_b[3];
+
+    // InitializeConditions for UnitDelay: '<S675>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_c[0] = rtP.UnitDelay1_InitialCondition_f[0];
+    rtDW.UnitDelay1_DSTATE_c[1] = rtP.UnitDelay1_InitialCondition_f[1];
+
+    // InitializeConditions for UnitDelay: '<S675>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_a[0] = rtP.UnitDelay_InitialCondition_ht[0];
+    rtDW.UnitDelay_DSTATE_a[1] = rtP.UnitDelay_InitialCondition_ht[1];
+    rtDW.UnitDelay_DSTATE_a[2] = rtP.UnitDelay_InitialCondition_ht[2];
+    rtDW.UnitDelay_DSTATE_a[3] = rtP.UnitDelay_InitialCondition_ht[3];
+
+    // InitializeConditions for UnitDelay: '<S676>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_k[0] = rtP.UnitDelay1_InitialCondition_ce[0];
+    rtDW.UnitDelay1_DSTATE_k[1] = rtP.UnitDelay1_InitialCondition_ce[1];
+
+    // InitializeConditions for UnitDelay: '<S676>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_n[0] = rtP.UnitDelay_InitialCondition_m[0];
+    rtDW.UnitDelay_DSTATE_n[1] = rtP.UnitDelay_InitialCondition_m[1];
+    rtDW.UnitDelay_DSTATE_n[2] = rtP.UnitDelay_InitialCondition_m[2];
+    rtDW.UnitDelay_DSTATE_n[3] = rtP.UnitDelay_InitialCondition_m[3];
+
+    // InitializeConditions for Integrator: '<S513>/Integrator'
+    rtX.Integrator_CSTATE_n[0] = rtP.Integrator_IC_gx;
+    rtX.Integrator_CSTATE_n[1] = rtP.Integrator_IC_gx;
+    rtX.Integrator_CSTATE_n[2] = rtP.Integrator_IC_gx;
+
+    // InitializeConditions for TransferFcn: '<S5>/Transfer Fcn'
+    rtX.TransferFcn_CSTATE = 0.0;
+
+    // InitializeConditions for TransferFcn: '<S5>/Transfer Fcn1'
+    rtX.TransferFcn1_CSTATE = 0.0;
+
+    // InitializeConditions for TransferFcn: '<S5>/Transfer Fcn2'
+    rtX.TransferFcn2_CSTATE = 0.0;
+
+    // InitializeConditions for TransferFcn: '<S5>/Transfer Fcn3'
+    rtX.TransferFcn3_CSTATE = 0.0;
+
+    // InitializeConditions for Integrator: '<S336>/Integrator1'
+    rtX.Integrator1_CSTATE = rtP.Integrator1_IC;
+
+    // InitializeConditions for Integrator: '<S337>/Integrator1'
+    rtX.Integrator1_CSTATE_c = rtP.Integrator1_IC_n;
+
+    // InitializeConditions for Integrator: '<S338>/Integrator1'
+    rtX.Integrator1_CSTATE_i = rtP.Integrator1_IC_j;
+
+    // InitializeConditions for Integrator: '<S209>/Filter'
+    rtX.Filter_CSTATE_o = rtP.PIDController_InitialConditio_i;
+
+    // InitializeConditions for Integrator: '<S214>/Integrator'
+    rtX.Integrator_CSTATE_bg = rtP.PIDController_InitialConditi_ay;
+
+    // InitializeConditions for Integrator: '<S261>/Filter'
+    rtX.Filter_CSTATE_n4 = rtP.PIDController1_InitialConditi_n;
+
+    // InitializeConditions for Integrator: '<S266>/Integrator'
+    rtX.Integrator_CSTATE_fs = rtP.PIDController1_InitialCondit_nz;
+
+    // InitializeConditions for Integrator: '<S313>/Filter'
+    rtX.Filter_CSTATE_a = rtP.PIDController2_InitialConditi_h;
+
+    // InitializeConditions for Integrator: '<S318>/Integrator'
+    rtX.Integrator_CSTATE_bj = rtP.PIDController2_InitialConditi_n;
+
+    // InitializeConditions for Integrator: '<S674>/Integrator1'
+    rtX.Integrator1_CSTATE_n = rtP.Integrator1_IC_h;
+
+    // InitializeConditions for Integrator: '<S675>/Integrator1'
+    rtX.Integrator1_CSTATE_p = rtP.Integrator1_IC_g;
+
+    // InitializeConditions for Integrator: '<S676>/Integrator1'
+    rtX.Integrator1_CSTATE_o = rtP.Integrator1_IC_e;
+
+    // InitializeConditions for Integrator: '<S547>/Filter'
+    rtX.Filter_CSTATE_mt = rtP.PIDController_InitialConditio_a;
+
+    // InitializeConditions for Integrator: '<S552>/Integrator'
+    rtX.Integrator_CSTATE_my = rtP.PIDController_InitialConditio_b;
+
+    // InitializeConditions for Integrator: '<S599>/Filter'
+    rtX.Filter_CSTATE_d = rtP.PIDController1_InitialConditi_a;
+
+    // InitializeConditions for Integrator: '<S604>/Integrator'
+    rtX.Integrator_CSTATE_bu = rtP.PIDController1_InitialConditi_b;
+
+    // InitializeConditions for Integrator: '<S651>/Filter'
+    rtX.Filter_CSTATE_g = rtP.PIDController2_InitialConditi_c;
+
+    // InitializeConditions for Integrator: '<S656>/Integrator'
+    rtX.Integrator_CSTATE_l = rtP.PIDController2_InitialCondit_k5;
+
+    // SystemInitialize for Atomic SubSystem: '<S2>/Subsystem Reference1'
+    // InitializeConditions for UnitDelay: '<S342>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_o[0] = rtP.UnitDelay1_InitialCondition[0];
+    rtDW.UnitDelay1_DSTATE_o[1] = rtP.UnitDelay1_InitialCondition[1];
+
+    // InitializeConditions for UnitDelay: '<S342>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_nf[0] = rtP.UnitDelay_InitialCondition[0];
+    rtDW.UnitDelay_DSTATE_nf[1] = rtP.UnitDelay_InitialCondition[1];
+    rtDW.UnitDelay_DSTATE_nf[2] = rtP.UnitDelay_InitialCondition[2];
+    rtDW.UnitDelay_DSTATE_nf[3] = rtP.UnitDelay_InitialCondition[3];
+
+    // InitializeConditions for UnitDelay: '<S343>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_d[0] = rtP.UnitDelay1_InitialCondition_o[0];
+    rtDW.UnitDelay1_DSTATE_d[1] = rtP.UnitDelay1_InitialCondition_o[1];
+
+    // InitializeConditions for UnitDelay: '<S343>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_ax[0] = rtP.UnitDelay_InitialCondition_n[0];
+    rtDW.UnitDelay_DSTATE_ax[1] = rtP.UnitDelay_InitialCondition_n[1];
+    rtDW.UnitDelay_DSTATE_ax[2] = rtP.UnitDelay_InitialCondition_n[2];
+    rtDW.UnitDelay_DSTATE_ax[3] = rtP.UnitDelay_InitialCondition_n[3];
+
+    // InitializeConditions for UnitDelay: '<S344>/Unit Delay1'
+    rtDW.UnitDelay1_DSTATE_co[0] = rtP.UnitDelay1_InitialCondition_p[0];
+    rtDW.UnitDelay1_DSTATE_co[1] = rtP.UnitDelay1_InitialCondition_p[1];
+
+    // InitializeConditions for UnitDelay: '<S344>/Unit Delay'
+    rtDW.UnitDelay_DSTATE_oo[0] = rtP.UnitDelay_InitialCondition_h[0];
+    rtDW.UnitDelay_DSTATE_oo[1] = rtP.UnitDelay_InitialCondition_h[1];
+    rtDW.UnitDelay_DSTATE_oo[2] = rtP.UnitDelay_InitialCondition_h[2];
+    rtDW.UnitDelay_DSTATE_oo[3] = rtP.UnitDelay_InitialCondition_h[3];
+
+    // InitializeConditions for DiscreteIntegrator: '<S13>/Discrete-Time Integrator' 
+    rtDW.DiscreteTimeIntegrator_DSTATE_b[0] = rtP.DiscreteTimeIntegrator_IC;
+    rtDW.DiscreteTimeIntegrator_DSTATE_b[1] = rtP.DiscreteTimeIntegrator_IC;
+    rtDW.DiscreteTimeIntegrator_DSTATE_b[2] = rtP.DiscreteTimeIntegrator_IC;
+
+    // End of SystemInitialize for SubSystem: '<S2>/Subsystem Reference1'
+
+    // SystemInitialize for Atomic SubSystem: '<S3>/Subsystem Reference1'
     // InitializeConditions for UnitDelay: '<S680>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_ff[0] = rtP.UnitDelay1_InitialCondition_c[0];
-    rtDW.UnitDelay1_DSTATE_ff[1] = rtP.UnitDelay1_InitialCondition_c[1];
+    rtDW.UnitDelay1_DSTATE_f[0] = rtP.UnitDelay1_InitialCondition_c[0];
+    rtDW.UnitDelay1_DSTATE_f[1] = rtP.UnitDelay1_InitialCondition_c[1];
 
     // InitializeConditions for UnitDelay: '<S680>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_kb[0] = rtP.UnitDelay_InitialCondition_f[0];
-    rtDW.UnitDelay_DSTATE_kb[1] = rtP.UnitDelay_InitialCondition_f[1];
-    rtDW.UnitDelay_DSTATE_kb[2] = rtP.UnitDelay_InitialCondition_f[2];
-    rtDW.UnitDelay_DSTATE_kb[3] = rtP.UnitDelay_InitialCondition_f[3];
+    rtDW.UnitDelay_DSTATE_k[0] = rtP.UnitDelay_InitialCondition_f[0];
+    rtDW.UnitDelay_DSTATE_k[1] = rtP.UnitDelay_InitialCondition_f[1];
+    rtDW.UnitDelay_DSTATE_k[2] = rtP.UnitDelay_InitialCondition_f[2];
+    rtDW.UnitDelay_DSTATE_k[3] = rtP.UnitDelay_InitialCondition_f[3];
 
     // InitializeConditions for UnitDelay: '<S681>/Unit Delay1'
     rtDW.UnitDelay1_DSTATE_e[0] = rtP.UnitDelay1_InitialCondition_b[0];
@@ -1889,8 +1933,8 @@ void Controller6dof::initialize()
     rtDW.UnitDelay_DSTATE_p[3] = rtP.UnitDelay_InitialCondition_o[3];
 
     // InitializeConditions for UnitDelay: '<S682>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_fj[0] = rtP.UnitDelay1_InitialCondition_ag[0];
-    rtDW.UnitDelay1_DSTATE_fj[1] = rtP.UnitDelay1_InitialCondition_ag[1];
+    rtDW.UnitDelay1_DSTATE_fj[0] = rtP.UnitDelay1_InitialCondition_a[0];
+    rtDW.UnitDelay1_DSTATE_fj[1] = rtP.UnitDelay1_InitialCondition_a[1];
 
     // InitializeConditions for UnitDelay: '<S682>/Unit Delay'
     rtDW.UnitDelay_DSTATE_i[0] = rtP.UnitDelay_InitialCondition_c[0];
@@ -1898,166 +1942,12 @@ void Controller6dof::initialize()
     rtDW.UnitDelay_DSTATE_i[2] = rtP.UnitDelay_InitialCondition_c[2];
     rtDW.UnitDelay_DSTATE_i[3] = rtP.UnitDelay_InitialCondition_c[3];
 
-    // InitializeConditions for Integrator: '<S351>/Integrator'
-    rtX.Integrator_CSTATE_ee[0] = rtP.Integrator_IC_bf;
-    rtX.Integrator_CSTATE_ee[1] = rtP.Integrator_IC_bf;
-    rtX.Integrator_CSTATE_ee[2] = rtP.Integrator_IC_bf;
+    // InitializeConditions for DiscreteIntegrator: '<S351>/Discrete-Time Integrator' 
+    rtDW.DiscreteTimeIntegrator_DSTATE[0] = rtP.DiscreteTimeIntegrator_IC_b;
+    rtDW.DiscreteTimeIntegrator_DSTATE[1] = rtP.DiscreteTimeIntegrator_IC_b;
+    rtDW.DiscreteTimeIntegrator_DSTATE[2] = rtP.DiscreteTimeIntegrator_IC_b;
 
-    // InitializeConditions for UnitDelay: '<S512>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_b[0] = rtP.UnitDelay1_InitialCondition_j[0];
-    rtDW.UnitDelay1_DSTATE_b[1] = rtP.UnitDelay1_InitialCondition_j[1];
-
-    // InitializeConditions for UnitDelay: '<S512>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_kf[0] = rtP.UnitDelay_InitialCondition_nl[0];
-    rtDW.UnitDelay_DSTATE_kf[1] = rtP.UnitDelay_InitialCondition_nl[1];
-    rtDW.UnitDelay_DSTATE_kf[2] = rtP.UnitDelay_InitialCondition_nl[2];
-    rtDW.UnitDelay_DSTATE_kf[3] = rtP.UnitDelay_InitialCondition_nl[3];
-
-    // InitializeConditions for UnitDelay: '<S513>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_as[0] = rtP.UnitDelay1_InitialCondition_e[0];
-    rtDW.UnitDelay1_DSTATE_as[1] = rtP.UnitDelay1_InitialCondition_e[1];
-
-    // InitializeConditions for UnitDelay: '<S513>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_m[0] = rtP.UnitDelay_InitialCondition_fd[0];
-    rtDW.UnitDelay_DSTATE_m[1] = rtP.UnitDelay_InitialCondition_fd[1];
-    rtDW.UnitDelay_DSTATE_m[2] = rtP.UnitDelay_InitialCondition_fd[2];
-    rtDW.UnitDelay_DSTATE_m[3] = rtP.UnitDelay_InitialCondition_fd[3];
-
-    // InitializeConditions for UnitDelay: '<S515>/Unit Delay1'
-    rtDW.UnitDelay1_DSTATE_k[0] = rtP.UnitDelay1_InitialCondition_ba[0];
-    rtDW.UnitDelay1_DSTATE_k[1] = rtP.UnitDelay1_InitialCondition_ba[1];
-
-    // InitializeConditions for UnitDelay: '<S515>/Unit Delay'
-    rtDW.UnitDelay_DSTATE_j[0] = rtP.UnitDelay_InitialCondition_k[0];
-    rtDW.UnitDelay_DSTATE_j[1] = rtP.UnitDelay_InitialCondition_k[1];
-    rtDW.UnitDelay_DSTATE_j[2] = rtP.UnitDelay_InitialCondition_k[2];
-    rtDW.UnitDelay_DSTATE_j[3] = rtP.UnitDelay_InitialCondition_k[3];
-
-    // InitializeConditions for Integrator: '<S516>/Integrator'
-    rtX.Integrator_CSTATE_n[0] = rtP.Integrator_IC_gx;
-
-    // InitializeConditions for Integrator: '<S350>/Integrator'
-    rtX.Integrator_CSTATE_p[0] = rtP.Integrator_IC_k;
-
-    // InitializeConditions for Integrator: '<S516>/Integrator'
-    rtX.Integrator_CSTATE_n[1] = rtP.Integrator_IC_gx;
-
-    // InitializeConditions for Integrator: '<S350>/Integrator'
-    rtX.Integrator_CSTATE_p[1] = rtP.Integrator_IC_k;
-
-    // InitializeConditions for Integrator: '<S516>/Integrator'
-    rtX.Integrator_CSTATE_n[2] = rtP.Integrator_IC_gx;
-
-    // InitializeConditions for Integrator: '<S350>/Integrator'
-    rtX.Integrator_CSTATE_p[2] = rtP.Integrator_IC_k;
-
-    // InitializeConditions for Integrator: '<S174>/Integrator1'
-    rtX.Integrator1_CSTATE = rtP.Integrator1_IC;
-
-    // InitializeConditions for Integrator: '<S175>/Integrator1'
-    rtX.Integrator1_CSTATE_p = rtP.Integrator1_IC_g;
-
-    // InitializeConditions for Integrator: '<S177>/Integrator1'
-    rtX.Integrator1_CSTATE_d = rtP.Integrator1_IC_p;
-
-    // InitializeConditions for Integrator: '<S214>/Filter'
-    rtX.Filter_CSTATE = rtP.PIDController_InitialConditionF;
-
-    // InitializeConditions for Integrator: '<S219>/Integrator'
-    rtX.Integrator_CSTATE_bg = rtP.PIDController_InitialConditi_ay;
-
-    // InitializeConditions for Integrator: '<S266>/Filter'
-    rtX.Filter_CSTATE_j = rtP.PIDController1_InitialCondition;
-
-    // InitializeConditions for Integrator: '<S271>/Integrator'
-    rtX.Integrator_CSTATE_f = rtP.PIDController1_InitialConditi_n;
-
-    // InitializeConditions for Integrator: '<S318>/Filter'
-    rtX.Filter_CSTATE_l = rtP.PIDController2_InitialCondition;
-
-    // InitializeConditions for Integrator: '<S323>/Integrator'
-    rtX.Integrator_CSTATE_bj = rtP.PIDController2_InitialCondit_ng;
-
-    // InitializeConditions for Integrator: '<S342>/Integrator1'
-    rtX.Integrator1_CSTATE_pi = rtP.Integrator1_IC_ga;
-
-    // InitializeConditions for Integrator: '<S343>/Integrator1'
-    rtX.Integrator1_CSTATE_k = rtP.Integrator1_IC_l;
-
-    // InitializeConditions for Integrator: '<S344>/Integrator1'
-    rtX.Integrator1_CSTATE_n = rtP.Integrator1_IC_n;
-
-    // InitializeConditions for Integrator: '<S46>/Filter'
-    rtX.Filter_CSTATE_f = rtP.PIDController_InitialConditio_k;
-
-    // InitializeConditions for Integrator: '<S51>/Integrator'
-    rtX.Integrator_CSTATE_m = rtP.PIDController_InitialConditio_o;
-
-    // InitializeConditions for Integrator: '<S98>/Filter'
-    rtX.Filter_CSTATE_b = rtP.PIDController1_InitialConditi_m;
-
-    // InitializeConditions for Integrator: '<S103>/Integrator'
-    rtX.Integrator_CSTATE_bn = rtP.PIDController1_InitialConditi_j;
-
-    // InitializeConditions for Integrator: '<S150>/Filter'
-    rtX.Filter_CSTATE_k = rtP.PIDController2_InitialConditi_n;
-
-    // InitializeConditions for Integrator: '<S155>/Integrator'
-    rtX.Integrator_CSTATE_l = rtP.PIDController2_InitialConditi_k;
-
-    // InitializeConditions for Integrator: '<S512>/Integrator1'
-    rtX.Integrator1_CSTATE_g = rtP.Integrator1_IC_h;
-
-    // InitializeConditions for Integrator: '<S513>/Integrator1'
-    rtX.Integrator1_CSTATE_m = rtP.Integrator1_IC_nb;
-
-    // InitializeConditions for Integrator: '<S515>/Integrator1'
-    rtX.Integrator1_CSTATE_a = rtP.Integrator1_IC_ph;
-
-    // InitializeConditions for Integrator: '<S552>/Filter'
-    rtX.Filter_CSTATE_n = rtP.PIDController_InitialConditio_a;
-
-    // InitializeConditions for Integrator: '<S557>/Integrator'
-    rtX.Integrator_CSTATE_my = rtP.PIDController_InitialConditio_b;
-
-    // InitializeConditions for Integrator: '<S604>/Filter'
-    rtX.Filter_CSTATE_e = rtP.PIDController1_InitialConditi_a;
-
-    // InitializeConditions for Integrator: '<S609>/Integrator'
-    rtX.Integrator_CSTATE_bu = rtP.PIDController1_InitialConditi_b;
-
-    // InitializeConditions for Integrator: '<S656>/Filter'
-    rtX.Filter_CSTATE_j5 = rtP.PIDController2_InitialConditi_c;
-
-    // InitializeConditions for Integrator: '<S661>/Integrator'
-    rtX.Integrator_CSTATE_lw = rtP.PIDController2_InitialCondit_k5;
-
-    // InitializeConditions for Integrator: '<S680>/Integrator1'
-    rtX.Integrator1_CSTATE_i = rtP.Integrator1_IC_f;
-
-    // InitializeConditions for Integrator: '<S681>/Integrator1'
-    rtX.Integrator1_CSTATE_l = rtP.Integrator1_IC_b;
-
-    // InitializeConditions for Integrator: '<S682>/Integrator1'
-    rtX.Integrator1_CSTATE_iu = rtP.Integrator1_IC_d;
-
-    // InitializeConditions for Integrator: '<S384>/Filter'
-    rtX.Filter_CSTATE_p = rtP.PIDController_InitialConditio_m;
-
-    // InitializeConditions for Integrator: '<S389>/Integrator'
-    rtX.Integrator_CSTATE_fq = rtP.PIDController_InitialConditi_a2;
-
-    // InitializeConditions for Integrator: '<S436>/Filter'
-    rtX.Filter_CSTATE_m = rtP.PIDController1_InitialCondit_ms;
-
-    // InitializeConditions for Integrator: '<S441>/Integrator'
-    rtX.Integrator_CSTATE_j = rtP.PIDController1_InitialCondit_jr;
-
-    // InitializeConditions for Integrator: '<S488>/Filter'
-    rtX.Filter_CSTATE_nw = rtP.PIDController2_InitialConditi_a;
-
-    // InitializeConditions for Integrator: '<S493>/Integrator'
-    rtX.Integrator_CSTATE_bh = rtP.PIDController2_InitialConditi_i;
+    // End of SystemInitialize for SubSystem: '<S3>/Subsystem Reference1'
   }
 }
 

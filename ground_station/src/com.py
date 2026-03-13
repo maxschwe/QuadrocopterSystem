@@ -74,9 +74,13 @@ class Com(threading.Thread):
                 print(f"Unexpected data format: {line}")
                 continue
 
-            time_ms = int(data[0])
-
-            data = map(float, data[1:])
+            try:     
+                time_ms = int(data[0])
+                data = map(float, data[1:])
+            except ValueError:
+                print(f"Failed to parse telemetry data: {line}")
+                continue
+            
             if self._in_6dof_mode:
                 telemetry_data = TelemetryData6dof(
                     time_ms,

@@ -1,7 +1,7 @@
 % Masse und Inertialmomente
-J_xx = 0.0304;
-J_yy = 0.0315;
-J_zz = 0.0476;
+J_xx = 0.0276;
+J_yy = 0.0295;
+J_zz = 0.0551;
 
 J = diag([J_xx, J_yy, J_zz]);
 
@@ -17,7 +17,7 @@ c = 0.0351;
 l = 0.20;
 
 % Abstand COG zu Fixed Point
-h = 0.044;
+h = 0.0421;
 
 % Control Effektivitätsmodell
 B_eff = [
@@ -26,6 +26,10 @@ B_eff = [
     0 l 0 -l;
     c -c c -c;
 ];
+
+px = 0.051;
+py = 0.040;
+pz = 0.142;
 
 % PID Parameters for attitude control
 kp_roll = 1.4;
@@ -48,9 +52,9 @@ A_test_rot = [
     0 0 0 1 0 0;
     0 0 0 0 1 0;
     0 0 0 0 0 1;
-    (m * g * h) / J_xx 0 0 0 0 0;
-    0 (m * g * h) / J_yy 0 0 0 0;
-    0 0 0 0 0 0;
+    (m * g * h) / J_xx 0 0 -px/J_xx 0 0;
+    0 (m * g * h) / J_yy 0 0 -py/J_yy 0;
+    0 0 0 0 0 -pz/J_zz;
 ];
 
 % A im freien Flug
@@ -96,6 +100,8 @@ B_rot_erw = [
 C_rot_erw = [
     C_rot, zeros(3, 3)
 ];
+
+return
 
 % LQR Parameters for Attitude Control
 Q = diag([130, 130, 130, 10, 10, 10, 130, 130, 130]);

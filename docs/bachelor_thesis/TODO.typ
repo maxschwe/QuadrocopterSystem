@@ -1,0 +1,3 @@
+- Beschreibung der verschiedenen Betriebsmodi (3-DOF, 6-DOF)
+- Koordinatensystem Erklärung
+- Regelungstechnische Grundlagen

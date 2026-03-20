@@ -101,11 +101,9 @@ C_rot_erw = [
     C_rot, zeros(3, 3)
 ];
 
-return
-
 % LQR Parameters for Attitude Control
-Q = diag([130, 130, 130, 10, 10, 10, 130, 130, 130]);
-R = diag([100, 100, 100]);
+Q = diag([3300, 3300, 3300, 131, 131, 131, 3300, 3300, 3300]);
+R = diag([2500, 2500, 2500]);
 
 % params on teststand
 K_test_rot_erw = lqrd(A_test_rot_erw, B_rot_erw, Q, R, 0.005);

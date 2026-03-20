@@ -1,0 +1,21 @@
+#import "conf/conf-unia-rt.typ": runin
+
+= Einleitung
+
+Die Entwicklung autonomer Quadrocopter ist ein hochgradig interdisziplinäres Forschungsfeld an der Schnittstelle von Informatik, Physik und Regelungstechnik. Über die Forschung hinaus bieten diese Systeme eine vielseitige Plattform für die akademische Lehre, da sie komplexe theoretische Konzepte der Regelungstechnik greifbar und praxisnah vermitteln. Das vorliegende Einleitungskapitel beleuchtet zunächst die praktische Relevanz von Quadrocoptern und arbeitet deren Vorzüge als modernes Lehrmittel heraus. Darauf aufbauend wird die Zielsetzung dieser Arbeit definiert und der strukturelle Aufbau der Untersuchung skizziert.
+
+== Motivation
+#runin[Aktueller Forschungsstand]
+Obwohl das Konzept der Multicopter bereits in der Frühzeit der Luftfahrt erprobt wurde, verhalfen erst die Fortschritte in der Mikroelektronik und Akkutechnologie der letzten drei Jahrzehnte den Quadrocoptern zum Durchbruch. Heute hat sich die Technologie zu einem vielseitig einsetzbaren Werkzeug entwickelt und ist Teil zahlreicher Forschungsprojekte. @nonamiResearchDevelopmentDrone2018
+
+Die Grundlagen der Modellbildung und Regelungstechnik für Quadrocopter besitzen bereits ein etabliertes Theoriefundament. Deshalb konzentriert sich die aktuelle Forschung vor allem auf die Behandlung von Unsicherheiten. Hierfür werden zum Beispiel statistische Methoden in der Modellbildung oder adaptive Regelungsstrategien untersucht. In jüngerer Zeit liegt der Fokus zunehmend auf hybriden Ansätzen, die klassische Regelungsstrategien mit Methoden des maschinellen Lernens kombinieren. Dadurch sollen beispielsweise Herausforderungen in der Schwarmintelligenz oder der Energieeffizienz adressiert werden.
+Die praktischen Einsatzgebiete sind dabei vielfältig und reichen von der autonomen Inspektion industrieller Anlagen über die topografische Vermessung bis hin zu logistischen Anwendungen. @ReviewModelingControl
+
+#runin[Quadrocopter als didaktische Plattform]
+Zudem eignen sich Quadrocopter hervorragend als Lehrmittel. Während die mechanische Struktur vergleichsweise einfach und wartungsarm ist, bietet das dynamische Verhalten eine Fülle an regelungstechnischen Herausforderungen. Sie weisen eine nichtlineare Dynamik mit vielfältigen Kopplungen zwischen den Bewegungsachsen auf. Da das System trotz seiner sechs Freiheitsgrade nur über vier Stellgrößen verfügt, handelt es sich um ein unteraktioniertes System, bei dem die Translation in $x$- und $y$-Richtung nur durch die Neigung des Gesamtsystems erreicht werden kann. Vielfältige aerodynamische Effekte und unsichere Umgebungen erschweren die Modellbildung und erfordern die Verwendung robuster Regelungsansätze. 
+Trotz der damit offensichtlichen Eignung für die Lehre von fortgeschrittenen Regelungskonzepten sind Quadrocopter auch für die Vermittlung von Grundlagen der Regelungstechnik attraktiv, da sie sich in der Hover-Position annäherend wie ein entkoppeltes, lineares System verhalten.
+
+== Zielsetzung und Aufbau
+Das Ziel dieser Arbeit ist die Konzeption und Realisierung einer funktionalen Basis für den Einsatz eines Quadrocopters in der Lehre. Um dieses Ziel zu erreichen, soll zunächst die Hardware konzipiert und in Betrieb genommen sowie softwareseitige Voraussetzungen für die Reglersynthese geschaffen werden. Anschließend sollen verschiedene Regelungsansätze implementiert und experimentell evaluiert werden, um die Eignung der Plattform für die Lehre zu demonstrieren.
+
+Die Arbeit ist in vier aufeinander aufbauende Abschnitte unterteilt. Im zweiten Kapitel wird die Systembeschreibung gegeben, in der die mechanische Konstruktion, die Sensorik und Aktorik sowie die Softwarearchitektur des Quadrocopters vorgestellt werden. Das dritte Kapitel widmet sich der Modellierung, wobei sowohl physikalische als auch datengetriebene Ansätze zur Beschreibung der Dynamik des Systems untersucht werden. Im vierten Kapitel erfolgt die eigentliche Regelungsentwicklung, bei der LQR und PID-Regler für die Lage- und Positionsregelung implementiert und anhand von realen Flugtests evaluiert werden. Im abschließenden fünften Kapitel werden die Ergebnisse zusammengefasst, die Eignung der Plattform für die Lehre untersucht und ein Ausblick auf mögliche Erweiterungen und Verbesserungen gegeben.

@@ -79,6 +79,7 @@ void host_com(void* params) {
                     if (sscanf(rx_buffer, "#P;%f,%f,%f", &input1, &input2, &input3) == 3) {
                         drone.updatePosition(input1, input2, input3);
                     #if PID_3DOF
+                    #if CONTROLLER_3DOF
                     } else if (sscanf(rx_buffer, "#RPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
                         Controller3dof::rtP.kp_roll = input1;
                         Controller3dof::rtP.ki_roll = input2;
@@ -94,6 +95,23 @@ void host_com(void* params) {
                         Controller3dof::rtP.ki_yaw = input2;
                         Controller3dof::rtP.kd_yaw = input3;
                         ESP_LOGI("PID", "Updated Yaw PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    #else
+                    } else if (sscanf(rx_buffer, "#RPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller6dof::rtP.kp_roll = input1;
+                        Controller6dof::rtP.ki_roll = input2;
+                        Controller6dof::rtP.kd_roll = input3;
+                        ESP_LOGI("PID", "Updated Roll PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#PPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller6dof::rtP.kp_pitch = input1;
+                        Controller6dof::rtP.ki_pitch = input2;
+                        Controller6dof::rtP.kd_pitch = input3;
+                        ESP_LOGI("PID", "Updated Pitch PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    } else if (sscanf(rx_buffer, "#YPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
+                        Controller6dof::rtP.kp_yaw = input1;
+                        Controller6dof::rtP.ki_yaw = input2;
+                        Controller6dof::rtP.kd_yaw = input3;
+                        ESP_LOGI("PID", "Updated Yaw PID: P=%.4f I=%.4f D=%.4f", input1, input2, input3);
+                    #endif
                     #endif
                     #if PID_6DOF
                     } else if (sscanf(rx_buffer, "#xPID;%f,%f,%f", &input1, &input2, &input3) == 3) {
@@ -134,12 +152,15 @@ void host_com(void* params) {
                 }
             } else if (rx_idx < sizeof(rx_buffer) - 1) {
                 rx_buffer[rx_idx++] = byte;
+            } else {
+                ESP_LOGW("ExternalInputs", "UART buffer overflow, clearing buffer!");
+                rx_idx = 0; // Prevent overflow
             }
         }
 
         BaseType_t thisCallDelayedLoop = xTaskDelayUntil(&xLastWakeTime, xFrequency);
         if (thisCallDelayedLoop != pdTRUE) {
-            ESP_LOGW("TASK", "Log delayed");
+            ESP_LOGW("TASK", "Logdelay");
         }
     }
 }
@@ -205,7 +226,7 @@ void drone_control(void*) {
     float t1 = 0, t2 = 0, t3 = 0, t4 = 0;
     while (true) {
         OrientationData orientation = drone.orientation();
-        if (motorsActive && (xTaskGetTickCount() - orientation.lastUpdate > pdMS_TO_TICKS(100))) {
+        if (motorsActive && (xTaskGetTickCount() - orientation.lastUpdate > pdMS_TO_TICKS(500))) {
             motorsActive = false;
             ESP_LOGE("TASK", "MPU Connection lost - Deactivating");
         }
@@ -219,7 +240,7 @@ void drone_control(void*) {
             }
 
             // 2. Failsafe: Connection Timeout
-            if (motorsActive && (xTaskGetTickCount() - referenceInputs.lastUpdate > pdMS_TO_TICKS(100))) {
+            if (motorsActive && (xTaskGetTickCount() - referenceInputs.lastUpdate > pdMS_TO_TICKS(500))) {
                 motorsActive = false;
                 ESP_LOGE("TASK", "Remote Controller Connection lost - Deactivating");
             }

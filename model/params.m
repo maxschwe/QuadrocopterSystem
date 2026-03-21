@@ -102,7 +102,7 @@ C_rot_erw = [
 ];
 
 % LQR Parameters for Attitude Control
-Q = diag([3300, 3300, 3300, 131, 131, 131, 3300, 3300, 3300]);
+Q = diag([3300, 3300, 3300, 130, 130, 130, 3300, 3300, 3300]);
 R = diag([2500, 2500, 2500]);
 
 % params on teststand
@@ -120,19 +120,32 @@ Ki_free_rot = K_free_rot_erw(1:3, 7:9);
 S_free_rot = -inv(C_rot*inv((A_free_rot-B_rot*K_free_rot))* B_rot);
 
 % PID Parameters for Position Control
-kp_x = 0.2;
-ki_x = 0.2;
-kd_x = 0.5;
+kp_x = 0.3;
+ki_x = 0.3;
+kd_x = 0.4;
 
-kp_y = 0.2;
-ki_y = 0.2;
-kd_y = 0.5;
+kp_y = 0.3;
+ki_y = 0.3;
+kd_y = 0.4;
 
-kp_z = 3.5;
-ki_z = 2.5;
-kd_z = 2.0;
+kp_z = 2.5;
+ki_z = 4.0;
+kd_z = 3.8;
 
-N_pos = 100;
+N_pos = 10;
+
+% PID Parameters for attitude control when using position control
+kp_roll = 1.6;
+ki_roll = 0.8;
+kd_roll = 0.38;
+
+kp_pitch = 1.6;
+ki_pitch = 0.8;
+kd_pitch = 0.40;
+
+kp_yaw = 0.5;
+ki_yaw = 0.3;
+kd_yaw = 0.3;
 
 % translation
 A_trans = [
@@ -176,8 +189,8 @@ C_trans_erw = [
 
 T_delay_actor = 20e-3;
 
-Q_erw = diag([1 1 100 10 10 10 10 10 100]);
-R_trans = diag([50 130 130]);
+Q_erw = diag([100 100 100 100 100 100 200 200 200]);
+R_trans = diag([25 3300 3300]);
 
 [K_erw, ~, P_erw] = lqrd(A_trans_erw, B_trans_erw, Q_erw, R_trans, 0.02);
 K_trans = K_erw(1:3, 1:6);

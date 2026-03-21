@@ -14,7 +14,7 @@
 #define CONTROLLER_3DOF false
 
 // activates PID parameter control from ground station
-#define PID_3DOF false
+#define PID_3DOF true
 #define PID_6DOF false
 
 #if CONTROLLER_3DOF

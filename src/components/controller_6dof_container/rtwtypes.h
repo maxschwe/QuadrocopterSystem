@@ -7,9 +7,9 @@
 //
 // Code generated for Simulink model 'controller_6dof_container'.
 //
-// Model version                  : 1.517
+// Model version                  : 1.545
 // Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
-// C/C++ source code generated on : Fri Mar 13 20:41:26 2026
+// C/C++ source code generated on : Sat Mar 21 21:34:57 2026
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: Custom Processor->Custom Processor

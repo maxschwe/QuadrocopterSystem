@@ -18,15 +18,19 @@ from plots import show_new_recording_plot, setup_subplots, plot
 
 MAX_POINTS = 2000
 INITIAL_THROTTLE = 3.0
-INITIAL_Z = 0.2
+Z_OFFSET = 0.7
 
 INITIAL_PIDS = {
-    Axis.ROLL: (1.4, 1.18, 0.33),
-    Axis.PITCH: (1.42, 1.21, 0.35),
-    Axis.YAW: (1.2, 0.7, 0.5),
-    Axis.X: (0.2, 0.2, 0.5),
-    Axis.Y: (0.2, 0.2, 0.5),
-    Axis.Z: (2.5, 3.0, 3.5)
+    # Axis.ROLL: (1.4, 1.18, 0.33),
+    # Axis.PITCH: (1.42, 1.21, 0.35),
+
+    Axis.ROLL: (1.6, 0.8, 0.38),
+    Axis.PITCH: (1.6, 0.8, 0.40),
+    Axis.YAW: (0.5, 0.3, 0.3),
+
+    Axis.X: (0.3, 0.3, 0.4),
+    Axis.Y: (0.3, 0.3, 0.4),
+    Axis.Z: (3.5, 4.0, 3.8)
 }  # Roll, Pitch, Yaw, X, Y, Z PID tuples
 
 
@@ -55,7 +59,7 @@ class Gui(tk.Tk):
 
         if self._in_6dof_mode:
             self.dev.start_temporal_dynamic_measurement(20, self._com.update_position)
-            self._com.set_reference(0.0, 0.0, INITIAL_Z)
+            self._com.set_reference(0.0, 0.0, Z_OFFSET)
         else:
             self._com.set_reference(0.0, 0.0, 0.0)
 
@@ -212,7 +216,7 @@ class Gui(tk.Tk):
         plot_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         
         self.fig = Figure(figsize=(8, 8), dpi=100)
-        self.axes = setup_subplots(self.fig)
+        self.axes = setup_subplots(self.fig, self._in_6dof_mode)
         
         self.canvas = FigureCanvasTkAgg(self.fig, master=plot_frame)
         self.canvas.draw()
@@ -261,6 +265,33 @@ class Gui(tk.Tk):
         }
 
     def multi_trajectories(self):
+        def get_linear_drone_trajectory(t, waypoints):
+            duration = 25.0
+            t = max(0, min(t, duration))
+            
+            num_segments = len(waypoints) - 1
+            segment_duration = duration / num_segments
+            
+            # Determine current segment index
+            idx = int(t / segment_duration)
+            
+            # Handle the exact end-of-time case
+            if idx >= num_segments:
+                return waypoints[-1]
+                
+            # Local interpolation factor (0.0 to 1.0)
+            local_t = (t % segment_duration) / segment_duration
+            
+            start_p = waypoints[idx]
+            end_p = waypoints[idx + 1]
+            
+            # Linear interpolation for all three axes
+            x = start_p[0] + (end_p[0] - start_p[0]) * local_t
+            y = start_p[1] + (end_p[1] - start_p[1]) * local_t
+            z = start_p[2] + (end_p[2] - start_p[2]) * local_t
+            
+            return (x, y, z)
+
         def sample_multi(t, A):
             # Roll, Pitch, Yaw
             return (A * np.sin(t), A * np.cos(t), A * np.sin(t))
@@ -270,7 +301,82 @@ class Gui(tk.Tk):
                 "Sample Multi": lambda t: sample_multi(t, 5)
             },
             "6dof": {
-                "Sample Multi": lambda t: sample_multi(t, 0.2)
+                "Rectangle XY": lambda t: get_linear_drone_trajectory(t, [
+                    (0.0, 0.0, 0.0),    # Start at origin
+                    (0.3, 0.3, 0.0),    # Point 1
+                    (0.3, -0.3, 0.0),   # Point 2
+                    (-0.3, -0.3, 0.0), # Point 3
+                    (-0.3, 0.3, 0.0),   # Point 4
+                    (0.3, 0.3, 0.0),  # Point 1 again
+                    (0.0, 0.0, 0.0)     # Finish at center
+                ]),
+                "Rectangle XZ": lambda t: get_linear_drone_trajectory(t, [
+                    (0.0, 0.0, 0.0),    # Start at origin
+                    (0.3, 0.0, 0.3),    # Point 1
+                    (0.3, 0.0, -0.3),   # Point 2
+                    (-0.3, 0.0, -0.3), # Point 3
+                    (-0.3, 0.0, 0.3),   # Point 4
+                    (0.3, 0.0, 0.3),  # Point 1 again
+                    (0.0, 0.0, 0.0)     # Finish at center
+                ]),
+                "Rectangle YZ": lambda t: get_linear_drone_trajectory(t, [
+                    (0.0, 0.0, 0.0),
+                    (0.0, 0.3, 0.3),
+                    (0.0, -0.3, 0.3),
+                    (0.0, -0.3, 0.3),
+                    (0.0, 0.3, -0.3),
+                    (0.0, 0.3, 0.3),
+                    (0.0, 0.0, 0.0)
+                ]),
+                "Haus vom Nikolaus XY": lambda t: get_linear_drone_trajectory(t, [
+                    (0.0, 0.0, 0.0),
+                    (-0.3, -0.3, 0.0),
+                    (0.3, -0.3, 0.0),
+                    (-0.3, 0.3, 0.0),
+                    (0.3, 0.3, 0.0),    
+                    (0.0, 0.6, 0.0),
+                    (-0.3, 0.3, 0.0),
+                    (-0.3, -0.3, 0.0),
+                    (0.3, 0.3, 0.0),   
+                    (0.3, -0.3, 0.0),
+                    (0.0, 0.0, 0.0)
+                ]),
+                "Haus vom Nikolaus XZ": lambda t: get_linear_drone_trajectory(t, [
+                    (0.0, 0.0, 0.0),
+                    (-0.3, 0.0, -0.3),
+                    (0.3, 0.0, -0.3),
+                    (-0.3, 0.0, 0.3),
+                    (0.3, 0.0, 0.3),
+                    (0.0, 0.0, 0.6),
+                    (-0.3, 0.0, 0.3),
+                    (-0.3, 0.0, -0.3),
+                    (0.3, 0.0, 0.3),   
+                    (0.3, 0.0, -0.3),
+                    (0.0, 0.0, 0.0)
+                ]),
+                "Haus vom Nikolaus YZ": lambda t: get_linear_drone_trajectory(t, [
+                    (0.0, 0.0, 0.0),
+                    (0.0, -0.3, -0.3),
+                    (0.0, 0.3, -0.3),
+                    (0.0, -0.3, 0.3),
+                    (0.0, 0.3, 0.3),
+                    (0.0, 0.0, 0.6),
+                    (0.0, -0.3, 0.3),
+                    (0.0, -0.3, -0.3),
+                    (0.0, 0.3, 0.3),   
+                    (0.0, 0.3, -0.3),
+                    (0.0, 0.0, 0.0)
+                ]),
+                "Sample Multi": lambda t: sample_multi(t, 0.2),
+                "rotated Rectangle": lambda t: get_linear_drone_trajectory(t, [
+                    (0.0, 0.0, 0.0),    # Start at origin
+                    (0.25, 0.25, 0.25),    # Point 1
+                    (0.25, -0.25, 0.0),   # Point 2
+                    (-0.25, -0.25, -0.25), # Point 3
+                    (-0.25, 0.25, 0.0),   # Point 4
+                    (0.25, 0.25, 0.0),  # Point 1 again
+                    (0.0, 0.0, 0.0)     # Finish at center
+                ])
             }
         }
     
@@ -297,6 +403,7 @@ class Gui(tk.Tk):
         start_time = time.time()
         save_loc = Path("../recordings") / Path(f"trajectory_{traj_type}_{traj_axis}_{int(start_time)}.csv")
         self._telemetry_handler.start_recording(traj_record_time, save_loc=save_loc, on_finish=self.show_recorded_data)
+        z_offset = Z_OFFSET if self._in_6dof_mode else 0.0
         
         while (time.time() - start_time) < traj_record_time:
             now = time.time()
@@ -306,12 +413,10 @@ class Gui(tk.Tk):
             if not self._in_6dof_mode:
                 target_value = np.radians(target_value)
 
-            z_offset = 0.5 if self._in_6dof_mode else 0.0
 
             if traj_axis == "All Axis":
                 self._com.set_reference(target_value[0], target_value[1], target_value[2] + z_offset)
             else:
-                
                 if traj_axis in ["Roll", "x"]:
                     self._com.set_reference(target_value, 0.0, z_offset)
                 elif traj_axis in ["Pitch", "y"]:
@@ -320,19 +425,17 @@ class Gui(tk.Tk):
                     self._com.set_reference(0.0, 0.0, target_value + z_offset)
 
             # print(f"Setting {traj_type} trajectory: {target_value:.2f} degrees")
-            time.sleep(0.001)
+            last_update_time = time.time()
+            time.sleep(last_update_time + 0.02 - time.time())  # Update at ~50 Hz
 
-        if self._in_6dof_mode:
-            self._com.set_reference(0.0, 0.0, 0.5)
-        else:
-            self._com.set_reference(0.0, 0.0, 0.0)
+        self._com.set_reference(0.0, 0.0, z_offset)
 
     def show_recorded_data(self, df):
         top = tk.Toplevel(self)
-        show_new_recording_plot(top, df)
+        show_new_recording_plot(top, df, self._in_6dof_mode)
 
     def update_plot(self):
         df = self._telemetry_handler.get_queue_data()
         
-        plot(df, self.axes, self.canvas)
+        plot(df, self.axes, self.canvas, self._in_6dof_mode)
         self.after(50, self.update_plot)

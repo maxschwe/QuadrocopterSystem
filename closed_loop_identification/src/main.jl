@@ -21,9 +21,9 @@ for d in dirs
 
     for (i, axis) in enumerate(instances(Axis))
         J_key = Dict(Roll => :J_xx, Pitch => :J_yy, Yaw => :J_zz)[axis]
-        # P_key = Dict(Roll => :p_x, Pitch => :p_y, Yaw => :p_z)[axis]
+        P_key = Dict(Roll => :p_x, Pitch => :p_y, Yaw => :p_z)[axis]
 
-        to_opt = Dict(J_key => OptimParam()) # , P_key => OptimParam(0.001, 100.0)
+        to_opt = Dict(J_key => OptimParam(), P_key => OptimParam(0.001, 100.0), :h => OptimParam())
         if axis != Yaw
             to_opt[:h] = OptimParam()
         end
@@ -34,7 +34,7 @@ for d in dirs
             identified_params, loss = opt_params(TrainingData(file_path, axis), params, to_opt)
 
             push!(J_identified_values[i], identified_params[J_key])
-            # push!(p_identified_values[i], identified_params[P_key])
+            push!(p_identified_values[i], identified_params[P_key])
             axis != Yaw && push!(h_identified_values, identified_params[:h])
             loss_total += loss
         end
@@ -62,7 +62,7 @@ function compare_plot(dir, filename, axis::Axis)
     # Optimized Param Sim
     optimized_overrides = Dict(
         :J_xx => J_identified[1], :J_yy => J_identified[2], :J_zz => J_identified[3],
-        # :p_x => p_identified[1], :p_y => p_identified[2], :p_z => p_identified[3],
+        :p_x => p_identified[1], :p_y => p_identified[2], :p_z => p_identified[3],
         :h => h_identified
     )
     final_params = update_params(initial_params, optimized_overrides)

@@ -167,7 +167,7 @@
     }
 
     circle((0, 0), radius: 0.05, fill: black)
-    content((-0.3, -0.1), $K_B$, anchor: "west")
+    content((-0.3, -0.1), $K_"B"$, anchor: "west")
     line((0, 0, 0), (1, 0), mark: (end: "stealth"))
     content((), $x$, anchor: "east")
     line((0, 0), (0, -0.9), mark: (end: "stealth"))
@@ -181,7 +181,7 @@
     if plus_config {
       translate((-5.0, 3.3, 0.5))
       circle((0, 0), radius: 0.05, fill: black)
-      content((-0.5, -0.1), $K_E$, anchor: "west")
+      content((-0.5, -0.1), $K_"E"$, anchor: "west")
       line((0, 0, 0), (1.2, 0), mark: (end: "stealth"))
       content((), $x$, anchor: "east")
       line((0, 0), (0, -1), mark: (end: "stealth"))

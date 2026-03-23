@@ -47,7 +47,7 @@ sp.pprint(B)
 x, y, z = sp.symbols('x y z')
 vx, vy, vz = sp.symbols('v_x v_y v_z')
 phi, theta, psi = sp.symbols('phi theta psi')
-m, g, F_thrust = sp.symbols('m g F_thrust')
+m, g, F_thrust = sp.symbols('m g F_t')
 dx, dy, dz = sp.symbols('d_x d_y d_z') # Drag coefficients
 
 X_trans = sp.Matrix([x, y, z, vx, vy, vz])

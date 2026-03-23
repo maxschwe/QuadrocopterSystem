@@ -62,7 +62,7 @@ Unter Verwendung des allgemeinen Regelgesetzes $ tau_x = - k_p phi.alt - k_d dot
 $ dot.double(y) = - a_1 dot(y) - a_0 y $
 überführt werden.
 
-Solche idealen Systeme sind asymptotisch stabil, wenn $a_0, a_1 > 0$ @quanIntroductionMulticopterDesign2017. Diese Bedingung ließe sich bereits durch einen reinen P-Regler erfüllen. In diesem Fall wäre die Dämpfung jedoch allein durch aerodynamische Effekte gegeben und somit sehr gering, was zu einer hohen Schwingung des Systems führen wird. Außerdem vernachlässigt das idealisierte Modell zusätzliche verzögernde Faktoren, die das reale System trotzdem destabilisieren würden. Dazu gehören Aktorverzögerungen, Abtastzeiten des diskreten Reglers und Totzeiten in der Sensordatenverabeitung.
+Solche idealen Systeme sind asymptotisch stabil, wenn $a_0, a_1 > 0$ @quanIntroductionMulticopterDesign2017. Diese Bedingung ließe sich bereits durch einen reinen P-Regler erfüllen. In diesem Fall wäre die Dämpfung jedoch allein durch aerodynamische Effekte gegeben und somit sehr gering, was zu einer hohen Schwingung des Systems führen würde. Außerdem vernachlässigt das idealisierte Modell zusätzliche verzögernde Faktoren, die das reale System trotzdem destabilisieren würden. Dazu gehören Aktorverzögerungen, Abtastzeiten des diskreten Reglers und Totzeiten in der Sensordatenverabeitung.
 Durch die Hinzunahme eines D-Anteils kann die Phasenreserve erhöht und die Systemantwort gedämpft werden, wodurch auch das reale System zuverlässig stabilisiert wird.
 
 Das System besitzt im Betrieb auf dem Teststand kein integrierendes Verhalten, da $a_0 != 0$ aufgrund des versetzten Schwerpunkts gilt. Deshalb benötigt dieses zwingend einen I-Anteil, um stationäre Genauigkeit zu erreichen. In freifliegender Konfiguration könnte hingegen theoretisch auf den I-Anteil verzichtet werden, da hier $a_0 = 0$ gilt und das System damit bereits ein integrierendes Verhalten aufweist. Jedoch ist auch hier ein I-Anteil meist sinnvoll, um die stationäre Genauigkeit zu verbessern. Bei der Verwendung eines I-Anteils muss beachtet werden, dass dieser eine zusätzliche Verzögerung in das System bringt, was die Phasenreserve verringert und damit die Stabilität gefährden kann. Deshalb muss die Verstärkung des I-Anteils sorgfältig gewählt werden, um einen guten Kompromiss zwischen Regelgüte und Stabilität zu erreichen. @lunzeRegelungstechnik1Systemtheoretische2020
@@ -159,7 +159,7 @@ fill: (x, y) => if y == 0 or x == 0 { gray.lighten(80%) },
 [Pitch], [$1.42$], [$1.20$], [$0.38$], [$100$],
 [Yaw], [$1.20$], [$0.70$], [$0.50$], [$100$]
 
-), caption: [Empirisch ermittelte PID-Parameter für Lageregelung]) <pid_att>
+), caption: [Empirisch ermittelte PID-Parameter für die Lageregelung]) <pid_att>
 
 Es ist zu erkennen, dass die Parameter für die Roll- und Nick-Achse relativ ähnlich sind. Dies lässt sich auf die strukturelle Symmetrie des Systems zurückführen. Bei der Gier-Achse fällt der P-Anteil trotz des höheren Trägheitsmomentes geringer aus, da hier kein destabilisierendes Moment kompensiert werden muss. Der geringere P-Anteil für die Gier-Achse trotz höherem Trägheitsmoment lässt sich damit erklären, dass es kein destabilisierendes Moment gibt, welches ausgeglichen werden muss. Auch der I-Anteil ist niedriger dimensioniert, da die Gier-Achse bereits inhärent ein integrierendes Verhalten aufweist. Dieser dient hier nur für eine Verstärkung dieses Verhaltens. Der D-Anteil ist hingegen höher, was sich mit der höheren Trägheit um diese Achse erklären lässt.
 === LQR mit integraler Ausgangsrückführung
@@ -267,8 +267,10 @@ Zur Quantifizierung der Leistungsfähigkeit wurde die Wurzel des mittleren quadr
     [Nick], [$1.70 degree$], [$1.72 degree$],
     [Gier], [$0.90 degree$], [$1.75 degree$],
   ),
-  caption: [Vergleich der Regelgüte zwischen PID- und LQ-Regler anhand eines RMSE]
+  caption: [Performanzvergleich von PID- und LQ-Lageregelung anhand eines RMSE]
 ) <eval_att>
+
+#v(1.5em)
 
 #figure(
   stack(
@@ -283,7 +285,8 @@ Zur Quantifizierung der Leistungsfähigkeit wurde die Wurzel des mittleren quadr
       )),
     ),
     [Roll-Winkel $phi.alt$ ($degree$)],
-    y_limits: (-10, 17.0)
+    y_limits: (-10, 17.0),
+    size: (12, 4),
   ),
   show_plot(
     (
@@ -296,7 +299,8 @@ Zur Quantifizierung der Leistungsfähigkeit wurde die Wurzel des mittleren quadr
       )),
     ),
     [Nick-Winkel $theta$ ($degree$)],
-    y_limits: (-10, 17.0)
+    y_limits: (-10, 17.0),
+    size: (12, 4),
   ),
   show_plot(
       (
@@ -309,7 +313,8 @@ Zur Quantifizierung der Leistungsfähigkeit wurde die Wurzel des mittleren quadr
         )),
       ),
       [Gier-Winkel $psi$ ($degree$)],
-      y_limits: (-10, 17.0)
+      y_limits: (-10, 17.0),
+      size: (12, 4),
     ),
   
   ),
@@ -317,7 +322,7 @@ Zur Quantifizierung der Leistungsfähigkeit wurde die Wurzel des mittleren quadr
 ) <att_plots>
 
 == Positionsregelung
-Die Positionsregelung bildet den äußeren Regelkreis, der die Sollwerte für die Roll- und Nickwinkel sowie den Gesamtschub vorgibt. Da sich das translatorische System im Schwebeflug, wie auch schon die rotatorische Dynamik, nahezu wie ein entkoppeltes, lineares System zweiter Ordnung verhält, ähnelt die Regelungsstruktur stark der Lageregelung. Um eine hohe Dämpfung, Stabilität und stationäre Genauigkeit zu gewährleisten, kommen neben dem Proportionalanteil auch ein Differenzial- (D) und ein Integralanteil (I) zum Einsatz. Die Umsetzung erfolgt analog zur Lageregelung entweder mit drei PID-Reglern oder einem LQR mit integraler Ausgangsrückführung.
+Die Positionsregelung bildet den äußeren Regelkreis, der die Sollwerte für die Roll- und Nickwinkel sowie den Gesamtschub vorgibt. Da sich das translatorische System im Schwebeflug, wie auch schon die rotatorische Dynamik, nahezu wie ein entkoppeltes, lineares System zweiter Ordnung verhält, ähnelt die Regelungsstruktur stark der Lageregelung. Um eine hohe Dämpfung, Stabilität und stationäre Genauigkeit zu gewährleisten, kommen neben dem Proportionalanteil ebenfalls ein Differenzial- und ein Integralanteil zum Einsatz. Die Umsetzung erfolgt analog zur Lageregelung entweder mit drei PID-Reglern oder einem LQR mit integraler Ausgangsrückführung.
 
 #runin[Vorsteuerung]
 Im Arbeitspunkt des Schwebeflugs muss die Schubkraft die Gewichtskraft exakt kompensieren. Es gilt:
@@ -325,11 +330,10 @@ $  F_"t,0" = m g $
 Würde der Ausgleich der Gewichtskraft ausschließlich durch den I-Anteil des Reglers erfolgen, würde sich der Schub nur langsam aufbauen. Um dies zu verhindern, wird die statische Kraft $F_"t,0"$ als Vorsteuerung direkt auf das Stellsignal addiert.
 
 #runin[Lageregler als innere Schleife]
-Die Positionsdaten werden im System mit einer Frequenz von $50 "Hz"$ erfasst, während die Lageregelung mit $200 "Hz"$ arbeitet. Für eine gute Kaskadenregelung sollte die innere Schleife aus Sicht des äußeren Regelkreises näherungsweise als statisches System agieren. Als Faustregel gilt hierbei, dass die Taktrate des inneren Regelkreises etwa das Zehnfache der Äußeren betragen sollte. Die daraus resultierende ideale Taktrate von 500 Hz für die Lageregelung ist technisch jedoch nicht realisierbar, da die gefilterten Daten des DMP mit maximal 200 Hz ausgelesen werden können. Um trotz dieser Einschränkung eine hohe Regelgüte zu erzielen, wurde die Dynamik des inneren Kreises durch eine Reduzierung des I-Anteils erhöht. Dies geht zwar zulasten der stationären Genauigkeit der Lageregelung, ist jedoch unkritisch, da die übergeordnete Positionsregelung über einen eigenen I-Anteil verfügt, der die stationäre Genauigkeit im Gesamtsystem sicherstellt. Für eine bessere Vergleichbarkeit der Positionsregler wurde einheitlich ein PID-Lageregler (Parameter siehe @pid_att) mit halbierter I-Verstärkung eingesetzt.
-
+Die Positionsdaten werden im System mit einer Frequenz von $50 "Hz"$ erfasst, während die Lageregelung mit $200 "Hz"$ arbeitet. Für eine gute Kaskadenregelung sollte die innere Schleife aus Sicht des äußeren Regelkreises näherungsweise als statisches System agieren @lunzeRegelungstechnik1Systemtheoretische2020. Um dies zu erreichen, wird die Dynamik des inneren Kreises durch eine Reduzierung des I-Anteils erhöht. Dies geht zwar zulasten der stationären Genauigkeit der Lageregelung, ist jedoch unkritisch, da die übergeordnete Positionsregelung über einen eigenen I-Anteil verfügt, der die stationäre Genauigkeit im Gesamtsystem sicherstellt. Für eine bessere Vergleichbarkeit der Positionsregler wurde einheitlich ein PID-Lageregler (Parameter siehe @pid_att) mit halbierter I-Verstärkung eingesetzt.
 
 #runin[Gesamtüberblick des Kaskadenregelkreises]
-Die beiden Regelkreise werden wie in @cascaded_control gezeigt in einer Kaskade zusammengeschalten. Zusätzlich wird eine Sättigung dazwischengeschalten, welche $F_t$ auf max. $15 "N"$ begrenzt, und die Roll- und Nickwinkel auf max. $5 degree$ limitiert. Dies ist als Sicherheit gedacht, um bei unerwarteten Störungen oder einem zu dynamisch ausgelegten Regler nicht die Stabilität zu gefährden und einen Absturz zu vermeiden. 
+Die beiden Regelkreise werden, wie in @cascaded_control dargestellt, in einer Kaskade verschaltet. Diese Struktur ermöglicht das Implementieren einer Sättigung als Schnittstelle zwischen den beiden Kreisen. Konkret wurde die Schubkraft $F_t$ auf maximal $15 "N"$ sowie die Roll- und Nickwinkel auf jeweils $5 degree$ begrenzt. Diese Limitierung dient als Sicherheitsmaßnahme, um die Stabilität des Systems auch bei unerwarteten Störungen oder einer zu aggressiven Reglerauslegung zu gewährleisten.
 
 #figure(
   diagram(
@@ -422,7 +426,7 @@ fill: (x, y) => if y == 0 or x == 0 { gray.lighten(80%) },
 ), caption: [Empirisch ermittelte PID-Parameter für die Positionsregelung]) <pid_pos>
 
 === LQR mit integraler Ausgangsrückführung
-Da der LQR auf dem Systemmodell aufbaut und dieses bereits die physikalischen Zusammehänge enthält, ist die Positionsregelung von der Struktur exakt dieselbe wie auch bei der Lageregelung. Hier müssen ebenfalls die Geschwindigkeiten mit einem Kalman-Filter geschätzt werden, da nur die Positionen gemessen werden können. Auch die Vorfilterung der Führungsgrößen erfolgt analog zur Lageregelung, um ein präzises Führungsverhalten zu gewährleisten.
+Da der LQR auf dem Systemmodell aufbaut und dieses bereits die physikalischen Zusammenhänge enthält, ist die Positionsregelung von der Struktur exakt dieselbe wie bei der Lageregelung. Hier müssen ebenfalls die Geschwindigkeiten mit einem Kalman-Filter geschätzt werden, da nur die Positionen gemessen werden können. Auch die Vorfilterung der Führungsgrößen erfolgt analog zur Lageregelung, um ein präzises Führungsverhalten zu gewährleisten.
 
 #figure(
   diagram(
@@ -483,9 +487,9 @@ $ bold(R) = "diag"(25, 3300, 3300) $
 
 === Evaluierung
 
-Die Evaluierung der Positionsregelung erfolgt anhand einer zweidimensionalen Referenztrajektorie in Form eines Teils des "Hauses vom Nikolaus". Zur systematischen Überprüfung des Systemverhaltens werden drei Testreihen durchgeführt, bei denen jeweils ein translatorischer Freiheitsgrad konstant gehalten wird, während die übrigen zwei variiert werden (vgl. @eval_pos_plots). Dieser Pfad erlaubt eine detaillierte Analyse des Führungsverhalten: Während die vertikalen und horizontalen Segmente die isolierte Ansteuerung der einzelnen Achsen prüfen, dienen die diagonalen Bewegungen der Validierung der translatorischen Kopplung. 
+Die Evaluierung der Positionsregelung erfolgt anhand einer zweidimensionalen Referenztrajektorie in Form eines Teils des "Hauses vom Nikolaus". Zur systematischen Überprüfung des Systemverhaltens werden drei Testreihen durchgeführt, bei denen jeweils ein translatorischer Freiheitsgrad konstant gehalten wird, die übrigen Beiden werden variiert (vgl. @eval_pos_plots). Dieser Pfad erlaubt eine detaillierte Analyse des Führungsverhalten: Während die vertikalen und horizontalen Segmente die isolierte Ansteuerung der einzelnen Achsen prüfen, dienen die diagonalen Bewegungen der Validierung der translatorischen Kopplung. 
 
-Als Bewertungsmaß wurde der Root Mean Squared Error (RMSE) verwendet. Die Ergebnisse der Evaluierung bzgl. des RMSE sind in der folgenden Tabelle dargestellt. Hier zeigt sich, dass der PID-Regler in allen drei Achsen eine deutlich bessere Regelgüte erzielt als der LQR. Jedoch wurden die Parameter des LQR auch nicht weiter optimiert. Es ist daher nicht auszuschließen, dass durch eine gezielte Feinabstimmung der Gewichtungsmatrizen des LQR eine ähnliche Regelgüte erzielt werden könnte. Dennoch verdeutlichen die Ergebnisse, dass die theoretischen Vorteile des LQR in der Praxis nicht zwangsläufig zu einer besseren Regelgüte führen müssen, insbesondere wenn die Modellgenauigkeit begrenzt ist oder die Parameter nicht optimal gewählt wurden.
+Als Bewertungsmaß für die Positionsregelgüte wurde erneut ein Root Mean Squared Error (RMSE) verwendet. Wie in @eval_pos dargestellt, erzielt der PID-Regler in allen drei Achsen eine signifikant höhere Präzision als der LQR. Da die Parameter des LQR jedoch nicht abschließend optimiert wurden, bleibt offen, inwieweit eine Feinabstimmung der Gewichtungsmatrizen die Performance angleichen könnte. Dennoch unterstreichen die Resultate, dass die theoretischen Vorzüge des LQR in der praktischen Anwendung nicht zwangsläufig in einer überlegenen Regelgüte resultieren.
 #figure(
   table(
     columns: (auto, auto, auto),
@@ -497,7 +501,7 @@ Als Bewertungsmaß wurde der Root Mean Squared Error (RMSE) verwendet. Die Ergeb
     [XZ], [$0.049 "m"$], [$0.120 "m"$],
     [YZ], [$0.054 "m"$], [$0.127 "m"$],
   ),
-  caption: [Vergleich der Regelgüte zwischen PID- und LQ-Regler anhand des Root Mean Squared Error]
+  caption: [Performanzvergleich von PID- und LQ-Positionsregelung anhand eines RMSE]
 ) <eval_pos>
 
 #figure(
@@ -559,16 +563,16 @@ Als Bewertungsmaß wurde der Root Mean Squared Error (RMSE) verwendet. Die Ergeb
           ),
         ),
       ),
-      x_label: [Position $x$ ($m$)],
-      y_label: [Position $y$ ($m$)],
+      x_label: [Position $y$ ($m$)],
+      y_label: [Position $z$ ($m$)],
       y_limits: (0.3, 1.8)
     ),
   ),
-  caption: [Vergleich des Systemverhaltens mit PID- und LQ-Reglern für die Positionsregelung]
+  caption: [Vergleich der translatorischen Trajektorienfolge zwischen PID- und LQ-Regler]
 ) <eval_pos_plots>
 
 == Implementierung
 
-Die Implementierung der Regler auf dem Zielsystem erfolgte mithilfe des Embedded Coders von MATLAB @EmbeddedCoder. Dabei erfolgt die Entwicklung der Regler vollständig in Simulink, wo die Algorithmen auch simulativ getestet und optimiert werden können. Für den Übergang von der Simulation zum realen System kann der Regler dann mit einem Klick in Quellcode überführt werden. Dieser lässt sich ohne Anpassungen in die bestehende Onboard-Software integrieren. Nach der anschließenden Kompilierung und Übertragung der gesamten Onboard-Software auf das Zielsystem ist der Regler einsatzbereit. Dies ermöglicht kurze Iterationszyklen zwischen Simulation und realem Test, da die zeitintensive und fehleranfällige manuelle Portierung der Algorithmen entfällt.
+Die Implementierung der Regler auf dem Zielsystem erfolgte mithilfe des Embedded Coders von MATLAB @EmbeddedCoder. Dabei wird die Entwicklung der Regler vollständig in Simulink durchgeführt, wobei die Algorithmen auch simulativ getestet und optimiert werden können. Für den Übergang von der Simulation zum realen System kann der Regler dann mit einem Klick in Quellcode überführt werden. Dieser lässt sich ohne Anpassungen in die bestehende Onboard-Software integrieren. Nach der anschließenden Kompilierung und Übertragung der gesamten Onboard-Software auf das Zielsystem ist der Regler einsatzbereit. Dies ermöglicht kurze Iterationszyklen zwischen Simulation und realem Test, da die zeitintensive und fehleranfällige manuelle Portierung der Algorithmen entfällt.
 
-Ergänzend wurde untersucht, den Regler direkt auf dem Entwicklungsrechner auszuführen und die Mess- sowie Stellgrößen über eine Kabelverbindung zu kommunizieren. Dieser Ansatz hätte den Zwischenschritt der Neukompilierung der Onboard-Software eingespart. Allerdings konnte dabei die geforderte Regelrate von 200 Hz nicht erreicht werden, was primär auf die Latenzen innerhalb der Simulink-Umgebung zurückzuführen ist. Deshalb wurde letztlich die Implementierung auf dem Zielsystem beibehalten, um eine hohe Taktrate zu gewährleisten.
+Zusätzlich wurde geprüft, ob der Regler direkt auf dem Entwicklungsrechner betrieben werden kann, wobei die Mess- sowie Stellgrößen über eine Kabelverbindung übertragen werden. Dieser Ansatz hätte den Zwischenschritt der Neukompilierung der Onboard-Software eingespart. Allerdings konnte dabei die geforderte Regelrate von 200 Hz nicht erreicht werden, was primär auf die Latenzen innerhalb der Simulink-Umgebung zurückzuführen ist. Deshalb wurde letztlich die Implementierung auf dem Zielsystem beibehalten, um eine hohe Taktrate zu gewährleisten.

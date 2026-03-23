@@ -105,7 +105,7 @@ Dabei wird angenommen, dass die Gesamtkraft $bold(F)$ ausschließlich aus der Ge
 $ bold(F) = bold(F)_"g" + bold(F)_"t" $
 
 #runin[Translations- und Rotationsmodell im Zustandraum]
- Es lassen sich Translations- und Rotationsmodell im Zustandsraum zusammensetzen. Der Zustandsvektor $bold(x)$ umfasst die Position $bold(p)$, die Geschwindigkeit $bold(v)$, die Orientierung $bold(eta)$ und die Winkelgeschwindigkeit $bold(omega)$. Hierbei ist erneut zu beachten, dass die Winkelgeschwindigkeit $bold(omega)$ im körperfesten Koordinatensystem definiert ist. Die anderen Zustandsgrößen werden dagegen im inertialen Raum angegeben:
+ Translations- und Rotationsmodell lassen sich in einen Zustandsraum zusammensetzen. Der Zustandsvektor $bold(x)$ umfasst die Position $bold(p)$, die Geschwindigkeit $bold(v)$, die Orientierung $bold(eta)$ und die Winkelgeschwindigkeit $bold(omega)$. Hierbei ist erneut zu beachten, dass die Winkelgeschwindigkeit $bold(omega)$ im körperfesten Koordinatensystem definiert ist. Die anderen Zustandsgrößen werden dagegen im inertialen Raum angegeben:
 
 $ bold(x) = [bold(p), bold(v), bold(eta), bold(omega)]^top $
 
@@ -242,11 +242,11 @@ bold(B_"r") = #text(1em, mitex(`\left[\begin{matrix}0 & 0 & 0\\0 & 0 & 0\\0 & 0 
 bold(C_"r") = #text(1em, $ mat(1, 0, 0, 0, 0, 0;0, 1, 0, 0, 0, 0; 0, 0, 1, 0, 0, 0) $)
 $
 
-In der Praxis erfolgt die Regelung meist um eine stationäre Ruhelage. Bei einem Quadrocopter befindet sich diese bei $bold(x)_"r, AP" = [0, 0, phi_0, 0, 0, 0]^top$. Im Folgenden soll zusätzlich $psi_0 = 0$ angenommen werden. Für diesen speziellen Arbeitspunkt ergeben sich die beiden Varianten für die Systemmatrix zu:
+In der Praxis erfolgt die Regelung meist um eine stationäre Ruhelage. Bei einem Quadrocopter befindet sich diese bei $bold(x)_"r,AP" = [0, 0, psi_0, 0, 0, 0]^top$. Im Folgenden soll zusätzlich $psi_0 = 0$ angenommen werden. Für diesen speziellen Arbeitspunkt ergeben sich die beiden Varianten für die Systemmatrix zu:
 
-$ bold(A)_(r, "frei") (bold(x)_"AP") = mat(0, 0, 0, 1, 0, 0; 0, 0, 0, 0, 1, 0; 0, 0, 0, 0, 0, 1; 0, 0, 0, 0, 0, 0; 0 , 0, 0, 0, 0, 0; 0, 0, 0, 0, 0, 0) $
+$ bold(A)_(r, "frei") (bold(x)_"r,AP") = mat(0, 0, 0, 1, 0, 0; 0, 0, 0, 0, 1, 0; 0, 0, 0, 0, 0, 1; 0, 0, 0, 0, 0, 0; 0 , 0, 0, 0, 0, 0; 0, 0, 0, 0, 0, 0) $
 
-$ bold(A)_(r, "test") (bold(x)_"AP") = mat(0, 0, 0, 1, 0, 0; 0, 0, 0, 0, 1, 0; 0, 0, 0, 0, 0, 1; (m g h) / J_"xx", 0, 0, -p_x/J_"xx", 0, 0; 0 , (m g h) / J_"yy", 0, 0, -p_y / J_"yy", 0; 0, 0, 0, 0, 0, -p_z / J_"zz") $
+$ bold(A)_(r, "test") (bold(x)_"r,AP") = mat(0, 0, 0, 1, 0, 0; 0, 0, 0, 0, 1, 0; 0, 0, 0, 0, 0, 1; (m g h) / J_"xx", 0, 0, -p_x/J_"xx", 0, 0; 0 , (m g h) / J_"yy", 0, 0, -p_y / J_"yy", 0; 0, 0, 0, 0, 0, -p_z / J_"zz") $
 
 #runin[Translationsdynamik]
 
@@ -282,7 +282,7 @@ $
 
 Für den speziellen Fall der Hover-Position, in der die Auftriebskraft die Gewichtskraft exakt kompensiert und alle Neigungswinkel Null sind, ergibt sich für die Eingangsmatrix:
 $ 
-bold(B)_"t" (bold(u)_"AP") = mat(
+bold(B)_"t" (bold(u)_"t,AP") = mat(
   0, 0, 0, 0;
   0, 0, 0, 0;
   0, 0, 0, 0;

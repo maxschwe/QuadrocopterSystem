@@ -32,9 +32,9 @@ Base.@kwdef struct Params
     J_yy = 0.0268
     J_zz = 0.0680
 
-    p_x = 0.0
-    p_y = 0.0
-    p_z = 0.0
+    p_x = 0.1
+    p_y = 0.1
+    p_z = 0.1
 
     h = 0.05
 end

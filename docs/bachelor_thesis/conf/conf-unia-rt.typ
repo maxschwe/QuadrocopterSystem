@@ -24,6 +24,13 @@
     ]
   ]
 
+  show heading.where(level: 1): it => {
+    counter(figure.where(kind: image)).update(0)
+    counter(figure.where(kind: table)).update(0)
+    counter(math.equation).update(0)
+    it
+  }
+
   show heading.where(level: 2): heading_title => [
     #pad(top: 8mm, bottom: 4mm)[
       #text(heading_title, size: 18pt)
@@ -64,6 +71,29 @@
   )
 
   counter(page).update(1)
+  set page(
+    numbering: "I",
+    number-align: bottom + center,
+  )
+
+  include("short_summary.typ")
+  pagebreak()
+
+  counter(page).update(2)
+
+  set page(
+    numbering: "I",
+    number-align: top + right,
+    header: context {
+
+      return [#h(1fr) #counter(page).display()]
+      
+    }
+  )
+
+  outline()
+
+
   set page(
     numbering: "I",
     number-align: top + right,
@@ -117,11 +147,14 @@
 
   show figure.where(kind: image): set figure(supplement: [Abb.])
   show figure.where(kind: table): set figure(supplement: [Tabelle])
+  show figure.where(kind: table): it => {
+    set figure.caption(separator: [: ], position: top)
+    it
+  }
 
-  outline()
 
   // pages with arabic numbering
-  counter(page).update(0)
+  counter(page).update(1)
   set page(numbering: "1")
   set heading(numbering: "1.")
 
@@ -175,7 +208,7 @@
 #let show_plot(
   file_configs, // Array of (path, indices) e.g., (("data1.csv", (([$phi_1$], 1),)), ("data2.csv", (([$phi_2$], 1),)))
   y_label, 
-  size: (12, 5),
+  size: (13, 6),
   y_limits: (-8, 14),
   raw_data: true
 ) = {
@@ -216,6 +249,69 @@
             plot.add(
               data_points,
               label: label_content,
+              style: (
+                stroke: (
+                  paint: colors.at(calc.rem(stroke_idx, colors.len())), 
+                  dash: strokes.at(calc.rem(stroke_idx, strokes.len())),
+                  thickness: 1.5pt
+                )
+              )
+            )
+            stroke_idx += 1
+          }
+        }
+      }
+    )
+  })
+}
+
+#let show_xy_plot(
+  file_configs, // Array of (path: "...", series: ((label: [], x: 1, y: 2), ...))
+  x_label: [X-Achse],
+  y_label: [Y-Achse], 
+  size: (12, 6),
+  x_limits: (-0.7, 0.7),
+  y_limits: (-0.5, 0.7),
+  raw_data: true
+) = {
+  let colors = (red, blue.lighten(20%), green, orange, purple)
+  let strokes = ("dotted", "solid", "solid", "solid")
+  let stroke_idx = 0
+
+  return canvas({
+    plot.plot(
+      size: size,
+      x-label: x_label,
+      y-label: y_label, 
+      x-min: x_limits.at(0),
+      x-max: x_limits.at(1),
+      y-min: y_limits.at(0),
+      y-max: y_limits.at(1),
+      x-tick-step: 0.2,
+      y-tick-step: 0.2,
+      legend: "inner-north-west",
+      {
+        for config in file_configs {
+          // Zugriff über Keys statt Indizes
+          let file_path = config.path
+          let series_list = config.series
+          
+          let raw_csv_data = csv("../" + file_path)
+          let header_less = raw_csv_data.slice(1)
+          if header_less.len() == 0 { continue }
+
+          for s in series_list {
+            let data_points = header_less.map(row => {
+              // Zugriff auf x und y über die Namen im Dictionary
+              let x_val = float(row.at(s.x))
+              let y_val = float(row.at(s.y))
+              
+              (x_val, y_val)
+            })
+
+            plot.add(
+              data_points,
+              label: s.label,
               style: (
                 stroke: (
                   paint: colors.at(calc.rem(stroke_idx, colors.len())), 

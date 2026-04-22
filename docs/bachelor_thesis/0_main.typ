@@ -6,7 +6,7 @@
   type: "Bachelorarbeit", // Bachelorarbeit or Seminararbeit
   title: "Entwurf und Evaluierung verschiedener Regelkonzepte \nfür einen Quadrocopter in der Lehre",
   author: "Maximilian Schweiger",
-  submission_date: datetime.today().display("[day].[month].[year]"),
+  submission_date: "23.03.2026",
   degree_program: "Ingenieurinformatik",
   chair: "Regelungstechnik",
   faculty: "Fakultät für Angewandte Informatik",

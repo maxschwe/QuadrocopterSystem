@@ -141,7 +141,7 @@ fill: (x, y) => if y == 0 { gray.lighten(80%) },
 
 Der Identifikationsprozess gliedert sich hierbei in folgende Schritte:
 1. Abflug einer Trajektorie am realen Flugsystem auf dem Teststand und dabei Aufzeichnung der Führungsgrößen $bold(w)_"recorded"$ und Ausgangsgrößen $bold(y)_"recorded"$.
-2. Definition der Optimierungsfunktion $f_"loss" (bold(w)_"recorded", bold(y)_"recorded")$ (@optim_function). Diese gibt die Abweichung zwischen Realität und Simulation mithilfe eines Mean Squared Error (MSE) an. Intern enthält diese die Simulation für die aufgenommenen Führungsgrößen $bold(w)_"recorded"$.
+2. Definition der Optimierungsfunktion $f_"cost" (bold(w)_"recorded", bold(y)_"recorded")$ (@optim_function). Diese gibt die Abweichung zwischen Realität und Simulation mithilfe eines Mean Squared Error (MSE) an. Intern enthält diese die Simulation für die aufgenommenen Führungsgrößen $bold(w)_"recorded"$.
 3. Durchführung einer gradientenbasierten Optimierung mittels BFGS-Verfahren. Mithilfe von automatischer Differentiation kann der Gradient effizient über die gesamte Simulationsstrecke hinweg bestimmt werden. 
 
 #figure(

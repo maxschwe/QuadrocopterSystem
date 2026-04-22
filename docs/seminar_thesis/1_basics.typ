@@ -1,0 +1,6 @@
+= Grundlagen
+
+Quadrocopter gehören zur Klasse der unbemannten Luftfahrzeuge (UAV), die im alltäglichen Sprachgebrauch meist als Drohnen bezeichnet werden. @ReviewModelingControl bietet einen umfassenden Überblick über die verschiedenen Typen von UAVs und zeigt ihre jeweiligen Vor- und Nachteile sowie typische Anwendungsgebiete auf.
+
+Sie besitzen vier Rotoren und entsprechen der Bauart eines Multicopters, bei denen es sich um hochdynamische und inhärent instabile Systeme handelt. Im Gegensatz zu Fixed Wing UAVs gibt es im Normalbetrieb keine Kräfte, die einer Auslenkung aus dem Gleichgewicht entgegenwirken, weshalb eine Regelungsstruktur immer notwendig ist. Hinzu kommt, dass sie meist in unsicheren Umgebungen betrieben werden und das System unteraktuiert ist: Als Stellgrößen bieten sich ausschließlich die Rotationsgeschwindigkeiten der 4 Rotoren, wodurch unabhängig nur der vertikale Schub und die 3 Rotationsfreiheitsgrade gestellt werden können. Translatorische Bewegungen sind nur durch gekoppelte Anpassung von Schub und Lage möglich. @stephanMulticopterControlFundamentals2025 
+Aufgrund dieser Eigenschaften bieten Quadrocopter vor allem aus regelungstechnischer Sicht eine interessante Entwicklungsplattform.

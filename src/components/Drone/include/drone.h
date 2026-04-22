@@ -14,6 +14,7 @@
 #define CONTROLLER_3DOF false
 
 // activates PID parameter control from ground station
+// not required to be active when PID is used but if not active the parameters cannot be tweaked online
 #define PID_3DOF true
 #define PID_6DOF false
 

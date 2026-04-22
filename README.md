@@ -12,7 +12,7 @@ Dieses Projekt entstand im Rahmen meiner Seminar- und Bachelorarbeit am **Lehrst
 
 ### Modellübersicht
 ![model](/docs/images/model.png)
-*Struktur des mathematischen Quadrocopter-Modells.*
+<br />*Struktur des mathematischen Quadrocopter-Modells.*
 
 ### Controllerübersicht
 ![controller](/docs/images/controller.png)
